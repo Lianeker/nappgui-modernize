@@ -133,6 +133,48 @@ _core_api const char_t *str_filext(const char_t *pathname);
 
 _core_api uint32_t str_find(const ArrPt(String) *array, const char_t *str);
 
+/*
+ * String to integer conversions ('str_to_i8' ... 'str_to_u64').
+ *
+ * The whole string must be a single integer literal in 'base'. Formally:
+ *
+ *      space* [ '+' | '-' ] [ "0x" | "0X" ] digit+ space* '\0'
+ *
+ * - 'space' is ' ', '\t', '\n', '\v', '\f' or '\r'. Leading and trailing spaces
+ *   are allowed and ignored. Spaces are NOT allowed between the sign and the
+ *   digits, nor inside the digits.
+ * - 'digit' is a valid digit in 'base': '0'-'1' in base 2, '0'-'7' in base 8,
+ *   '0'-'9' in base 10 and '0'-'9','a'-'f','A'-'F' in base 16. Bases from 2 to
+ *   36 are supported, using the letters up to 'z'. Any other base is an error.
+ * - The "0x"/"0X" prefix is only accepted in base 16, and only when a hex digit
+ *   follows it.
+ * - At least one digit is required and nothing else may follow the number.
+ * - A '-' sign is a format error in the unsigned versions ('str_to_uXX').
+ *
+ * '*error' is set to TRUE when the string does not follow that grammar or when
+ * the value does not fit in the type of the result, and to FALSE otherwise.
+ * 'error' can be NULL if the caller is not interested.
+ *
+ * On a format error the result is 0. On a valid number out of range the result
+ * is the closest limit of the type (for example 'str_to_u8("300", 10, &err)'
+ * returns 255 with 'err' == TRUE).
+ *
+ * Examples:      "42"      ->  42, no error
+ *                " 42 "    ->  42, no error       (surrounding spaces ignored)
+ *                "+42"     ->  42, no error
+ *                "-5"      ->  -5, no error       (error in 'str_to_uXX')
+ *                "42abc"   ->   0, error          (trailing garbage)
+ *                ""        ->   0, error          (no digits)
+ *                "  "      ->   0, error          (no digits)
+ *                "1 2"     ->   0, error          (embedded space)
+ *                "255"     -> 597 in base 16, no error
+ *                "0x255"   -> 597 in base 16, no error
+ *                "129"     ->   0, error in base 8 ('9' is not an octal digit)
+ *                "99999999999999999999" -> limit of the type, error
+ *
+ * The real versions below follow a different criterion: they reject trailing
+ * characters but accept the empty string as 0 without error.
+ */
 _core_api int8_t str_to_i8(const char_t *str, const uint32_t base, bool_t *error);
 
 _core_api int16_t str_to_i16(const char_t *str, const uint32_t base, bool_t *error);
