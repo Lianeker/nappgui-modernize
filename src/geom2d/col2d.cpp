@@ -513,12 +513,13 @@ static bool_t i_box_point(const Box2D< real > *b, const V2D< real > *p, Col2D< r
         if (d < mind)
             mind = d;
 
-        /* Contacto parcial: solo 'd'; p y n quedan sin tocar. Ojo: se escribe
-           el ultimo 'd' calculado (la distancia al borde max.y), no 'mind',
-           que se calcula y se tira. Corregirlo cambia valores que ya devuelve
-           la API: ver NAP-024. */
-        cassert(d >= 0);
-        col->d = d;
+        /* Contacto parcial: solo 'd'; p y n quedan sin tocar. 'd' es aqui la
+           distancia al borde mas cercano, no una profundidad de penetracion:
+           la semantica de Col2D.d no es uniforme entre funciones (NAP-025).
+           Hasta NAP-024 se escribia el ultimo 'd' calculado (la distancia al
+           borde max.y) en vez de 'mind', que se calculaba y se tiraba. */
+        cassert(mind >= 0);
+        col->d = mind;
         return inside;
     }
 }

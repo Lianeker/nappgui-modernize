@@ -17,6 +17,7 @@
 #include <geom2d/cir2d.h>
 #include <geom2d/box2d.h>
 #include <geom2d/tri2d.h>
+#include <geom2d/obb2d.h>
 #include <geom2d/col2d.h>
 #include <sewer/bmath.h>
 #include <sewer/bmem.h>
@@ -280,6 +281,73 @@ static void i_colisiones(void)
         box.max = v2df(10, 10);
         ntest_true(col2d_box_pointf(&box, &dentro, NULL), "punto dentro de la caja");
         ntest_false(col2d_box_pointf(&box, &fuera, NULL), "punto fuera de la caja");
+    }
+
+    /* Regresion de NAP-024: i_box_point escribia en 'd' la distancia al borde
+       max.y en vez de la minima de los cuatro bordes.
+
+       La caja tiene que ser rectangular y el punto descentrado, o el fallo no
+       se ve: con una caja cuadrada y el punto en el centro los cuatro bordes
+       estan a la misma distancia y el valor malo coincide con el bueno.
+
+       Caja (0,0)-(100,10) y punto (50,2): min.x esta a 50, max.x a 50,
+       min.y a 2 y max.y a 8. El minimo es 2 (borde min.y); antes salia 8. */
+    {
+        Col2Df col;
+        Box2Df box;
+        V2Df pnt = v2df(50, 2);
+        box.min = v2df(0, 0);
+        box.max = v2df(100, 10);
+        bmem_set_zero((byte_t *)&col, sizeof32(Col2Df));
+        if (ntest_true(col2d_box_pointf(&box, &pnt, &col), "punto dentro de la caja rectangular"))
+        {
+            ntest_equ_r32(col.d, 2.f, "col2d_box_pointf: 'd' es la distancia al borde mas cercano (min.y)");
+
+            /* 'd' es distancia a un borde, no una profundidad, y p y n siguen
+               sin tocarse: box_point es del grupo 2 de docs/col2d-contacto.md.
+               NAP-024 corrige el valor, no la semantica; eso es NAP-025. */
+            ntest_equ_r32(col.p.x, 0.f, "col2d_box_pointf no escribe el punto de contacto");
+            ntest_equ_r32(col.n.y, 0.f, "col2d_box_pointf no escribe la normal");
+        }
+    }
+
+    /* El caso de la ficha NAP-024: caja (0,0)-(10,10) y punto (5,1). El borde
+       mas cercano es min.y, a 1; el valor viejo era 9 (borde max.y). */
+    {
+        Col2Df col;
+        Box2Df box;
+        V2Df pnt = v2df(5, 1);
+        box.min = v2df(0, 0);
+        box.max = v2df(10, 10);
+        bmem_set_zero((byte_t *)&col, sizeof32(Col2Df));
+        if (ntest_true(col2d_box_pointf(&box, &pnt, &col), "punto descentrado dentro de la caja"))
+            ntest_equ_r32(col.d, 1.f, "col2d_box_pointf: distancia 1 al borde min.y, no 9 al max.y");
+    }
+
+    /* La variante d recorre el mismo codigo (misma plantilla, otro real). */
+    {
+        Col2Dd col;
+        Box2Dd box;
+        V2Dd pnt = v2dd(50, 2);
+        box.min = v2dd(0, 0);
+        box.max = v2dd(100, 10);
+        bmem_set_zero((byte_t *)&col, sizeof32(Col2Dd));
+        if (ntest_true(col2d_box_pointd(&box, &pnt, &col), "punto dentro de la caja, doble precision"))
+            ntest_equ_r32(col.d, 2.0, "col2d_box_pointd: mismo minimo que la variante f");
+    }
+
+    /* obb_point delega en box_point tras llevar el punto a coordenadas locales
+       del OBB, asi que hereda el arreglo. Sin rotar, el OBB de centro (50,5) y
+       de 100x10 es la caja (0,0)-(100,10) de arriba. */
+    {
+        Col2Df col;
+        V2Df centro = v2df(50, 5);
+        V2Df pnt = v2df(50, 2);
+        OBB2Df *obb = obb2d_createf(&centro, 100, 10, 0);
+        bmem_set_zero((byte_t *)&col, sizeof32(Col2Df));
+        if (ntest_true(col2d_obb_pointf(obb, &pnt, &col), "punto dentro del OBB sin rotar"))
+            ntest_equ_r32(col.d, 2.f, "col2d_obb_pointf: hereda la 'd' corregida de box_point");
+        obb2d_destroyf(&obb);
     }
 
     /* Segmento que cruza un circulo y otro que no. */
