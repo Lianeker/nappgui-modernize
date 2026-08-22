@@ -47,8 +47,11 @@ __END_C
     cassert_no_null_imp(cast(ptr, void), #ptr, __FILE__, __LINE__)
 
 #define cassert_no_nullf(fptr) \
-    if (fptr == NULL) \
-    cassert_no_null_imp(NULL, #fptr, __FILE__, __LINE__)
+    do \
+    { \
+        if ((fptr) == NULL) \
+            cassert_no_null_imp(NULL, #fptr, __FILE__, __LINE__); \
+    } while (0)
 
 #define cassert_default(value) \
     cassert_default_imp(__FILE__, __LINE__, (int32_t)value)

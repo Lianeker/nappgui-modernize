@@ -12,9 +12,11 @@
 
 #include "sewer.hxx"
 
-#define max_val(x, y) ((x) > (y)) ? (x) : (y)
+/* Ojo: evalua x e y dos veces. Prefiere max_u32 / bmath_maxf. */
+#define max_val(x, y) (((x) > (y)) ? (x) : (y))
 
-#define min_val(x, y) ((x) < (y)) ? (x) : (y)
+/* Ojo: evalua x e y dos veces. Prefiere min_u32 / bmath_minf. */
+#define min_val(x, y) (((x) < (y)) ? (x) : (y))
 
 __EXTERN_C
 
