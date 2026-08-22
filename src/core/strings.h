@@ -172,8 +172,10 @@ _core_api uint32_t str_find(const ArrPt(String) *array, const char_t *str);
  *                "129"     ->   0, error in base 8 ('9' is not an octal digit)
  *                "99999999999999999999" -> limit of the type, error
  *
- * The real versions below follow a different criterion: they reject trailing
- * characters but accept the empty string as 0 without error.
+ * The real versions below follow a different criterion: they reject any
+ * trailing character, trailing spaces included ('str_to_r32(" 42 ", &err)' is
+ * an error, while 'str_to_i32(" 42 ", 10, &err)' is not), and they accept the
+ * empty string as 0 without error.
  */
 _core_api int8_t str_to_i8(const char_t *str, const uint32_t base, bool_t *error);
 

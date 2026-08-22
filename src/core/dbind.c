@@ -4903,6 +4903,35 @@ bindset_t dbind_st_set_value_incr(const DBind *stbind, const uint32_t member_id,
 
 /*---------------------------------------------------------------------------*/
 
+/*
+ * TRUE when the string announces itself as hexadecimal with an explicit
+ * "0x"/"0X" prefix, using the same leading spaces and sign that the grammar
+ * documented in 'core/strings.h' accepts.
+ *
+ * The 'ekDTYPE_INT' case below retries the conversion in base 16 when the value
+ * is not a valid decimal. Without this filter every string built from the
+ * letters 'a'-'f' ("abc", "12e", "1f", "42abc") would be a valid hexadecimal
+ * number and would be accepted silently, which is more permissive than plain
+ * base 10 and not what the caller means when it types text in a number field.
+ */
+static bool_t i_hex_literal(const char_t *str)
+{
+    uint32_t i = 0;
+    cassert_no_null(str);
+    while (str[i] == ' ' || str[i] == '\t' || str[i] == '\n' || str[i] == '\v' || str[i] == '\f' || str[i] == '\r')
+        i += 1;
+
+    if (str[i] == '+' || str[i] == '-')
+        i += 1;
+
+    if (str[i] != '0')
+        return FALSE;
+
+    return (bool_t)(str[i + 1] == 'x' || str[i + 1] == 'X');
+}
+
+/*---------------------------------------------------------------------------*/
+
 static bindset_t i_set_value_str(const DBind *bind, byte_t *data, const char_t *value, const StructMember *member)
 {
     cassert_no_null(bind);
@@ -4919,7 +4948,8 @@ static bindset_t i_set_value_str(const DBind *bind, byte_t *data, const char_t *
         bool_t error = FALSE;
         int64_t cvalue = str_to_i64(value, 10, &error);
 
-        if (error == TRUE)
+        /* "0x1f" is not a decimal literal, but it is an unambiguous hex one. */
+        if (error == TRUE && i_hex_literal(value) == TRUE)
             cvalue = str_to_i64(value, 16, &error);
 
         if (error == FALSE)
