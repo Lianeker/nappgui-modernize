@@ -63,7 +63,12 @@ jobs:
             arch: x64
 
     steps:
-      - uses: actions/checkout@v4
+      # NAP-027: @v4 declara `runs.using: node20` y GitHub lo estaba forzando
+      # sobre Node 24 con un puente temporal, avisando en cada trabajo. @v5 es
+      # ya node24 de verdad. v6 y v7 tambien lo son, asi que subir mas adelante
+      # no vuelve a tocar este problema; se queda en v5 por ser el salto con
+      # menos cambios de comportamiento respecto a v4.
+      - uses: actions/checkout@v5
 
       - name: Dependencias de Linux
         if: runner.os == 'Linux'
@@ -77,15 +82,50 @@ jobs:
         if: runner.os == 'macOS'
         run: brew install ninja
 
+      # NAP-027: aqui habia dos acciones de terceros, y las dos siguen en
+      # node20 en su ultima version publicada (`gha-setup-ninja@v6`, de
+      # 02/2025, e `ilammy/msvc-dev-cmd@v1.13.0`, de 01/2024). No hay a que
+      # subirlas, asi que se sustituyen por lo que ya trae la imagen del
+      # runner: choco para ninja y vcvarsall.bat para el entorno de MSVC.
+      # Ahora la unica accion del workflow es `actions/checkout`, de GitHub.
       - name: Ninja en Windows
         if: runner.os == 'Windows' && matrix.generator == 'Ninja'
-        uses: seanmiddleditch/gha-setup-ninja@v5
+        run: choco install ninja -y --no-progress
 
+      # Equivalente a lo que hacia msvc-dev-cmd: llamar a vcvarsall.bat y
+      # propagar el entorno resultante a los pasos siguientes por GITHUB_ENV.
+      # Se exportan solo las variables que CMake necesita para dar con cl.exe,
+      # las cabeceras y las librerias; volcar `set` entero mete pseudovariables
+      # de cmd (`=C:`, `=ExitCode`) que GITHUB_ENV no sabe leer.
       - name: Entorno MSVC
         if: runner.os == 'Windows' && matrix.generator == 'Ninja'
-        uses: ilammy/msvc-dev-cmd@v1
-        with:
-          arch: ${{ matrix.arch }}
+        shell: pwsh
+        run: |
+          $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+          if (-not (Test-Path $vswhere)) { throw "no existe $vswhere" }
+          $raiz = @(& $vswhere -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath)[0]
+          if (-not $raiz) { throw "vswhere no encuentra Visual Studio con las herramientas de C++" }
+          $vcvarsall = Join-Path $raiz 'VC\Auxiliary\Build\vcvarsall.bat'
+          if (-not (Test-Path $vcvarsall)) { throw "no existe $vcvarsall" }
+          Write-Host "vcvarsall: $vcvarsall ${{ matrix.arch }}"
+          $entorno = cmd /c "`"$vcvarsall`" ${{ matrix.arch }} >nul 2>&1 && set"
+          if ($LASTEXITCODE -ne 0) { throw "vcvarsall.bat salio con $LASTEXITCODE" }
+          $exportar = @('PATH', 'INCLUDE', 'LIB', 'LIBPATH', 'VSINSTALLDIR', 'VCINSTALLDIR',
+                        'VCToolsInstallDir', 'VCToolsVersion', 'WindowsSdkDir', 'WindowsSdkBinPath',
+                        'WindowsSdkVerBinPath', 'WindowsSDKVersion', 'WindowsLibPath',
+                        'UniversalCRTSdkDir', 'UCRTVersion', 'Platform', 'VisualStudioVersion')
+          $puestas = 0
+          foreach ($linea in $entorno) {
+            $i = $linea.IndexOf('=')
+            if ($i -lt 1) { continue }
+            $nombre = $exportar | Where-Object { $_ -eq $linea.Substring(0, $i) } | Select-Object -First 1
+            if ($nombre) {
+              "$nombre=$($linea.Substring($i + 1))" | Add-Content -Path $env:GITHUB_ENV -Encoding utf8
+              $puestas++
+            }
+          }
+          Write-Host "$puestas variables exportadas a GITHUB_ENV"
+          if ($puestas -lt 4) { throw "vcvarsall no dejo el entorno esperado" }
 
       # NAPPGUI_WEB=NO a proposito: con WebView activo, el consumidor externo
       # no enlaza porque el paquete exportado no arrastra el loader de
@@ -136,7 +176,7 @@ jobs:
     name: linux-x64-shared
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5   # NAP-027, ver el comentario del otro trabajo
 
       - name: Dependencias
         run: |
