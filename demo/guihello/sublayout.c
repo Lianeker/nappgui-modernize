@@ -101,7 +101,7 @@ static Layout *i_top_layout(LPData *data)
     layout_hsize(layout1, 2, 230);
     layout_hmargin(layout1, 0, 5);
     layout_hmargin(layout1, 1, 5);
-    layout_valign(layout1, 2, 0, ekJUSTIFY);
+    layout_valign(layout1, 2, 0, ekVJUSTIFY);
     data->view = view;
     return layout1;
 }

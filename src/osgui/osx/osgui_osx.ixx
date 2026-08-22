@@ -216,7 +216,7 @@ struct _ostext_attr_t
 {
     Font *font;
     color_t color;
-    align_t align;
+    halign_t align;
     uint32_t mark;
 };
 

@@ -242,12 +242,12 @@ static Panel *i_gl_panel(App *app)
     label_multiline(label, TRUE);
     layout_view(layout1, view, 0, 0);
     label_font(label, font);
-    label_align(label, ekCENTER);
+    label_align(label, ekHCENTER);
     layout_label(layout2, label, 0, 0);
     layout_hsize(layout2, 0, 512);
     layout_vsize(layout2, 0, 512);
-    layout_halign(layout2, 0, 0, ekCENTER);
-    layout_valign(layout2, 0, 0, ekTOP);
+    layout_halign(layout2, 0, 0, ekHCENTER);
+    layout_valign(layout2, 0, 0, ekVTOP);
     font_destroy(&font);
     panel_layout(panel, layout1);
     panel_layout(panel, layout2);
@@ -302,7 +302,7 @@ static Panel *i_panel(App *app)
     layout_listbox(layout1, listbox, 0, 0);
     layout_layout(layout1, layout2, 1, 0);
     panel_layout(panel, layout1);
-    layout_valign(layout1, 0, 0, ekTOP);
+    layout_valign(layout1, 0, 0, ekVTOP);
     layout_hsize(layout1, 0, 150);
     layout_hexpand(layout1, 1);
     layout_margin(layout1, 10);

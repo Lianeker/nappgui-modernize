@@ -13,8 +13,8 @@ static Cell *i_coeff(Layout *layout, const char_t *text, const uint32_t col, con
     Label *label = label_create();
     Edit *edit = edit_create();
     label_text(label, text);
-    edit_align(edit, ekRIGHT);
-    layout_halign(layout, col * 2, row, ekCENTER);
+    edit_align(edit, ekHRIGHT);
+    layout_halign(layout, col * 2, row, ekHCENTER);
     layout_label(layout, label, col * 2, row);
     layout_edit(layout, edit, col * 2 + 1, row);
     return layout_cell(layout, col * 2 + 1, row);
@@ -65,8 +65,8 @@ static void i_range(Layout *layout, const char_t *text, const uint32_t i)
     Edit *edit1 = edit_create();
     Edit *edit2 = edit_create();
     label_text(label, text);
-    edit_align(edit1, ekRIGHT);
-    edit_align(edit2, ekRIGHT);
+    edit_align(edit1, ekHRIGHT);
+    edit_align(edit2, ekHRIGHT);
     layout_label(layout, label, 0, i);
     layout_edit(layout, edit1, 1, i);
     layout_edit(layout, edit2, 2, i);
@@ -125,7 +125,7 @@ static Layout *i_left(Ctrl *ctrl)
     layout_label(layout, label2, 0, 6);
     layout_layout(layout, layout2, 0, 7);
     layout_button(layout, button5, 0, 9);
-    layout_halign(layout, 0, 7, ekLEFT);
+    layout_halign(layout, 0, 7, ekHLEFT);
     layout_vmargin(layout, 0, 10);
     layout_vmargin(layout, 1, 10);
     layout_vmargin(layout, 2, 5);
@@ -151,7 +151,7 @@ static void i_slider_K(Layout *layout, const char_t *title, const uint32_t row)
     Slider *slider = slider_create();
     Edit *edit = edit_create();
     label_text(label, title);
-    edit_align(edit, ekRIGHT);
+    edit_align(edit, ekHRIGHT);
     layout_label(layout, label, 0, row);
     layout_slider(layout, slider, 1, row);
     layout_edit(layout, edit, 2, row);

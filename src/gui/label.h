@@ -34,7 +34,7 @@ _gui_api void label_style_over(Label *label, const uint32_t fstyle);
 
 _gui_api void label_multiline(Label *label, const bool_t multiline);
 
-_gui_api void label_align(Label *label, const align_t align);
+_gui_api void label_align(Label *label, const halign_t align);
 
 _gui_api void label_color(Label *label, const color_t color);
 

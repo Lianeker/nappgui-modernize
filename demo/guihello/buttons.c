@@ -133,7 +133,7 @@ static Layout *i_buttons(Button **defbutton)
     layout_layout(layout2, layout4, 1, 1);
     layout_layout(layout, layout2, 0, 1);
     layout_layout(layout, layout5, 0, 2);
-    layout_halign(layout, 0, 0, ekLEFT);
+    layout_halign(layout, 0, 0, ekHLEFT);
     layout_margin(layout2, 5);
     layout_hmargin(layout2, 0, 10);
     layout_margin(layout5, 5);

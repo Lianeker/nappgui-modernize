@@ -47,14 +47,14 @@ struct _dctx_t
     double line_dash[16];
     int dash_count;
     real32_t text_width;
-    align_t text_halign;
-    align_t text_valign;
+    halign_t text_halign;
+    valign_t text_valign;
     PangoAlignment text_intalign;
     PangoEllipsizeMode ellipsis;
     Font *font;
     PangoLayout *layout;
-    align_t image_halign;
-    align_t image_valign;
+    halign_t image_halign;
+    valign_t image_valign;
     bool_t cartesian_system;
     bool_t raster_mode;
     bool_t fill_line;

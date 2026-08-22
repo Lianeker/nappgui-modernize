@@ -273,7 +273,7 @@ static Panel *i_panel(App *app)
     layout_button(layout2, button1, 2, 0);
     layout_button(layout2, button2, 3, 0);
     layout_label(layout2, label2, 4, 0);
-    layout_halign(layout2, 4, 0, ekJUSTIFY);
+    layout_halign(layout2, 4, 0, ekHJUSTIFY);
     layout_hexpand(layout2, 4);
     layout_layout(layout1, layout2, 0, 1);
     layout_imageview(layout1, view, 0, 2);

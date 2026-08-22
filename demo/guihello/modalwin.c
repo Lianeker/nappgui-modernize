@@ -139,7 +139,7 @@ static void i_modal_window(ModalData *data)
     layout_layout(layout1, layout2, 0, 0);
     layout_layout(layout1, layout3, 1, 0);
     layout_hmargin(layout1, 0, 10);
-    layout_valign(layout1, 1, 0, ekTOP);
+    layout_valign(layout1, 1, 0, ekVTOP);
     layout_margin(layout1, 10);
     panel_data(panel, &ndata, i_destroy_modal_data, ModalData);
     panel_layout(panel, layout1);
@@ -200,7 +200,7 @@ static Layout *i_modal_layout(ModalData *data)
     layout_button(layout, button3, 0, 2);
     layout_button(layout, button4, 0, 3);
     layout_label(layout, label, 0, 4);
-    layout_halign(layout, 0, 4, ekJUSTIFY);
+    layout_halign(layout, 0, 4, ekHJUSTIFY);
     layout_vmargin(layout, 0, 5);
     layout_vmargin(layout, 1, 5);
     layout_vmargin(layout, 2, 5);

@@ -825,7 +825,7 @@ static Layout *i_assert_layout(const ResPack *pack, const char_t *message, const
     label_text(label, message);
     label_multiline(label, TRUE);
     layout_layout(layout, layout2, 0, 0);
-    layout_valign(layout, 0, 0, ekTOP);
+    layout_valign(layout, 0, 0, ekVTOP);
     layout_hmargin(layout, 0, 5.f);
     layout_label(layout1, label, 0, 0);
     layout_layout(layout1, info_layout, 0, 1);

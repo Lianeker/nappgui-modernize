@@ -18,7 +18,7 @@ void _oscontrol_init(OSControl *control, const gui_type_t type, GtkWidget *widge
 
 void _oscontrol_destroy(OSControl *control);
 
-void _oscontrol_set_halign(OSControl *control, const align_t align);
+void _oscontrol_set_halign(OSControl *control, const halign_t align);
 
 void _oscontrol_set_visible(OSControl *control, const bool_t visible);
 
@@ -74,9 +74,9 @@ color_t _oscontrol_from_gdkrgba(const GdkRGBA *gdkcolor);
 
 void _oscontrol_to_gdkrgba(const color_t color, GdkRGBA *gdkcolor);
 
-GtkJustification _oscontrol_justification(const align_t align);
+GtkJustification _oscontrol_justification(const halign_t align);
 
-PangoAlignment _oscontrol_alignment(const align_t align);
+PangoAlignment _oscontrol_alignment(const halign_t align);
 
 GtkPositionType _oscontrol_position(const gui_pos_t pos);
 

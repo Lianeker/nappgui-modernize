@@ -388,7 +388,7 @@ void _osentry_font(OSEntry *entry, const Font *font)
 
 /*---------------------------------------------------------------------------*/
 
-void _osentry_align(OSEntry *entry, const align_t align)
+void _osentry_align(OSEntry *entry, const halign_t align)
 {
     cassert_no_null(entry);
     if (GTK_IS_ENTRY(entry->widget) == TRUE)
@@ -396,14 +396,14 @@ void _osentry_align(OSEntry *entry, const align_t align)
         gfloat a = 0.f;
         switch (align)
         {
-        case ekLEFT:
+        case ekHLEFT:
             a = 0.f;
             break;
-        case ekCENTER:
-        case ekJUSTIFY:
+        case ekHCENTER:
+        case ekHJUSTIFY:
             a = .5f;
             break;
-        case ekRIGHT:
+        case ekHRIGHT:
             a = .99f;
             break;
         default:

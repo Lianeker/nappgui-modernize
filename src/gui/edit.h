@@ -36,7 +36,7 @@ _gui_api void edit_text(Edit *edit, const char_t *text);
 
 _gui_api void edit_font(Edit *edit, const Font *font);
 
-_gui_api void edit_align(Edit *edit, const align_t align);
+_gui_api void edit_align(Edit *edit, const halign_t align);
 
 _gui_api void edit_passmode(Edit *edit, const bool_t passmode);
 

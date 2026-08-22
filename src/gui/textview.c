@@ -61,7 +61,7 @@ TextView *textview_create(void)
     uint32_t units = ekFPIXELS;
     real32_t size = font_size(font);
     uint32_t fstyle = ekFNORMAL;
-    align_t palign = ekLEFT;
+    halign_t palign = ekHLEFT;
     real32_t lspacing = 1;
     real32_t bfpspace = 0;
     real32_t afpspace = 0;
@@ -315,7 +315,7 @@ void textview_pgcolor(TextView *view, const color_t color)
 
 /*---------------------------------------------------------------------------*/
 
-void textview_halign(TextView *view, const align_t align)
+void textview_halign(TextView *view, const halign_t align)
 {
     cassert_no_null(view);
     cassert_no_null(view->component.context);

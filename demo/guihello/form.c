@@ -207,8 +207,8 @@ static Layout *i_numbers(FormData *data, color_t colorbg)
     edit_text(edit2, "175");
     edit_autoselect(edit1, TRUE);
     edit_autoselect(edit2, TRUE);
-    edit_align(edit1, ekRIGHT);
-    edit_align(edit2, ekRIGHT);
+    edit_align(edit1, ekHRIGHT);
+    edit_align(edit2, ekHRIGHT);
     edit_OnFilter(edit1, listener(NULL, i_OnFilter, void));
     edit_OnFilter(edit2, listener(NULL, i_OnFilter, void));
     edit_OnChange(edit1, listener(data, i_OnEditChange, FormData));
@@ -333,7 +333,7 @@ static Layout *i_form(FormData *data)
     layout_layout(layout1, layout3, 0, 1);
     layout_label(layout1, label, 0, 2);
     layout_hsize(layout1, 0, 300);
-    layout_halign(layout1, 0, 1, ekLEFT);
+    layout_halign(layout1, 0, 1, ekHLEFT);
     layout_vmargin(layout1, 0, 10);
     layout_vmargin(layout1, 1, 10);
     layout_margin(layout1, 10);

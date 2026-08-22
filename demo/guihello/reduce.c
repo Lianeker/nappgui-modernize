@@ -35,7 +35,7 @@ static void i_OnDraw(void *nonused, Event *e)
 
 /*---------------------------------------------------------------------------*/
 
-static void i_set_reduce_mode(Layout *layout, const align_t align)
+static void i_set_reduce_mode(Layout *layout, const halign_t align)
 {
     layout_halign(layout, 0, 0, align);
     layout_halign(layout, 0, 1, align);
@@ -54,7 +54,7 @@ static void i_OnReduceClick(ReduceData *data, Event *e)
 {
     const EvButton *p = event_params(e, EvButton);
     cassert_no_null(data);
-    i_set_reduce_mode(data->layout, p->state == ekGUI_ON ? ekJUSTIFY : ekLEFT);
+    i_set_reduce_mode(data->layout, p->state == ekGUI_ON ? ekHJUSTIFY : ekHLEFT);
     window_update(data->window);
 }
 
@@ -141,11 +141,11 @@ static Window *i_reducible_window(ReduceData *data)
     layout_vmargin(layout2, 5, 5);
     layout_vmargin(layout2, 6, 5);
     layout_vmargin(layout2, 7, 5);
-    layout_valign(layout1, 1, 0, ekTOP);
+    layout_valign(layout1, 1, 0, ekVTOP);
     panel_layout(panel, layout1);
     window_panel(window, panel);
     window_title(window, "Reduce basic components to the limit");
-    i_set_reduce_mode(layout2, ekJUSTIFY);
+    i_set_reduce_mode(layout2, ekHJUSTIFY);
     data->layout = layout2;
     return window;
 }

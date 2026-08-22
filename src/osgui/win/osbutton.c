@@ -195,7 +195,7 @@ static void i_draw_flat_button(OSButton *button, const Image *image)
             HGDIOBJ old_font = SelectObject(memHdc, (HFONT)font_native(button->font));
             COLORREF color = GetSysColor(enabled ? COLOR_BTNTEXT : COLOR_GRAYTEXT);
             SetBkMode(memHdc, TRANSPARENT);
-            _osdrawctrl_gdi_text(memHdc, NULL, tc(button->text), (int32_t)tx, (int32_t)ty, ekLEFT, ekELLIPEND, -1, color, ekCTRL_STATE_NORMAL);
+            _osdrawctrl_gdi_text(memHdc, NULL, tc(button->text), (int32_t)tx, (int32_t)ty, ekHLEFT, ekELLIPEND, -1, color, ekCTRL_STATE_NORMAL);
             SelectObject(memHdc, old_font);
         }
     }
@@ -323,16 +323,16 @@ static DWORD i_button_skin(const button_flag_t flags)
 
 /*---------------------------------------------------------------------------*/
 
-static DWORD i_button_halign(const align_t text_align)
+static DWORD i_button_halign(const halign_t text_align)
 {
     switch (text_align)
     {
-    case ekLEFT:
+    case ekHLEFT:
         return BS_LEFT;
-    case ekCENTER:
-    case ekJUSTIFY:
+    case ekHCENTER:
+    case ekHJUSTIFY:
         return BS_CENTER;
-    case ekRIGHT:
+    case ekHRIGHT:
         return BS_RIGHT;
     default:
         cassert_default(text_align);
@@ -343,7 +343,7 @@ static DWORD i_button_halign(const align_t text_align)
 
 /*---------------------------------------------------------------------------*/
 
-static DWORD i_style(const button_flag_t flags, const align_t align)
+static DWORD i_style(const button_flag_t flags, const halign_t align)
 {
     DWORD osskin = 0;
     DWORD oshalign = 0;
@@ -371,7 +371,7 @@ OSButton *osbutton_create(const uint32_t flags)
     button->key = ENUM_MAX(vkey_t);
     button->id = _osgui_unique_child_id();
 
-    _oscontrol_init(cast(button, OSControl), PARAM(dwExStyle, WS_EX_NOPARENTNOTIFY), i_style(flags, ekCENTER), L"button", 0, 0, i_WndProc, kDEFAULT_PARENT_WINDOW);
+    _oscontrol_init(cast(button, OSControl), PARAM(dwExStyle, WS_EX_NOPARENTNOTIFY), i_style(flags, ekHCENTER), L"button", 0, 0, i_WndProc, kDEFAULT_PARENT_WINDOW);
     button->control.tooltip_hwnd1 = button->control.hwnd;
 
     if (_osbutton_text_allowed(flags) == TRUE)
@@ -473,7 +473,7 @@ void osbutton_font(OSButton *button, const Font *font)
 
 /*---------------------------------------------------------------------------*/
 
-void osbutton_align(OSButton *button, const align_t align)
+void osbutton_align(OSButton *button, const halign_t align)
 {
     DWORD dwStyle = 0;
     cassert_no_null(button);

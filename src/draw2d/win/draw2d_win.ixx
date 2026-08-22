@@ -57,9 +57,9 @@ struct _dctx_t
     Gdiplus::REAL gradient_angle;
     Gdiplus::WrapMode gradient_wrap;
     real32_t text_width;
-    align_t text_halign;
-    align_t text_valign;
-    align_t text_intalign;
+    halign_t text_halign;
+    valign_t text_valign;
+    halign_t text_intalign;
     ellipsis_t text_ellipsis;
     Font *font;
     Gdiplus::Font *ffont;
@@ -67,8 +67,8 @@ struct _dctx_t
     INT fstyle;
     Gdiplus::REAL fsize;
     Gdiplus::REAL fintleading;
-    align_t image_halign;
-    align_t image_valign;
+    halign_t image_halign;
+    valign_t image_valign;
     void *data;
     FPtr_destroy func_destroy_data;
 };

@@ -438,7 +438,7 @@ static Layout *i_area_layout(void)
     layout_label(layout, label1, 0, 0);
     layout_label(layout, label2, 1, 0);
     layout_hmargin(layout, 0, 5);
-    layout_halign(layout, 1, 0, ekJUSTIFY);
+    layout_halign(layout, 1, 0, ekHJUSTIFY);
     layout_hexpand(layout, 1);
     cell_dbind(layout_cell(layout, 1, 0), App, real32_t, sel_area);
     return layout;
@@ -994,7 +994,7 @@ static Layout *i_layout(App *app)
     layout_margin(layout1, 10);
     layout_layout(layout1, layout2, 0, 0);
     layout_view(layout1, view, 1, 0);
-    layout_valign(layout1, 0, 0, ekTOP);
+    layout_valign(layout1, 0, 0, ekVTOP);
     layout_hmargin(layout1, 0, 10);
     layout_hexpand(layout1, 1);
     app->view = view;

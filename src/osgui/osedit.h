@@ -33,7 +33,7 @@ _osgui_api void osedit_tooltip(OSEdit *edit, const char_t *text);
 
 _osgui_api void osedit_font(OSEdit *edit, const Font *font);
 
-_osgui_api void osedit_align(OSEdit *edit, const align_t align);
+_osgui_api void osedit_align(OSEdit *edit, const halign_t align);
 
 _osgui_api void osedit_passmode(OSEdit *edit, const bool_t passmode);
 

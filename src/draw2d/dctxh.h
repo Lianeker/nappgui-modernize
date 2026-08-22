@@ -35,7 +35,7 @@ _draw2d_api void dctx_line_dash(const DCtx *ctx, real32_t *pattern, uint32_t *si
 
 _draw2d_api real32_t dctx_text_width(const DCtx *ctx);
 
-_draw2d_api align_t dctx_text_intalign(const DCtx *ctx);
+_draw2d_api halign_t dctx_text_intalign(const DCtx *ctx);
 
 _draw2d_api color_t dctx_text_color(const DCtx *ctx);
 

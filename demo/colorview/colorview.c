@@ -88,7 +88,7 @@ static void i_OnDraw(App *app, Event *e)
     real32_t cheight = i_ITEM_WIDTH + font_height(app->font);
 
     draw_font(p->ctx, app->font);
-    draw_text_align(p->ctx, ekCENTER, ekBOTTOM);
+    draw_text_align(p->ctx, ekHCENTER, ekVBOTTOM);
 
     arrst_foreach(item, app->items, ViewItem)
         uint32_t row = item_i / app->num_cols;

@@ -50,7 +50,7 @@ static void i_set_panel(App *app, const uint32_t index)
 {
     Panel *panel = NULL;
     Button *defbutton = NULL;
-    align_t valign = ekTOP;
+    valign_t valign = ekVTOP;
 
     switch (index)
     {
@@ -71,7 +71,7 @@ static void i_set_panel(App *app, const uint32_t index)
         break;
     case 5:
         panel = tabctrls();
-        valign = ekJUSTIFY;
+        valign = ekVJUSTIFY;
         break;
     case 6:
         panel = listboxes();
@@ -129,7 +129,7 @@ static void i_set_panel(App *app, const uint32_t index)
         break;
     case 24:
         panel = sublayouts();
-        valign = ekJUSTIFY;
+        valign = ekVJUSTIFY;
         break;
     case 25:
         panel = subpanels();
@@ -233,8 +233,8 @@ static Panel *i_panel(App *app)
     layout_listbox(layout, list, 0, 0);
     i_set_panel(app, 0);
     panel_layout(panel, layout);
-    layout_valign(layout, 0, 0, ekTOP);
-    layout_valign(layout, 1, 0, ekTOP);
+    layout_valign(layout, 0, 0, ekVTOP);
+    layout_valign(layout, 1, 0, ekVTOP);
     layout_margin(layout, 10);
     layout_hmargin(layout, 0, 10);
     return panel;

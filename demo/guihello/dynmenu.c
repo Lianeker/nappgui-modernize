@@ -365,7 +365,7 @@ Panel *dynmenu_panel(Window *window)
     layout_button(layout2, button6, 2, 0);
     layout_button(layout2, button7, 3, 0);
     layout_button(layout2, button8, 4, 0);
-    layout_halign(layout1, 0, 6, ekLEFT);
+    layout_halign(layout1, 0, 6, ekHLEFT);
     layout_hmargin(layout2, 0, 5);
     layout_hmargin(layout2, 1, 5);
     layout_hmargin(layout2, 2, 5);

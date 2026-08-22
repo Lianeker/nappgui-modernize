@@ -27,7 +27,7 @@ _gui_api real32_t tableview_get_column_width(const TableView *view, const uint32
 
 _gui_api const char_t *tableview_get_header_title(const TableView *view, const uint32_t column_id);
 
-_gui_api align_t tableview_get_header_align(const TableView *view, const uint32_t column_id);
+_gui_api halign_t tableview_get_header_align(const TableView *view, const uint32_t column_id);
 
 __END_C
 

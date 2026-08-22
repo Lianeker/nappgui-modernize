@@ -278,7 +278,7 @@ static NSColorChoose *i_COLOR_CHOOSE = nil;
 
 /*---------------------------------------------------------------------------*/
 
-void oscomwin_color(OSWindow *parent, const char_t *caption, const real32_t x, const real32_t y, const align_t halign, const align_t valign, const color_t current, color_t *colors, const uint32_t n, Listener *OnChange)
+void oscomwin_color(OSWindow *parent, const char_t *caption, const real32_t x, const real32_t y, const halign_t halign, const valign_t valign, const color_t current, color_t *colors, const uint32_t n, Listener *OnChange)
 {
     NSColorPanel *panel = [NSColorPanel sharedColorPanel];
     unref(colors);
@@ -307,17 +307,17 @@ void oscomwin_color(OSWindow *parent, const char_t *caption, const real32_t x, c
         NSPoint origin = NSMakePoint((CGFloat)x, (CGFloat)y);
         NSSize size = [panel frame].size;
         CGFloat sh = [[NSScreen mainScreen] frame].size.height;
-        if (halign != ekLEFT || valign != ekTOP)
+        if (halign != ekHLEFT || valign != ekVTOP)
         {
             switch (halign)
             {
-            case ekLEFT:
-            case ekJUSTIFY:
+            case ekHLEFT:
+            case ekHJUSTIFY:
                 break;
-            case ekCENTER:
+            case ekHCENTER:
                 origin.x -= size.width / 2;
                 break;
-            case ekRIGHT:
+            case ekHRIGHT:
                 origin.x -= size.width;
                 break;
             default:
@@ -326,13 +326,13 @@ void oscomwin_color(OSWindow *parent, const char_t *caption, const real32_t x, c
 
             switch (valign)
             {
-            case ekTOP:
-            case ekJUSTIFY:
+            case ekVTOP:
+            case ekVJUSTIFY:
                 break;
-            case ekCENTER:
+            case ekVCENTER:
                 origin.y -= size.height / 2;
                 break;
-            case ekBOTTOM:
+            case ekVBOTTOM:
                 origin.y -= size.height;
                 break;
             default:

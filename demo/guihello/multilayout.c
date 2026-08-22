@@ -99,7 +99,7 @@ Panel *multilayouts(void)
     layout_panel(layout1, panel2, 0, 1);
     layout_vmargin(layout1, 0, 10);
     layout_hmargin(layout2, 0, 10);
-    layout_halign(layout1, 0, 0, ekLEFT);
+    layout_halign(layout1, 0, 0, ekHLEFT);
     panel_layout(panel1, layout1);
     return panel1;
 }

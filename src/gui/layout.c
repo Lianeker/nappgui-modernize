@@ -68,12 +68,27 @@ struct i_line_dim_t
     bool_t must_resize;    /* Computed: Marked as must-resize during resizing part */
 };
 
+/*
+ * Axis-neutral alignment, used only by the compose algorithm. The public API
+ * has one type per axis (halign_t, valign_t), but a cell dimension is generic
+ * code shared by both, so it stores the axis-neutral value and converts at the
+ * boundary. Keeping the public values apart is what makes an axis mix-up
+ * visible; here the axis is already fixed by the index of dim[].
+ */
+typedef enum _calign_t
+{
+    i_ekSTART = 1,
+    i_ekCENTER = 2,
+    i_ekEND = 3,
+    i_ekJUSTIFY = 4
+} calign_t;
+
 /* Represents a cell dimension (Width or Height) */
 struct i_cell_dim_t
 {
     /* Fixed attributes. Change required execute compose algorithm */
     /* Computed attributes. Final results of compose algorithm  */
-    align_t align;           /* Fixed: Cell alignment within the partition */
+    calign_t align;          /* Fixed: Cell alignment within the partition */
     real32_t forced_size;    /* Fixed: Specific size by user */
     real32_t padding_before; /* Fixed: Internal space before content */
     real32_t padding_after;  /* Fixed: Internal space after content */
@@ -145,10 +160,94 @@ static real32_t i_MINIMUM_PIXELS_SIZE = 5;
 
 /*---------------------------------------------------------------------------*/
 
+static calign_t i_from_halign(const halign_t align)
+{
+    switch (align)
+    {
+    case ekHLEFT:
+        return i_ekSTART;
+    case ekHCENTER:
+        return i_ekCENTER;
+    case ekHRIGHT:
+        return i_ekEND;
+    case ekHJUSTIFY:
+        return i_ekJUSTIFY;
+    default:
+        cassert_default(align);
+    }
+
+    return i_ekSTART;
+}
+
+/*---------------------------------------------------------------------------*/
+
+static calign_t i_from_valign(const valign_t align)
+{
+    switch (align)
+    {
+    case ekVTOP:
+        return i_ekSTART;
+    case ekVCENTER:
+        return i_ekCENTER;
+    case ekVBOTTOM:
+        return i_ekEND;
+    case ekVJUSTIFY:
+        return i_ekJUSTIFY;
+    default:
+        cassert_default(align);
+    }
+
+    return i_ekSTART;
+}
+
+/*---------------------------------------------------------------------------*/
+
+static halign_t i_to_halign(const calign_t align)
+{
+    switch (align)
+    {
+    case i_ekSTART:
+        return ekHLEFT;
+    case i_ekCENTER:
+        return ekHCENTER;
+    case i_ekEND:
+        return ekHRIGHT;
+    case i_ekJUSTIFY:
+        return ekHJUSTIFY;
+    default:
+        cassert_default(align);
+    }
+
+    return ekHLEFT;
+}
+
+/*---------------------------------------------------------------------------*/
+
+static valign_t i_to_valign(const calign_t align)
+{
+    switch (align)
+    {
+    case i_ekSTART:
+        return ekVTOP;
+    case i_ekCENTER:
+        return ekVCENTER;
+    case i_ekEND:
+        return ekVBOTTOM;
+    case i_ekJUSTIFY:
+        return ekVJUSTIFY;
+    default:
+        cassert_default(align);
+    }
+
+    return ekVTOP;
+}
+
+/*---------------------------------------------------------------------------*/
+
 static ___INLINE void i_init_celldim(i_CellDim *dim)
 {
     cassert_no_null(dim);
-    dim->align = ENUM_MAX(align_t);
+    dim->align = ENUM_MAX(calign_t);
     dim->forced_size = 0;
     dim->padding_before = 0;
     dim->padding_after = 0;
@@ -346,7 +445,7 @@ GuiControl *layout_control(Layout *layout, const uint32_t col, const uint32_t ro
 
 /*---------------------------------------------------------------------------*/
 
-static Cell *i_set_component(Layout *layout, GuiComponent *component, const uint32_t col, const uint32_t row, const align_t halign, const align_t valign)
+static Cell *i_set_component(Layout *layout, GuiComponent *component, const uint32_t col, const uint32_t row, const halign_t halign, const valign_t valign)
 {
     i_CellContent content;
     Cell *cell = NULL;
@@ -360,11 +459,11 @@ static Cell *i_set_component(Layout *layout, GuiComponent *component, const uint
         _panel_attach_component(layout->panel, component);
 
     cell->type = i_ekCOMPONENT;
-    if (cell->dim[0].align == ENUM_MAX(align_t))
-        cell->dim[0].align = halign;
+    if (cell->dim[0].align == ENUM_MAX(calign_t))
+        cell->dim[0].align = i_from_halign(halign);
 
-    if (cell->dim[1].align == ENUM_MAX(align_t))
-        cell->dim[1].align = valign;
+    if (cell->dim[1].align == ENUM_MAX(calign_t))
+        cell->dim[1].align = i_from_valign(valign);
 
     cell->content = content;
     return cell;
@@ -414,8 +513,8 @@ static void i_change_component(Layout *layout, GuiComponent *component, const ui
 void layout_label(Layout *layout, Label *label, const uint32_t col, const uint32_t row)
 {
     Cell *cell = NULL;
-    align_t align = ekLEFT;
-    cell = i_set_component(layout, cast(label, GuiComponent), col, row, align, ekCENTER);
+    halign_t align = ekHLEFT;
+    cell = i_set_component(layout, cast(label, GuiComponent), col, row, align, ekVCENTER);
     cassert_no_null(cell);
     cell->tabstop = FALSE;
 }
@@ -425,27 +524,27 @@ void layout_label(Layout *layout, Label *label, const uint32_t col, const uint32
 void layout_button(Layout *layout, Button *button, const uint32_t col, const uint32_t row)
 {
     Cell *cell = NULL;
-    align_t halign = ekJUSTIFY;
-    align_t valign = ekJUSTIFY;
+    halign_t halign = ekHJUSTIFY;
+    valign_t valign = ekVJUSTIFY;
     uint32_t flags = _button_flags(button);
     switch (button_get_type(flags))
     {
     case ekBUTTON_PUSH:
-        halign = ekJUSTIFY;
-        valign = ekCENTER;
+        halign = ekHJUSTIFY;
+        valign = ekVCENTER;
         break;
 
     case ekBUTTON_CHECK2:
     case ekBUTTON_CHECK3:
     case ekBUTTON_RADIO:
-        halign = ekLEFT;
-        valign = ekCENTER;
+        halign = ekHLEFT;
+        valign = ekVCENTER;
         break;
 
     case ekBUTTON_FLAT:
     case ekBUTTON_FLATGLE:
-        halign = ekCENTER;
-        valign = ekCENTER;
+        halign = ekHCENTER;
+        valign = ekVCENTER;
         break;
 
     default:
@@ -460,7 +559,7 @@ void layout_button(Layout *layout, Button *button, const uint32_t col, const uin
 
 void layout_popup(Layout *layout, PopUp *popup, const uint32_t col, const uint32_t row)
 {
-    Cell *cell = i_set_component(layout, cast(popup, GuiComponent), col, row, ekJUSTIFY, ekCENTER);
+    Cell *cell = i_set_component(layout, cast(popup, GuiComponent), col, row, ekHJUSTIFY, ekVCENTER);
     cassert_unref(cell != NULL, cell);
 }
 
@@ -469,10 +568,10 @@ void layout_popup(Layout *layout, PopUp *popup, const uint32_t col, const uint32
 void layout_edit(Layout *layout, Edit *edit, const uint32_t col, const uint32_t row)
 {
     Cell *cell = NULL;
-    align_t valign = ekCENTER;
+    valign_t valign = ekVCENTER;
     if (_edit_is_multiline(edit) == TRUE)
-        valign = ekJUSTIFY;
-    cell = i_set_component(layout, cast(edit, GuiComponent), col, row, ekJUSTIFY, valign);
+        valign = ekVJUSTIFY;
+    cell = i_set_component(layout, cast(edit, GuiComponent), col, row, ekHJUSTIFY, valign);
     cassert_unref(cell != NULL, cell);
 }
 
@@ -480,7 +579,7 @@ void layout_edit(Layout *layout, Edit *edit, const uint32_t col, const uint32_t 
 
 void layout_combo(Layout *layout, Combo *combo, const uint32_t col, const uint32_t row)
 {
-    Cell *cell = i_set_component(layout, cast(combo, GuiComponent), col, row, ekJUSTIFY, ekCENTER);
+    Cell *cell = i_set_component(layout, cast(combo, GuiComponent), col, row, ekHJUSTIFY, ekVCENTER);
     cassert_unref(cell != NULL, cell);
 }
 
@@ -489,26 +588,26 @@ void layout_combo(Layout *layout, Combo *combo, const uint32_t col, const uint32
 void layout_tabs(Layout *layout, Tabs *tabs, const uint32_t col, const uint32_t row)
 {
     Cell *cell = NULL;
-    align_t halign = ekJUSTIFY;
-    align_t valign = ekCENTER;
+    halign_t halign = ekHJUSTIFY;
+    valign_t valign = ekVCENTER;
     uint32_t flags = _tabs_flags(tabs);
     switch (tabs_get_pos(flags))
     {
     case ekTABS_LEFT:
-        halign = ekRIGHT;
-        valign = ekJUSTIFY;
+        halign = ekHRIGHT;
+        valign = ekVJUSTIFY;
         break;
     case ekTABS_RIGHT:
-        halign = ekLEFT;
-        valign = ekJUSTIFY;
+        halign = ekHLEFT;
+        valign = ekVJUSTIFY;
         break;
     case ekTABS_TOP:
-        halign = ekJUSTIFY;
-        valign = ekBOTTOM;
+        halign = ekHJUSTIFY;
+        valign = ekVBOTTOM;
         break;
     case ekTABS_BOTTOM:
-        halign = ekJUSTIFY;
-        valign = ekCENTER;
+        halign = ekHJUSTIFY;
+        valign = ekVCENTER;
         break;
 
     default:
@@ -523,7 +622,7 @@ void layout_tabs(Layout *layout, Tabs *tabs, const uint32_t col, const uint32_t 
 
 void layout_listbox(Layout *layout, ListBox *list, const uint32_t col, const uint32_t row)
 {
-    Cell *cell = i_set_component(layout, cast(list, GuiComponent), col, row, ekJUSTIFY, ekJUSTIFY);
+    Cell *cell = i_set_component(layout, cast(list, GuiComponent), col, row, ekHJUSTIFY, ekVJUSTIFY);
     cassert_no_null(cell);
     cassert_unref(cell != NULL, cell);
 }
@@ -532,7 +631,7 @@ void layout_listbox(Layout *layout, ListBox *list, const uint32_t col, const uin
 
 void layout_updown(Layout *layout, UpDown *updown, const uint32_t col, const uint32_t row)
 {
-    Cell *cell = i_set_component(layout, cast(updown, GuiComponent), col, row, ekJUSTIFY, ekJUSTIFY);
+    Cell *cell = i_set_component(layout, cast(updown, GuiComponent), col, row, ekHJUSTIFY, ekVJUSTIFY);
     cassert_no_null(cell);
     cell->tabstop = FALSE;
 }
@@ -542,12 +641,12 @@ void layout_updown(Layout *layout, UpDown *updown, const uint32_t col, const uin
 void layout_slider(Layout *layout, Slider *slider, const uint32_t col, const uint32_t row)
 {
     Cell *cell = NULL;
-    align_t halig = ekJUSTIFY;
-    align_t valign = ekCENTER;
+    halign_t halig = ekHJUSTIFY;
+    valign_t valign = ekVCENTER;
     if (_slider_is_horizontal(slider) == FALSE)
     {
-        halig = ekCENTER;
-        valign = ekJUSTIFY;
+        halig = ekHCENTER;
+        valign = ekVJUSTIFY;
     }
 
     cell = i_set_component(layout, cast(slider, GuiComponent), col, row, halig, valign);
@@ -558,7 +657,7 @@ void layout_slider(Layout *layout, Slider *slider, const uint32_t col, const uin
 
 void layout_progress(Layout *layout, Progress *progress, const uint32_t col, const uint32_t row)
 {
-    Cell *cell = i_set_component(layout, cast(progress, GuiComponent), col, row, ekJUSTIFY, ekCENTER);
+    Cell *cell = i_set_component(layout, cast(progress, GuiComponent), col, row, ekHJUSTIFY, ekVCENTER);
     cassert_no_null(cell);
     cell->tabstop = FALSE;
 }
@@ -567,7 +666,7 @@ void layout_progress(Layout *layout, Progress *progress, const uint32_t col, con
 
 void layout_view(Layout *layout, View *view, const uint32_t col, const uint32_t row)
 {
-    Cell *cell = i_set_component(layout, cast(view, GuiComponent), col, row, ekJUSTIFY, ekJUSTIFY);
+    Cell *cell = i_set_component(layout, cast(view, GuiComponent), col, row, ekHJUSTIFY, ekVJUSTIFY);
     cassert_no_null(cell);
     cell->tabstop = FALSE;
 }
@@ -576,7 +675,7 @@ void layout_view(Layout *layout, View *view, const uint32_t col, const uint32_t 
 
 void layout_textview(Layout *layout, TextView *view, const uint32_t col, const uint32_t row)
 {
-    Cell *cell = i_set_component(layout, cast(view, GuiComponent), col, row, ekJUSTIFY, ekJUSTIFY);
+    Cell *cell = i_set_component(layout, cast(view, GuiComponent), col, row, ekHJUSTIFY, ekVJUSTIFY);
     cassert_no_null(cell);
     cell->tabstop = FALSE;
 }
@@ -587,7 +686,7 @@ void layout_webview(Layout *layout, WebView *view, const uint32_t col, const uin
 {
     Cell *cell = NULL;
     cassert_no_null(view);
-    cell = i_set_component(layout, cast(view, GuiComponent), col, row, ekJUSTIFY, ekJUSTIFY);
+    cell = i_set_component(layout, cast(view, GuiComponent), col, row, ekHJUSTIFY, ekVJUSTIFY);
     cassert_no_null(cell);
     cell->tabstop = FALSE;
 }
@@ -596,7 +695,7 @@ void layout_webview(Layout *layout, WebView *view, const uint32_t col, const uin
 
 void layout_imageview(Layout *layout, ImageView *view, const uint32_t col, const uint32_t row)
 {
-    Cell *cell = i_set_component(layout, cast(view, GuiComponent), col, row, ekJUSTIFY, ekJUSTIFY);
+    Cell *cell = i_set_component(layout, cast(view, GuiComponent), col, row, ekHJUSTIFY, ekVJUSTIFY);
     cassert_no_null(cell);
     cell->tabstop = FALSE;
 }
@@ -605,7 +704,7 @@ void layout_imageview(Layout *layout, ImageView *view, const uint32_t col, const
 
 void layout_tableview(Layout *layout, TableView *view, const uint32_t col, const uint32_t row)
 {
-    Cell *cell = i_set_component(layout, cast(view, GuiComponent), col, row, ekJUSTIFY, ekJUSTIFY);
+    Cell *cell = i_set_component(layout, cast(view, GuiComponent), col, row, ekHJUSTIFY, ekVJUSTIFY);
     cassert_unref(cell != NULL, cell);
 }
 
@@ -613,7 +712,7 @@ void layout_tableview(Layout *layout, TableView *view, const uint32_t col, const
 
 void layout_splitview(Layout *layout, SplitView *view, const uint32_t col, const uint32_t row)
 {
-    Cell *cell = i_set_component(layout, cast(view, GuiComponent), col, row, ekJUSTIFY, ekJUSTIFY);
+    Cell *cell = i_set_component(layout, cast(view, GuiComponent), col, row, ekHJUSTIFY, ekVJUSTIFY);
     cassert_no_null(cell);
     cell->tabstop = TRUE;
 }
@@ -622,7 +721,7 @@ void layout_splitview(Layout *layout, SplitView *view, const uint32_t col, const
 
 void layout_panel(Layout *layout, Panel *panel, const uint32_t col, const uint32_t row)
 {
-    Cell *cell = i_set_component(layout, cast(panel, GuiComponent), col, row, ekJUSTIFY, ekJUSTIFY);
+    Cell *cell = i_set_component(layout, cast(panel, GuiComponent), col, row, ekHJUSTIFY, ekVJUSTIFY);
     cassert_no_null(layout);
     cassert_unref(cell != NULL, cell);
     cassert(cell->tabstop == TRUE);
@@ -642,7 +741,7 @@ void layout_panel_replace(Layout *layout, Panel *panel, const uint32_t col, cons
     cassert_no_null(cell);
     if (cell->type == i_ekEMPTY)
     {
-        i_set_component(layout, cast(panel, GuiComponent), col, row, ekJUSTIFY, ekJUSTIFY);
+        i_set_component(layout, cast(panel, GuiComponent), col, row, ekHJUSTIFY, ekVJUSTIFY);
         cassert(cell->tabstop == TRUE);
 
         if (layout->panel != NULL)
@@ -666,12 +765,12 @@ void layout_panel_replace(Layout *layout, Panel *panel, const uint32_t col, cons
 void layout_line(Layout *layout, Line *line, const uint32_t col, const uint32_t row)
 {
     Cell *cell = NULL;
-    align_t halig = ekJUSTIFY;
-    align_t valign = ekCENTER;
+    halign_t halig = ekHJUSTIFY;
+    valign_t valign = ekVCENTER;
     if (_line_is_horizontal(line) == FALSE)
     {
-        halig = ekCENTER;
-        valign = ekJUSTIFY;
+        halig = ekHCENTER;
+        valign = ekVJUSTIFY;
     }
 
     cell = i_set_component(layout, cast(line, GuiComponent), col, row, halig, valign);
@@ -696,11 +795,11 @@ void layout_layout(Layout *layout, Layout *sublayout, const uint32_t col, const 
     cassert(cell->type == i_ekEMPTY);
     cell->type = i_ekLAYOUT;
 
-    if (cell->dim[0].align == ENUM_MAX(align_t))
-        cell->dim[0].align = ekJUSTIFY;
+    if (cell->dim[0].align == ENUM_MAX(calign_t))
+        cell->dim[0].align = i_ekJUSTIFY;
 
-    if (cell->dim[1].align == ENUM_MAX(align_t))
-        cell->dim[1].align = ekJUSTIFY;
+    if (cell->dim[1].align == ENUM_MAX(calign_t))
+        cell->dim[1].align = i_ekJUSTIFY;
 
     cell->content = content;
 
@@ -1294,20 +1393,20 @@ void layout_vexpandn(Layout *layout, const uint32_t n, const uint32_t *index, co
 
 /*---------------------------------------------------------------------------*/
 
-void layout_halign(Layout *layout, const uint32_t col, const uint32_t row, const align_t align)
+void layout_halign(Layout *layout, const uint32_t col, const uint32_t row, const halign_t align)
 {
     Cell *cell = i_get_cell(layout, col, row);
     cassert_no_null(cell);
-    cell->dim[0].align = align;
+    cell->dim[0].align = i_from_halign(align);
 }
 
 /*---------------------------------------------------------------------------*/
 
-void layout_valign(Layout *layout, const uint32_t col, const uint32_t row, const align_t align)
+void layout_valign(Layout *layout, const uint32_t col, const uint32_t row, const valign_t align)
 {
     Cell *cell = i_get_cell(layout, col, row);
     cassert_no_null(cell);
-    cell->dim[1].align = align;
+    cell->dim[1].align = i_from_valign(align);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1839,7 +1938,7 @@ static void i_line_natural(i_LineDim *dim, const uint32_t di, Cell **cell, const
                     expand_required_size = cell[i]->dim[di].forced_size;
 
                 /* We cell dimension must be expanded */
-                if (expand_required_size < 0 && cell[i]->dim[di].align == ekJUSTIFY)
+                if (expand_required_size < 0 && cell[i]->dim[di].align == i_ekJUSTIFY)
                     expand_required_size = final_natural_size;
             }
 
@@ -1952,7 +2051,7 @@ static void i_line_expand(const uint32_t di, Cell **line_cells, const uint32_t n
     {
         if (line_cells[i]->displayed == TRUE)
         {
-            if (line_cells[i]->dim[di].align == ekJUSTIFY)
+            if (line_cells[i]->dim[di].align == i_ekJUSTIFY)
                 i_cell_expand(line_cells[i], di, required_size);
 
             if (line_cells[i]->dim[di].final_size > *final_size)
@@ -2084,7 +2183,7 @@ void _layout_expand(Layout *layout, const uint32_t di, const real32_t natural_si
     }
 
     /*
-     * Finally, we have the final size of each partition. However, there may be cells with ekJUSTIFY
+     * Finally, we have the final size of each partition. However, there may be cells with i_ekJUSTIFY
      * that are narrower than the final dimension, as they would have allowed for a smaller resizing.
      * Here, we force these cells to expand to the final partition size.
      */
@@ -2095,7 +2194,7 @@ void _layout_expand(Layout *layout, const uint32_t di, const real32_t natural_si
             Cell **line_cells = cells + (dim_i * dim_num_elems);
             for (i = 0; i < dim_num_elems; ++i)
             {
-                if (line_cells[i]->dim[di].align == ekJUSTIFY)
+                if (line_cells[i]->dim[di].align == i_ekJUSTIFY)
                     i_cell_expand(line_cells[i], di, dim->final_size);
             }
         }
@@ -2193,18 +2292,18 @@ static void i_layout_locate(Layout *layout, const V2Df *origin, FPtr_gctx_set_ar
 
                 switch (cell->dim[0].align)
                 {
-                case ekLEFT:
-                case ekJUSTIFY:
+                case i_ekSTART:
+                case i_ekJUSTIFY:
                     break;
 
-                case ekRIGHT:
+                case i_ekEND:
                 {
                     real32_t cell_diff = cols[j].final_size - cell->dim[0].final_size - cell->dim[0].padding_before - cell->dim[0].padding_after;
                     cell_origin.x += cell_diff;
                     break;
                 }
 
-                case ekCENTER:
+                case i_ekCENTER:
                 {
                     real32_t cell_diff = cols[j].final_size - cell->dim[0].final_size - cell->dim[0].padding_before - cell->dim[0].padding_after;
                     cell_origin.x += bmath_floorf(.5f * cell_diff);
@@ -2217,18 +2316,18 @@ static void i_layout_locate(Layout *layout, const V2Df *origin, FPtr_gctx_set_ar
 
                 switch (cell->dim[1].align)
                 {
-                case ekTOP:
-                case ekJUSTIFY:
+                case i_ekSTART:
+                case i_ekJUSTIFY:
                     break;
 
-                case ekBOTTOM:
+                case i_ekEND:
                 {
                     real32_t cell_diff = rows[i].final_size - cell->dim[1].final_size - cell->dim[1].padding_before - cell->dim[1].padding_after;
                     cell_origin.y += cell_diff;
                     break;
                 }
 
-                case ekCENTER:
+                case i_ekCENTER:
                 {
                     real32_t cell_diff = rows[i].final_size - cell->dim[1].final_size - cell->dim[1].padding_before - cell->dim[1].padding_after;
                     cell_origin.y += bmath_floorf(.5f * cell_diff);
@@ -2809,18 +2908,18 @@ real32_t cell_get_padding_right(const Cell *cell)
 
 /*---------------------------------------------------------------------------*/
 
-align_t cell_get_halign(const Cell *cell)
+halign_t cell_get_halign(const Cell *cell)
 {
     cassert_no_null(cell);
-    return cell->dim[0].align;
+    return i_to_halign(cell->dim[0].align);
 }
 
 /*---------------------------------------------------------------------------*/
 
-align_t cell_get_valign(const Cell *cell)
+valign_t cell_get_valign(const Cell *cell)
 {
     cassert_no_null(cell);
-    return cell->dim[1].align;
+    return i_to_valign(cell->dim[1].align);
 }
 
 /*---------------------------------------------------------------------------*/

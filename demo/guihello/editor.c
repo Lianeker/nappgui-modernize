@@ -214,11 +214,11 @@ static Layout *i_text_controls(EditData *data)
     layout_hmargin(layout1, 2, 5);
     layout_hmargin(layout1, 3, 5);
     layout_vmargin(layout1, 0, 5);
-    layout_valign(layout1, 0, 1, ekTOP);
-    layout_valign(layout1, 1, 1, ekTOP);
-    layout_valign(layout1, 2, 1, ekTOP);
-    layout_valign(layout1, 3, 1, ekTOP);
-    layout_valign(layout1, 4, 1, ekTOP);
+    layout_valign(layout1, 0, 1, ekVTOP);
+    layout_valign(layout1, 1, 1, ekVTOP);
+    layout_valign(layout1, 2, 1, ekVTOP);
+    layout_valign(layout1, 3, 1, ekVTOP);
+    layout_valign(layout1, 4, 1, ekVTOP);
     data->family_popup = popup1;
     data->size_popup = popup2;
     data->color_popup = popup3;
@@ -316,7 +316,7 @@ static Layout *i_layout(EditData *data)
     layout_layout(layout1, layout2, 0, 0);
     layout_textview(layout1, text, 0, 1);
     layout_layout(layout1, layout3, 0, 2);
-    layout_halign(layout1, 0, 2, ekRIGHT);
+    layout_halign(layout1, 0, 2, ekHRIGHT);
     layout_vmargin(layout1, 0, 10);
     layout_vmargin(layout1, 1, 10);
     layout_tabstop(layout1, 0, 1, TRUE);

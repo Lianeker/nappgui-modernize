@@ -119,8 +119,8 @@ static Layout *i_control_layout_1(DynData *data)
      * By default, updown and button cells are JUSTIFICABLE
      * We force keep the buttons into their original size
      */
-    layout_halign(layout, 1, 0, ekLEFT);
-    layout_halign(layout, 3, 0, ekLEFT);
+    layout_halign(layout, 1, 0, ekHLEFT);
+    layout_halign(layout, 3, 0, ekHLEFT);
 
     /*
      * The horizontal expansion is delegated to a fifth empty cell.
@@ -404,8 +404,8 @@ static void i_fill_sublayout(Layout *layout, const uint32_t row, DynData *data)
     layout_label(layout2, label3, 0, 2);
     layout_label(layout2, label4, 0, 3);
     layout_layout(layout1, layout2, 1, 0);
-    layout_valign(layout1, 0, 0, ekTOP);
-    layout_valign(layout1, 1, 0, ekTOP);
+    layout_valign(layout1, 0, 0, ekVTOP);
+    layout_valign(layout1, 1, 0, ekVTOP);
     layout_hmargin(layout1, 0, 10);
     layout_hexpand(layout1, 2);
     layout_margin(layout1, 10);
@@ -579,10 +579,10 @@ static Layout *i_control_layout_2(DynData *data)
     layout_hmargin(layout, 2, 5);
     layout_hmargin(layout, 3, 5);
     layout_hmargin(layout, 4, 5);
-    layout_halign(layout, 1, 0, ekLEFT);
-    layout_halign(layout, 2, 0, ekLEFT);
-    layout_halign(layout, 4, 0, ekLEFT);
-    layout_halign(layout, 5, 0, ekLEFT);
+    layout_halign(layout, 1, 0, ekHLEFT);
+    layout_halign(layout, 2, 0, ekHLEFT);
+    layout_halign(layout, 4, 0, ekHLEFT);
+    layout_halign(layout, 5, 0, ekHLEFT);
     layout_hexpand(layout, 6);
     return layout;
 }
@@ -605,8 +605,8 @@ static Layout *i_control_layout_3(DynData *data)
     layout_button(layout, button2, 2, 0);
     layout_hmargin(layout, 0, 5);
     layout_hmargin(layout, 1, 5);
-    layout_halign(layout, 1, 0, ekLEFT);
-    layout_halign(layout, 2, 0, ekLEFT);
+    layout_halign(layout, 1, 0, ekHLEFT);
+    layout_halign(layout, 2, 0, ekHLEFT);
     layout_hexpand(layout, 3);
     return layout;
 }

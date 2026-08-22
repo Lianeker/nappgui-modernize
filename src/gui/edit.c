@@ -75,7 +75,7 @@ static void i_OnFocus(Edit *edit, Event *e)
 
 /*---------------------------------------------------------------------------*/
 
-static Edit *i_create(const align_t halign, const uint32_t flags)
+static Edit *i_create(const halign_t halign, const uint32_t flags)
 {
     const GuiCtx *context = guictx_get_current();
     Edit *edit = obj_new0(Edit);
@@ -96,14 +96,14 @@ static Edit *i_create(const align_t halign, const uint32_t flags)
 
 Edit *edit_create(void)
 {
-    return i_create(ekLEFT, ekEDIT_SINGLE);
+    return i_create(ekHLEFT, ekEDIT_SINGLE);
 }
 
 /*---------------------------------------------------------------------------*/
 
 Edit *edit_multiline(void)
 {
-    return i_create(ekLEFT, ekEDIT_MULTI);
+    return i_create(ekHLEFT, ekEDIT_MULTI);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -167,7 +167,7 @@ void edit_font(Edit *edit, const Font *font)
 
 /*---------------------------------------------------------------------------*/
 
-void edit_align(Edit *edit, const align_t align)
+void edit_align(Edit *edit, const halign_t align)
 {
     cassert_no_null(edit);
     edit->component.context->func_edit_set_align(edit->component.ositem, (enum_t)align);

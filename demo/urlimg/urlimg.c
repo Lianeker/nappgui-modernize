@@ -143,7 +143,7 @@ static Layout *i_label(const char_t *title, Label **info)
     label_font(label, font);
     layout_label(layout, label, 0, 0);
     layout_label(layout, *info, 1, 0);
-    layout_halign(layout, 1, 0, ekJUSTIFY);
+    layout_halign(layout, 1, 0, ekHJUSTIFY);
     layout_hmargin(layout, 0, 5);
     layout_hexpand(layout, 1);
     font_destroy(&font);

@@ -179,7 +179,7 @@ static Panel *i_panel(App *app)
     Layout *layout1 = layout_create(2, 1);
     Layout *layout2 = i_control_layout(app);
     Panel *tabpanel = i_tab_panel(app);
-    layout_valign(layout1, 0, 0, ekTOP);
+    layout_valign(layout1, 0, 0, ekVTOP);
     layout_layout(layout1, layout2, 0, 0);
     layout_panel(layout1, tabpanel, 1, 0);
     layout_hexpand(layout1, 1);

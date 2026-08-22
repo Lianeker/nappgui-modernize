@@ -42,7 +42,7 @@ void _ostextfield_tooltip(OSTextField *field, const char_t *text);
 
 void _ostextfield_font(OSTextField *field, const Font *font);
 
-void _ostextfield_align(OSTextField *field, const align_t align);
+void _ostextfield_align(OSTextField *field, const halign_t align);
 
 void _ostextfield_passmode(OSTextField *field, const bool_t passmode);
 

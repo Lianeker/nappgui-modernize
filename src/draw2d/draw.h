@@ -68,9 +68,9 @@ _draw2d_api void draw_text_width(DCtx *ctx, const real32_t width);
 
 _draw2d_api void draw_text_trim(DCtx *ctx, const ellipsis_t ellipsis);
 
-_draw2d_api void draw_text_align(DCtx *ctx, const align_t halign, const align_t valign);
+_draw2d_api void draw_text_align(DCtx *ctx, const halign_t halign, const valign_t valign);
 
-_draw2d_api void draw_text_halign(DCtx *ctx, const align_t halign);
+_draw2d_api void draw_text_halign(DCtx *ctx, const halign_t halign);
 
 _draw2d_api void draw_text_extents(DCtx *ctx, const char_t *text, const real32_t refwidth, real32_t *width, real32_t *height);
 
@@ -78,7 +78,7 @@ _draw2d_api void draw_image(DCtx *ctx, const Image *image, const real32_t x, con
 
 _draw2d_api void draw_image_frame(DCtx *ctx, const Image *image, const uint32_t frame, const real32_t x, const real32_t y);
 
-_draw2d_api void draw_image_align(DCtx *ctx, const align_t halign, const align_t valign);
+_draw2d_api void draw_image_align(DCtx *ctx, const halign_t halign, const valign_t valign);
 
 __END_C
 

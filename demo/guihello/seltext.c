@@ -361,7 +361,7 @@ static Layout *i_layout(SelData *data)
     layout_tabstop(layout1, 0, 8, FALSE);
     layout_tabstop(layout1, 0, 9, TRUE);
     layout_tabstop(layout1, 0, 10, FALSE);
-    layout_halign(layout1, 0, 10, ekLEFT);
+    layout_halign(layout1, 0, 10, ekHLEFT);
     layout_vmargin(layout1, 1, 5);
     layout_vmargin(layout1, 3, 5);
     layout_vmargin(layout1, 5, 5);

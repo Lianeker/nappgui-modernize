@@ -406,7 +406,7 @@ static COLORREF i_colorref(const color_t color)
 
 /*---------------------------------------------------------------------------*/
 
-void _osdrawctrl_gdi_text(HDC hdc, HTHEME theme, const char_t *text, const int32_t x, const int32_t y, const align_t align, const ellipsis_t trim, const int32_t text_width, const COLORREF text_color, const ctrl_state_t state)
+void _osdrawctrl_gdi_text(HDC hdc, HTHEME theme, const char_t *text, const int32_t x, const int32_t y, const halign_t align, const ellipsis_t trim, const int32_t text_width, const COLORREF text_color, const ctrl_state_t state)
 {
     RECT rect;
     WString str;
@@ -420,14 +420,14 @@ void _osdrawctrl_gdi_text(HDC hdc, HTHEME theme, const char_t *text, const int32
 
     switch (align)
     {
-    case ekLEFT:
-    case ekJUSTIFY:
+    case ekHLEFT:
+    case ekHJUSTIFY:
         format |= DT_LEFT;
         break;
-    case ekCENTER:
+    case ekHCENTER:
         format |= DT_CENTER;
         break;
-    case ekRIGHT:
+    case ekHRIGHT:
         format |= DT_RIGHT;
         break;
     default:
@@ -496,7 +496,7 @@ void osdrawctrl_text(DCtx *ctx, const char_t *text, const int32_t x, const int32
 {
     real32_t offset_x = 0, offset_y = 0;
     HDC hdc = (HDC)dctx_native(ctx);
-    align_t align = dctx_text_intalign(ctx);
+    halign_t align = dctx_text_intalign(ctx);
     ellipsis_t trim = dctx_text_trim(ctx);
     real32_t text_width = dctx_text_width(ctx);
     color_t text_color = dctx_text_color(ctx);

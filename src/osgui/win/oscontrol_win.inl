@@ -50,9 +50,9 @@ void _oscontrol_apply_tooltip(OSControl *control);
 
 void _oscontrol_draw_focus(HWND hwnd, const INT left_offset, const INT right_offset, const INT top_offset, const INT bottom_offset);
 
-DWORD _oscontrol_ss_halign(const align_t align);
+DWORD _oscontrol_ss_halign(const halign_t align);
 
-DWORD _oscontrol_es_halign(const align_t align);
+DWORD _oscontrol_es_halign(const halign_t align);
 
 DWORD _oscontrol_ellipsis(const ellipsis_t ellipsis);
 

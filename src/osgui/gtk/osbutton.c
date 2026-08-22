@@ -576,7 +576,7 @@ void osbutton_font(OSButton *button, const Font *font)
 
 /*---------------------------------------------------------------------------*/
 
-void osbutton_align(OSButton *button, const align_t align)
+void osbutton_align(OSButton *button, const halign_t align)
 {
     cassert_no_null(button);
     cassert(_osbutton_text_allowed(button->flags) == TRUE);

@@ -35,9 +35,9 @@ _gui_api real32_t cell_get_padding_bottom(const Cell *cell);
 
 _gui_api real32_t cell_get_padding_right(const Cell *cell);
 
-_gui_api align_t cell_get_halign(const Cell *cell);
+_gui_api halign_t cell_get_halign(const Cell *cell);
 
-_gui_api align_t cell_get_valign(const Cell *cell);
+_gui_api valign_t cell_get_valign(const Cell *cell);
 
 _gui_api real32_t layout_get_hsize(const Layout *layout, const uint32_t col);
 

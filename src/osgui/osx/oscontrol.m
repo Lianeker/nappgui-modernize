@@ -63,18 +63,18 @@ void _oscontrol_origin_in_screen_coordinates(const NSRect *frame, CGFloat *x, CG
 
 /*---------------------------------------------------------------------------*/
 
-static ___INLINE NSTextAlignment i_text_alignment(const align_t halign)
+static ___INLINE NSTextAlignment i_text_alignment(const halign_t halign)
 {
 #if defined(MAC_OS_X_VERSION_10_12) && MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_12
     switch (halign)
     {
-    case ekLEFT:
+    case ekHLEFT:
         return NSTextAlignmentLeft;
-    case ekCENTER:
+    case ekHCENTER:
         return NSTextAlignmentCenter;
-    case ekJUSTIFY:
+    case ekHJUSTIFY:
         return NSTextAlignmentJustified;
-    case ekRIGHT:
+    case ekHRIGHT:
         return NSTextAlignmentRight;
     default:
         cassert_default(halign);
@@ -84,13 +84,13 @@ static ___INLINE NSTextAlignment i_text_alignment(const align_t halign)
 #else
     switch (halign)
     {
-    case ekLEFT:
+    case ekHLEFT:
         return NSLeftTextAlignment;
-    case ekCENTER:
+    case ekHCENTER:
         return NSCenterTextAlignment;
-    case ekJUSTIFY:
+    case ekHJUSTIFY:
         return NSJustifiedTextAlignment;
-    case ekRIGHT:
+    case ekHRIGHT:
         return NSRightTextAlignment;
     default:
         cassert_default(halign);
@@ -102,7 +102,7 @@ static ___INLINE NSTextAlignment i_text_alignment(const align_t halign)
 
 /*---------------------------------------------------------------------------*/
 
-NSTextAlignment _oscontrol_text_alignment(const align_t halign)
+NSTextAlignment _oscontrol_text_alignment(const halign_t halign)
 {
     return i_text_alignment(halign);
 }
@@ -242,7 +242,7 @@ color_t _oscontrol_from_NSColor(NSColor *color)
 
 /*---------------------------------------------------------------------------*/
 
-static NSDictionary *i_text_attribs(NSControl *control, const align_t align, const color_t color, const uint32_t fstyle, NSFont *font)
+static NSDictionary *i_text_attribs(NSControl *control, const halign_t align, const color_t color, const uint32_t fstyle, NSFont *font)
 {
     id keys[5];
     id objects[5];
@@ -257,14 +257,14 @@ static NSDictionary *i_text_attribs(NSControl *control, const align_t align, con
 
     switch (align)
     {
-    case ekLEFT:
-    case ekJUSTIFY:
+    case ekHLEFT:
+    case ekHJUSTIFY:
         objects[2] = kLEFT_PARAGRAPH_STYLE;
         break;
-    case ekRIGHT:
+    case ekHRIGHT:
         objects[2] = kRIGHT_PARAGRAPH_STYLE;
         break;
-    case ekCENTER:
+    case ekHCENTER:
         objects[2] = kCENTER_PARAGRAPH_STYLE;
         break;
     default:
@@ -284,7 +284,7 @@ void _oscontrol_init_textattr(OSTextAttr *attr)
     cassert_no_null(attr);
     attr->font = _osgui_create_default_font();
     attr->color = kCOLOR_TRANSPARENT;
-    attr->align = ekLEFT;
+    attr->align = ekHLEFT;
     attr->mark = UINT32_MAX;
 }
 
@@ -371,7 +371,7 @@ void _oscontrol_set_font(NSControl *control, OSTextAttr *attrs, const Font *font
 
 /*---------------------------------------------------------------------------*/
 
-void _oscontrol_set_align(NSControl *control, OSTextAttr *attrs, const align_t align)
+void _oscontrol_set_align(NSControl *control, OSTextAttr *attrs, const halign_t align)
 {
     cassert_no_null(attrs);
     if (attrs->align != align)

@@ -446,20 +446,20 @@ void ostext_property(OSText *view, const gui_text_t prop, const void *value)
         break;
 
     case ekGUI_TEXT_PARALIGN:
-        switch (*cast(value, align_t))
+        switch (*cast(value, halign_t))
         {
-        case ekLEFT:
-        case ekJUSTIFY:
+        case ekHLEFT:
+        case ekHJUSTIFY:
             view->wAlignment = PFA_LEFT;
             break;
-        case ekCENTER:
+        case ekHCENTER:
             view->wAlignment = PFA_CENTER;
             break;
-        case ekRIGHT:
+        case ekHRIGHT:
             view->wAlignment = PFA_RIGHT;
             break;
         default:
-            cassert_default(*cast(value, align_t));
+            cassert_default(*cast(value, halign_t));
         }
         break;
 
