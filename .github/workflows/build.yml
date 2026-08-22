@@ -87,17 +87,16 @@ jobs:
         with:
           arch: ${{ matrix.arch }}
 
-      # NAPPGUI_WEB=NO a proposito: con WebView activo, el consumidor externo
-      # no enlaza porque el paquete exportado no arrastra el loader de
-      # WebView2 (CreateCoreWebView2EnvironmentWithOptions). Es parte de
-      # NAP-002; cuando se cierre, quitar esta linea.
+      # WebView queda activo, que es el valor por omision de NAPPGUI_WEB. Antes
+      # habia que apagarlo porque el paquete exportado no arrastraba el loader
+      # de WebView2 (CreateCoreWebView2EnvironmentWithOptions); ahora es un
+      # requisito de uso de nappgui::osgui. Ver NAP-002.
       - name: Configure
         run: >
           cmake -S . -B build ${{ env.CMAKE_GEN_ARG }}
           -DCMAKE_BUILD_TYPE=Debug
           -DNAPPGUI_DEMO=YES
           -DNAPPGUI_TESTS=YES
-          -DNAPPGUI_WEB=NO
           -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}/install
 
       - name: Build
@@ -111,8 +110,8 @@ jobs:
 
       # El consumidor externo es la prueba de que el paquete exportado sirve
       # para algo: compila contra el SDK instalado con find_package(), igual
-      # que lo haria un usuario. Los parches de su CMakeLists documentan
-      # NAP-002 y deben poder borrarse cuando esa tarea se cierre.
+      # que lo haria un usuario. Su CMakeLists ya no lleva parches: si vuelve a
+      # necesitarlos, el paquete ha dejado de trasladar sus requisitos de uso.
       - name: Consumidor externo
         run: >
           cmake -S test/consumer -B build-consumer ${{ env.CMAKE_GEN_ARG }}
@@ -152,7 +151,6 @@ jobs:
           -DNAPPGUI_SHARED=YES
           -DNAPPGUI_DEMO=YES
           -DNAPPGUI_TESTS=YES
-          -DNAPPGUI_WEB=NO
 
       - name: Build
         run: cmake --build build

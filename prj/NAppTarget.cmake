@@ -597,82 +597,42 @@ endfunction()
 
 #------------------------------------------------------------------------------
 
-function(nap_exists_dependency targetName libName _ret)
+# Devuelve la visibilidad con la que enlazar: la que se haya pasado como
+# argumento extra, o PUBLIC, que es lo que hacia la firma antigua de
+# target_link_libraries.
+function(nap_link_scope _ret)
 
-    set(${_ret} "NO" PARENT_SCOPE)
-
-    if (${targetName} STREQUAL "${libName}")
-        set(${_ret} "YES" PARENT_SCOPE)
-        return()
+    if (ARGC GREATER 1)
+        set(${_ret} "${ARGV1}" PARENT_SCOPE)
+    else()
+        set(${_ret} "PUBLIC" PARENT_SCOPE)
     endif()
-
-    foreach(depend ${${targetName}_LINKDEPENDS})
-
-        if (${depend} STREQUAL "${libName}")
-            set(${_ret} "YES" PARENT_SCOPE)
-            return()
-        endif()
-
-    endforeach()
 
 endfunction()
 
 #------------------------------------------------------------------------------
 
-function(nap_web_libs _weblibs)
-    if (WEB_SUPPORT)
-        if (WIN32)
-            if(NAPPGUI_IS_PACKAGE)
-                set(WEB_LIB_PATH "${NAPPGUI_ROOT_PATH}/lib")
-            else()
-                set(WEB_LIB_PATH "${NAPPGUI_ROOT_PATH}/src/osgui/win/depend")
-            endif()
-
-            if (${CMAKE_ARCHITECTURE} STREQUAL "x86")
-                set(WEBVIEW_LIBPATH "${WEB_LIB_PATH}/x86/WebView2LoaderStatic.lib")
-            elseif (${CMAKE_ARCHITECTURE} STREQUAL "x64")
-                set(WEBVIEW_LIBPATH "${WEB_LIB_PATH}/x64/WebView2LoaderStatic.lib")
-            elseif (${CMAKE_ARCHITECTURE} STREQUAL "arm64")
-                set(WEBVIEW_LIBPATH "${WEB_LIB_PATH}/arm64/WebView2LoaderStatic.lib")
-            endif()
-
-            # 'version' is required by WebView2Loader
-            set(${_weblibs} "${WEBVIEW_LIBPATH};version" PARENT_SCOPE)
-
-        elseif (${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
-            if (NOT OSX_SYSROOT)
-                message(FATAL_ERROR "OSX_SYSROOT is not set")
-            endif()
-
-            set(WEBVIEW_FRAMEWORK ${OSX_SYSROOT}/System/Library/Frameworks/WebKit.framework)
-            set(${_weblibs} "${WEBVIEW_FRAMEWORK}" PARENT_SCOPE)
-
-        elseif (${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
-            nap_find_webview_linux(WEBVIEW_FOUND WEBVIEW_HEADERS WEBVIEW_LIBS)
-            if (WEBVIEW_FOUND)
-                set(${_weblibs} "${WEBVIEW_LIBS}" PARENT_SCOPE)
-            endif()
-        endif()
-    endif()
-endfunction()
-
-#------------------------------------------------------------------------------
-
+# El segundo argumento, opcional, es la visibilidad (PUBLIC por omision, que es
+# lo que hacia la firma antigua de target_link_libraries). Todas las llamadas de
+# prj/ usan ya la firma con palabra clave: mezclar las dos en un mismo target es
+# un error de CMake, asi que se convirtieron todas a la vez (NAP-002).
 function(nap_link_inet_depends targetName)
 
+    nap_link_scope(napScope ${ARGN})
+
     if(NAPPGUI_IS_PACKAGE)
-        target_link_libraries(${targetName} nappgui::encode)
+        target_link_libraries(${targetName} ${napScope} nappgui::encode)
     else()
-        target_link_libraries(${targetName} "encode")
+        target_link_libraries(${targetName} ${napScope} "encode")
     endif()
 
     if(WIN32)
-        target_link_libraries(${targetName} wininet)
+        target_link_libraries(${targetName} ${napScope} wininet)
 
     elseif (${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
         find_package(CURL)
         if (${CURL_FOUND})
-            target_link_libraries(${targetName} ${CURL_LIBRARY})
+            target_link_libraries(${targetName} ${napScope} ${CURL_LIBRARY})
         else()
             message(FATAL_ERROR "NAppGUI necesita libCURL para el modulo 'inet'. En Debian/Ubuntu: sudo apt-get install libcurl4-openssl-dev")
         endif()
@@ -685,13 +645,15 @@ endfunction()
 
 function(nap_link_inet targetName)
 
+    nap_link_scope(napScope ${ARGN})
+
     if(NAPPGUI_IS_PACKAGE)
-        target_link_libraries(${targetName} nappgui::inet)
+        target_link_libraries(${targetName} ${napScope} nappgui::inet)
     else()
-        target_link_libraries(${targetName} "inet")
+        target_link_libraries(${targetName} ${napScope} "inet")
     endif()
 
-    nap_link_inet_depends(${targetName})
+    nap_link_inet_depends(${targetName} ${napScope})
 
 endfunction()
 
@@ -699,12 +661,14 @@ endfunction()
 
 function(nap_link_opengl_depends targetName)
 
+    nap_link_scope(napScope ${ARGN})
+
     if (${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
         find_package(OpenGL REQUIRED EGL)
-        target_link_libraries(${targetName} ${OPENGL_LIBRARY})
+        target_link_libraries(${targetName} ${napScope} ${OPENGL_LIBRARY})
 
         if (OPENGL_egl_LIBRARY)
-            target_link_libraries(${targetName} ${OPENGL_egl_LIBRARY})
+            target_link_libraries(${targetName} ${napScope} ${OPENGL_egl_LIBRARY})
 
         else()
             # CMake older than 3.10 not detect EGL
@@ -728,13 +692,13 @@ function(nap_link_opengl_depends targetName)
             endif()
 
             target_include_directories(${targetName} PRIVATE ${EGL_INCLUDE_DIR})
-            target_link_libraries(${targetName} ${EGL_LIBRARY})
+            target_link_libraries(${targetName} ${napScope} ${EGL_LIBRARY})
 
         endif()
 
     else()
         find_package(OpenGL REQUIRED)
-        target_link_libraries(${targetName} ${OPENGL_LIBRARY})
+        target_link_libraries(${targetName} ${napScope} ${OPENGL_LIBRARY})
 
     endif()
 
@@ -744,13 +708,15 @@ endfunction()
 
 function(nap_link_opengl targetName)
 
+    nap_link_scope(napScope ${ARGN})
+
     if(NAPPGUI_IS_PACKAGE)
-        target_link_libraries(${targetName} nappgui::ogl3d)
+        target_link_libraries(${targetName} ${napScope} nappgui::ogl3d)
     else()
-        target_link_libraries(${targetName} ogl3d)
+        target_link_libraries(${targetName} ${napScope} ogl3d)
     endif()
 
-    nap_link_opengl_depends(${targetName})
+    nap_link_opengl_depends(${targetName} ${napScope})
 
     if(NOT NAPPGUI_IS_PACKAGE)
         get_target_property(TARGET_TYPE ogl3d TYPE)
@@ -765,6 +731,16 @@ endfunction()
 
 function(nap_link_with_libraries targetName targetType firstLevelDepends)
 
+    # Las librerias del sistema ya no se anaden aqui: son requisitos de uso de
+    # la libreria de NAppGUI que de verdad las necesita (nap_library_requires),
+    # asi que llegan igual al ejecutable, tanto en el arbol como a traves del
+    # paquete exportado. Ver NAP-002.
+    if (${targetType} STREQUAL "DYNAMIC_LIB")
+        set(napScope PUBLIC)
+    else()
+        set(napScope PRIVATE)
+    endif()
+
     #
     # Link with direct target dependencies
     #
@@ -773,7 +749,7 @@ function(nap_link_with_libraries targetName targetType firstLevelDepends)
 
     if (${targetName}_LINKDEPENDS)
         foreach(depend ${${targetName}_LINKDEPENDS})
-            target_link_libraries(${targetName} ${depend})
+            target_link_libraries(${targetName} ${napScope} ${depend})
             get_target_property(DEPEND_TARGET_TYPE ${depend} TYPE)
             if (${DEPEND_TARGET_TYPE} STREQUAL "SHARED_LIBRARY")
                 nap_target_relpath(${${depend}_SRCPATH} dependPath)
@@ -790,94 +766,154 @@ function(nap_link_with_libraries targetName targetType firstLevelDepends)
     #
     if (NAPPGUI_IS_PACKAGE)
         if (${targetType} STREQUAL "DESKTOP_APP" OR ${targetType} STREQUAL "DYNAMIC_LIB")
-            target_link_libraries(${targetName} "nappgui::osapp;nappgui::gui;nappgui::osgui;nappgui::draw2d;nappgui::geom2d;nappgui::core;nappgui::osbs;nappgui::sewer")
+            target_link_libraries(${targetName} ${napScope} "nappgui::osapp;nappgui::gui;nappgui::osgui;nappgui::draw2d;nappgui::geom2d;nappgui::core;nappgui::osbs;nappgui::sewer")
         elseif (${targetType} STREQUAL "COMMAND_APP")
-            target_link_libraries(${targetName} "nappgui::draw2d;nappgui::geom2d;nappgui::core;nappgui::osbs;nappgui::sewer")
-        endif()
-    endif()
-
-    #
-    # Link with system libraries
-    #
-    if (NOT NAPPGUI_IS_PACKAGE)
-        nap_exists_dependency(${targetName} "osbs" _depend_osbs)
-        nap_exists_dependency(${targetName} "draw2d" _depend_draw2d)
-        nap_exists_dependency(${targetName} "osgui" _depend_osgui)
-    else()
-        set(_depend_osbs True)
-        set(_depend_draw2d True)
-        if (${targetType} STREQUAL "DESKTOP_APP" OR ${targetType} STREQUAL "DYNAMIC_LIB")
-            set(_depend_osgui True)
-        else()
-            set(_depend_osgui False)
-        endif()
-    endif()
-
-    if(WIN32)
-        # Target should link with WinSockets
-        if (_depend_osbs)
-            target_link_libraries(${targetName} ws2_32)
-        endif()
-
-        # Target should link with gdiplus
-        if (_depend_draw2d)
-            target_link_libraries(${targetName} gdiplus shlwapi)
-        endif()
-
-        # Target should link with comctl32
-        if (_depend_osgui)
-            target_link_libraries(${targetName} comctl32 uxtheme)
-        endif()
-
-    elseif (${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
-        # Target should link with math always
-        target_link_libraries(${targetName} "m")
-
-        # Target should link with pthread and dl
-        if (_depend_osbs)
-            find_package(Threads)
-            if (Threads_FOUND)
-                target_link_libraries(${targetName} ${CMAKE_THREAD_LIBS_INIT})
-            else()
-                message(FATAL_ERROR "NAppGUI necesita pthreads para el modulo 'osbs'. En Debian/Ubuntu: sudo apt-get install build-essential")
-            endif()
-
-            target_link_libraries(${targetName} ${CMAKE_DL_LIBS})
-        endif()
-
-        if (_depend_draw2d)
-            # Graphics toolkit
-            if (NOT CMAKE_TOOLKIT)
-                message(FATAL_ERROR "CMAKE_TOOLKIT is not set")
-            endif()
-
-            # The target has to link with GTK+3
-            if (${CMAKE_TOOLKIT} STREQUAL "GTK3")
-                # Use the package PkgConfig to detect GTK+ headers/library files
-                find_package(PkgConfig REQUIRED)
-                pkg_check_modules(GTK3 REQUIRED gtk+-3.0)
-                target_link_libraries(${targetName} ${GTK3_LIBRARIES})
-            endif()
-        endif()
-
-    elseif (${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
-        if (NOT ${targetType} STREQUAL "STATIC_LIB")
-            target_link_libraries(${targetName} ${COCOA_LIB})
-        endif()
-
-    endif()
-
-    # Target should link with WebView
-    if (_depend_osgui)
-        nap_web_libs(_weblibs)
-        if (_weblibs)
-            target_link_libraries(${targetName} ${_weblibs})
+            target_link_libraries(${targetName} ${napScope} "nappgui::draw2d;nappgui::geom2d;nappgui::core;nappgui::osbs;nappgui::sewer")
         endif()
     endif()
 
     # In GCC the g++ linker must be used
     if (${CMAKE_SYSTEM_NAME} STREQUAL "Linux" OR ${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
         set_target_properties(${targetName} PROPERTIES LINKER_LANGUAGE CXX)
+    endif()
+
+endfunction()
+
+#------------------------------------------------------------------------------
+# Requisitos de uso de las librerias del SDK (NAP-002)
+#
+# Antes, ws2_32/gdiplus/GTK3/Cocoa/... se anadian al ejecutable final dentro de
+# nap_desktop_app() y nap_command_app(). Asi solo las conseguia quien usaba las
+# macros del SDK: un consumidor que hace lo idiomatico
+#
+#     find_package(nappgui REQUIRED)
+#     target_link_libraries(app PRIVATE ${NAPPGUI_LIBRARIES})
+#
+# se quedaba sin ellas y no enlazaba en ninguna plataforma. Ahora cada libreria
+# declara lo que necesita, el paquete exportado lo traslada y los dos caminos
+# (arbol e instalado) convergen.
+#
+# 'scope' es INTERFACE en las librerias estaticas (no enlazan, solo propagan) y
+# PUBLIC en las dinamicas (enlazan y ademas propagan).
+#------------------------------------------------------------------------------
+function(nap_library_requires libName scope)
+
+    #
+    # Runtime de C++ y libm
+    #
+    # sewer, core, geom2d y osgui tienen unidades .cpp. En el arbol lo tapa el
+    # LINKER_LANGUAGE CXX que fuerza nap_link_with_libraries; un consumidor en C
+    # puro enlaza con el driver de C y se queda sin typeinfo/vtable.
+    #
+    if (${libName} STREQUAL "sewer")
+        if (${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+            target_link_libraries(sewer ${scope} "stdc++" "m")
+        elseif (${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
+            target_link_libraries(sewer ${scope} "c++")
+        endif()
+    endif()
+
+    #
+    # osbs: sockets, hilos y carga dinamica
+    #
+    if (${libName} STREQUAL "osbs")
+        if (WIN32)
+            target_link_libraries(osbs ${scope} ws2_32)
+
+        elseif (${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+            find_package(Threads)
+            if (NOT Threads_FOUND)
+                message(FATAL_ERROR "NAppGUI necesita pthreads para el modulo 'osbs'. En Debian/Ubuntu: sudo apt-get install build-essential")
+            endif()
+
+            # Nombres planos, no Threads::Threads: un target importado obligaria
+            # al consumidor a un find_dependency() antes de importar el paquete.
+            # Con glibc >= 2.34 esto queda vacio, porque libpthread y libdl se
+            # fusionaron dentro de libc.
+            if (CMAKE_THREAD_LIBS_INIT)
+                target_link_libraries(osbs ${scope} ${CMAKE_THREAD_LIBS_INIT})
+            endif()
+
+            if (CMAKE_DL_LIBS)
+                target_link_libraries(osbs ${scope} ${CMAKE_DL_LIBS})
+            endif()
+        endif()
+    endif()
+
+    #
+    # draw2d y osgui: el backend grafico nativo
+    #
+    if (${libName} STREQUAL "draw2d" OR ${libName} STREQUAL "osgui")
+        if (WIN32)
+            if (${libName} STREQUAL "draw2d")
+                target_link_libraries(draw2d ${scope} gdiplus shlwapi)
+            else()
+                target_link_libraries(osgui ${scope} comctl32 uxtheme)
+            endif()
+
+        elseif (${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+            if (NOT CMAKE_TOOLKIT)
+                message(FATAL_ERROR "CMAKE_TOOLKIT is not set")
+            endif()
+
+            if (${CMAKE_TOOLKIT} STREQUAL "GTK3")
+                find_package(PkgConfig REQUIRED)
+                pkg_check_modules(GTK3 REQUIRED gtk+-3.0)
+                if (GTK3_LIBRARY_DIRS)
+                    target_link_directories(${libName} ${scope} ${GTK3_LIBRARY_DIRS})
+                endif()
+                target_link_libraries(${libName} ${scope} ${GTK3_LIBRARIES})
+            endif()
+
+        endif()
+    endif()
+
+    #
+    # macOS: Cocoa y el runtime de Objective-C
+    #
+    # No solo el backend grafico: 'osbs' tambien tiene una unidad .m
+    # (src/osbs/osx/sinfo.m, que incluye <Cocoa/Cocoa.h>), asi que hasta una
+    # aplicacion de consola necesita el framework y el runtime.
+    #
+    if (${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
+        if (${libName} STREQUAL "osbs" OR ${libName} STREQUAL "draw2d" OR ${libName} STREQUAL "osgui")
+            # '-framework X' y no la ruta absoluta de ${COCOA_LIB}: el paquete no
+            # debe llevar cableado el sysroot del Xcode con el que se compilo.
+            # 'objc' resuelve _objc_retain / _objc_release de las unidades .m.
+            target_link_libraries(${libName} ${scope} "-framework Cocoa" "objc")
+        endif()
+
+        # UniformTypeIdentifiers solo lo usa el backend grafico (dialogos de
+        # fichero), y solo existe desde macOS 12.
+        if (${libName} STREQUAL "draw2d" OR ${libName} STREQUAL "osgui")
+            if (CMAKE_OSX_DEPLOYMENT_TARGET VERSION_GREATER 11.9999)
+                target_link_libraries(${libName} ${scope} "-framework UniformTypeIdentifiers")
+            endif()
+        endif()
+    endif()
+
+    #
+    # osgui: WebView
+    #
+    if (${libName} STREQUAL "osgui" AND WEB_SUPPORT)
+        if (WIN32)
+            # El loader se instala en 'lib/<arch>' y se compila desde
+            # 'src/osgui/win/depend/<arch>'. $<INSTALL_PREFIX> es lo que
+            # install(EXPORT) reescribe a ${_IMPORT_PREFIX} en el paquete.
+            target_link_libraries(osgui ${scope}
+                $<BUILD_INTERFACE:${NAPPGUI_ROOT_PATH}/src/osgui/win/depend/${CMAKE_ARCHITECTURE}/WebView2LoaderStatic.lib>
+                $<INSTALL_INTERFACE:$<INSTALL_PREFIX>/lib/${CMAKE_ARCHITECTURE}/WebView2LoaderStatic.lib>
+                version)
+
+        elseif (${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
+            target_link_libraries(osgui ${scope} "-framework WebKit")
+
+        elseif (${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+            nap_find_webview_linux(WEBVIEW_FOUND WEBVIEW_HEADERS WEBVIEW_LIBS)
+            if (WEBVIEW_FOUND)
+                target_link_libraries(osgui ${scope} ${WEBVIEW_LIBS})
+            endif()
+        endif()
     endif()
 
 endfunction()
@@ -1069,13 +1105,25 @@ function(nap_target targetName targetType dependList nrcMode)
     endif()
 
     # Target global include directories
-    if (NOT NAPPGUI_IS_PACKAGE)
-        target_include_directories(${targetName} PRIVATE $<BUILD_INTERFACE:${NAPPGUI_ROOT_PATH}/src>)
+    #
+    # En las librerias esto es PUBLIC, no PRIVATE: la ruta de cabeceras es un
+    # requisito de uso, no un detalle privado. Con PRIVATE, los targets
+    # exportados nappgui::* se instalaban sin INTERFACE_INCLUDE_DIRECTORIES y
+    # el consumidor externo no encontraba 'nappgui.h' (NAP-002).
+    # En los ejecutables sigue siendo PRIVATE: nadie enlaza contra ellos.
+    if (targetType STREQUAL STATIC_LIB OR targetType STREQUAL DYNAMIC_LIB)
+        set(napIncScope PUBLIC)
     else()
-        target_include_directories(${targetName} PRIVATE $<BUILD_INTERFACE:${NAPPGUI_INCLUDE_PATH}>)
+        set(napIncScope PRIVATE)
     endif()
 
-    target_include_directories(${targetName} PRIVATE $<INSTALL_INTERFACE:inc>)
+    if (NOT NAPPGUI_IS_PACKAGE)
+        target_include_directories(${targetName} ${napIncScope} $<BUILD_INTERFACE:${NAPPGUI_ROOT_PATH}/src>)
+    else()
+        target_include_directories(${targetName} ${napIncScope} $<BUILD_INTERFACE:${NAPPGUI_INCLUDE_PATH}>)
+    endif()
+
+    target_include_directories(${targetName} ${napIncScope} $<INSTALL_INTERFACE:inc>)
 
     # Include dir for target generated resources
     if (resIncludeDir)
@@ -1103,6 +1151,7 @@ function(nap_library libName dependList buildShared nrcMode)
         nap_target(${libName} DYNAMIC_LIB "${dependList}" ${nrcMode})
         nap_link_with_libraries(${libName} DYNAMIC_LIB "${dependList}")
         nap_target_rpath(${libName} NO "")
+        set(napReqScope PUBLIC)
 
     else()
         nap_target(${libName} STATIC_LIB "${dependList}" ${nrcMode})
@@ -1111,6 +1160,13 @@ function(nap_library libName dependList buildShared nrcMode)
         # if (${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
         #     nap_link_with_libraries(${libName} STATIC_LIB "${dependList}")
         # endif()
+        set(napReqScope INTERFACE)
+    endif()
+
+    # Requisitos de uso de esta libreria: solo para las del propio SDK, que son
+    # las que se compilan cuando NAppGUI no viene de un paquete. Ver NAP-002.
+    if (NOT NAPPGUI_IS_PACKAGE)
+        nap_library_requires(${libName} ${napReqScope})
     endif()
 
     set(NAPPGUI_CACHE_DEPENDS_${libName} "${dependList}" CACHE INTERNAL "")
