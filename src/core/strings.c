@@ -1434,16 +1434,125 @@ uint64_t str_to_u64(const char_t *str, const uint32_t base, bool_t *error)
 
 /*---------------------------------------------------------------------------*/
 
+/*
+ * Real scanner for 'str_to_r32'/'str_to_r64'. Accepted grammar (documented in
+ * 'strings.h'):
+ *
+ *      space* [ '+' | '-' ] ( digit+ [ '.' digit* ] | '.' digit+ )
+ *             [ ( 'e' | 'E' ) [ '+' | '-' ] digit+ ] space* '\0'
+ *
+ * Same criterion as 'i_scan_int': the whole string has to be the number,
+ * surrounding spaces included, and at least one digit is required. So "",
+ * "  ", "abc", "1.5abc", "nan" and "inf" are format errors and " 4.5 " is not.
+ *
+ * The format is checked here and not with the 'endptr' of the C library on
+ * purpose: 'blib_strtof' has no 'endptr' with MSVC <= 1700 (it falls back to
+ * 'atof'), so the trailing garbage check simply did not run there. Doing it
+ * here also keeps out the extensions that some C libraries accept in 'strtod'
+ * ("inf", "nan", "0x1p3"), which are not part of this API.
+ *
+ * Returns TRUE if the string is well formed. The value itself still comes from
+ * the C library, which rounds correctly.
+ */
+static bool_t i_scan_real(const char_t *str)
+{
+    uint32_t ndigits = 0;
+    uint32_t edigits = 0;
+
+    if (str == NULL)
+        return FALSE;
+
+    while (i_is_space(*str) == TRUE)
+        str += 1;
+
+    if (*str == '+' || *str == '-')
+        str += 1;
+
+    while (*str >= '0' && *str <= '9')
+    {
+        ndigits += 1;
+        str += 1;
+    }
+
+    if (*str == '.')
+    {
+        str += 1;
+        while (*str >= '0' && *str <= '9')
+        {
+            ndigits += 1;
+            str += 1;
+        }
+    }
+
+    /* A lonely sign or a lonely '.' is not a number */
+    if (ndigits == 0)
+        return FALSE;
+
+    if (*str == 'e' || *str == 'E')
+    {
+        str += 1;
+        if (*str == '+' || *str == '-')
+            str += 1;
+
+        while (*str >= '0' && *str <= '9')
+        {
+            edigits += 1;
+            str += 1;
+        }
+
+        if (edigits == 0)
+            return FALSE;
+    }
+
+    while (i_is_space(*str) == TRUE)
+        str += 1;
+
+    if (*str != '\0')
+        return FALSE;
+
+    return TRUE;
+}
+
+/*---------------------------------------------------------------------------*/
+
+/*
+ * TRUE when the ERANGE reported by the C library is an overflow and not an
+ * underflow. 'strtof'/'strtod' use the same condition for both, but they are
+ * not the same thing: an overflow returns +/-infinity and loses the value,
+ * while an underflow returns 0 or a subnormal, which is still a faithful
+ * answer. Libraries do not even agree on when they report the underflow (glibc
+ * does it for subnormals, others only for a plain 0), so only the overflow is
+ * reported as an error here.
+ */
+static ___INLINE bool_t i_range_overflow(const real64_t value)
+{
+    if (value > 1 || value < -1)
+        return TRUE;
+    return FALSE;
+}
+
+/*---------------------------------------------------------------------------*/
+
 real32_t str_to_r32(const char_t *str, bool_t *error)
 {
-    char_t *end = NULL;
-    real32_t r = blib_strtof(str, &end, error);
-    if (end != NULL && end[0] != 0)
+    bool_t range = FALSE;
+    real32_t r = 0;
+
+    if (i_scan_real(str) == FALSE)
     {
         ptr_assign(error, TRUE);
         return 0;
     }
 
+    r = blib_strtof(str, NULL, &range);
+
+    if (range == TRUE && i_range_overflow((real64_t)r) == TRUE)
+    {
+        ptr_assign(error, TRUE);
+        return r;
+    }
+
+    ptr_assign(error, FALSE);
     return r;
 }
 
@@ -1451,13 +1560,23 @@ real32_t str_to_r32(const char_t *str, bool_t *error)
 
 real64_t str_to_r64(const char_t *str, bool_t *error)
 {
-    char_t *end = NULL;
-    real64_t r = blib_strtod(str, &end, error);
-    if (end != NULL && end[0] != 0)
+    bool_t range = FALSE;
+    real64_t r = 0;
+
+    if (i_scan_real(str) == FALSE)
     {
         ptr_assign(error, TRUE);
         return 0;
     }
 
+    r = blib_strtod(str, NULL, &range);
+
+    if (range == TRUE && i_range_overflow(r) == TRUE)
+    {
+        ptr_assign(error, TRUE);
+        return r;
+    }
+
+    ptr_assign(error, FALSE);
     return r;
 }

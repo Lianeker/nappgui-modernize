@@ -26,7 +26,39 @@
     - Code that ignores `error` only sees a difference with strings that were
       invalid to begin with. Code that checks `error` will start seeing errors
       that were silently accepted before.
-    - `str_to_r32()` and `str_to_r64()` are not affected by this change.
+    - `str_to_r32()` and `str_to_r64()` are not affected by this change. See the
+      entry below for them.
+
+- `str_to_r32()` and `str_to_r64()` now use the same criterion as the integer
+  conversions above, documented next to them in `core/strings.h`: the whole
+  string must be a single decimal literal, with the surrounding spaces ignored
+  and at least one digit required.
+    - **The empty string is an error now.** `str_to_r32("", &error)` returned 0
+      with `error` == `FALSE`, which contradicted `str_to_r32("  ", &error)`,
+      already an error. Both are errors now.
+    - **Surrounding spaces are accepted now.** `str_to_r32(" 42 ", &error)` was
+      an error because `strtof` leaves `endptr` on the trailing space, while
+      `str_to_i32(" 42 ", 10, &error)` was not. Both accept them now.
+    - The format is validated by walking the string, so it no longer depends on
+      `errno` nor on the `endptr` of the C library. With MSVC <= 1700 there is
+      no `strtof` and `endptr` was never written, so trailing garbage was
+      accepted silently there: `str_to_r32("42abc", &error)` returned 42 without
+      error. It is 0 with `error` == `TRUE` on every compiler now.
+    - The C library extensions `"nan"`, `"inf"`, `"infinity"` and the
+      hexadecimal floats `"0x1p3"` are format errors, so the result no longer
+      depends on which C library reads them.
+    - Out of range is still an error, and it is now reported reliably:
+      `str_to_r32("1e400", &error)` sets `error` to `TRUE` and returns the
+      overflow value of the C library. A value too small to represent is not an
+      error, it converts to 0 or to a subnormal.
+    - Affects the enumerated members of `dbind`, which resolve a string that is
+      not an alias by its numeric index. The empty string used to be index 0 and
+      is rejected now, leaving the member at its `ENUM_MAX` invalid value.
+
+- `blib_strtol()`, `blib_strtoul()`, `blib_strtof()` and `blib_strtod()` reset
+  `errno` to 0 before calling the C library. They read `errno` afterwards to
+  fill `*err`, but nothing ever cleared it, so `*err` reported an `ERANGE` left
+  behind by a previous and unrelated call and hid a real one already reported.
 
 - `dbind` no longer reads any string as hexadecimal when it is not a valid
   decimal. `dbind_set_value_str()` and `dbind_st_set_value_str()` retried the
@@ -68,6 +100,27 @@
 - **Hexadecimal in `dbind` / JSON.** A string field that must be read as a
   number in an integer member needs a decimal (`"31"`) or an explicit
   hexadecimal (`"0x1f"`). `"1f"` is no longer a number.
+
+- **`str_to_r32()` / `str_to_r64()` with the empty string.** It was 0 without
+  error and it is an error now. Code that used the empty field of a form as a
+  zero has to say so:
+
+    ```c
+    /* Before: "" was 0 and 'error' was FALSE */
+    real32_t v = str_to_r32(text, NULL);
+
+    /* After: check the error and pick the default */
+    bool_t err = FALSE;
+    real32_t v = str_to_r32(text, &err);
+    if (err == TRUE)
+        v = 0;
+    ```
+
+- **`str_to_r32()` / `str_to_r64()` with trailing garbage on MSVC <= 1700.**
+  There is no `strtof` there and the garbage went unnoticed, so `"42abc"` was
+  42. It is 0 with an error now, like on every other compiler. Cut the string at
+  the first character that is not part of the number if the old reading is what
+  you want.
 
 ## v1.6.2 - July 02, 2026 (r6905)
 

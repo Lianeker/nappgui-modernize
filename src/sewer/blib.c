@@ -131,12 +131,21 @@ uint32_t blib_strftime(char_t *dest, const uint32_t size, const char_t *format, 
 
 /*---------------------------------------------------------------------------*/
 
+/*
+ * The C library only sets 'errno' on error, it never clears it. Without this
+ * reset the '*err' of the four 'blib_strtoXXX' below reports an ERANGE left
+ * behind by any previous and unrelated call, and hides a real one that another
+ * call had already reported.
+ */
 int64_t blib_strtol(const char_t *str, char_t **endptr, uint32_t base, bool_t *err)
 {
+    int64_t v = 0;
+    errno = 0;
+
 #if _MSC_VER > 1700
-    int64_t v = strtoll(cast_const(str, char), dcast(endptr, char), (int)base);
+    v = strtoll(cast_const(str, char), dcast(endptr, char), (int)base);
 #else
-    int64_t v = strtol(cast_const(str, char), dcast(endptr, char), (int)base);
+    v = strtol(cast_const(str, char), dcast(endptr, char), (int)base);
 #endif
 
     if (err != NULL)
@@ -154,14 +163,17 @@ int64_t blib_strtol(const char_t *str, char_t **endptr, uint32_t base, bool_t *e
 
 uint64_t blib_strtoul(const char_t *str, char_t **endptr, uint32_t base, bool_t *err)
 {
+    uint64_t v = 0;
+    errno = 0;
+
 #if defined(_MSC_VER)
 #if _MSC_VER > 1700
-    uint64_t v = strtoull(cast_const(str, char), dcast(endptr, char), (int)base);
+    v = strtoull(cast_const(str, char), dcast(endptr, char), (int)base);
 #else
-    uint64_t v = strtoul(cast_const(str, char), dcast(endptr, char), (int)base);
+    v = strtoul(cast_const(str, char), dcast(endptr, char), (int)base);
 #endif
 #else
-    uint64_t v = strtoull(cast_const(str, char), dcast(endptr, char), (int)base);
+    v = strtoull(cast_const(str, char), dcast(endptr, char), (int)base);
 #endif
 
     if (err != NULL)
@@ -179,15 +191,18 @@ uint64_t blib_strtoul(const char_t *str, char_t **endptr, uint32_t base, bool_t 
 
 real32_t blib_strtof(const char_t *str, char_t **endptr, bool_t *err)
 {
+    real32_t v = 0;
+    errno = 0;
+
 #if defined(_MSC_VER)
 #if _MSC_VER > 1700
-    real32_t v = (real32_t)strtof(cast_const(str, char), dcast(endptr, char));
+    v = (real32_t)strtof(cast_const(str, char), dcast(endptr, char));
 #else
-    real32_t v = (real32_t)atof(cast_const(str, char));
+    v = (real32_t)atof(cast_const(str, char));
     unref(endptr);
 #endif
 #else
-    real32_t v = (real32_t)strtof(cast_const(str, char), dcast(endptr, char));
+    v = (real32_t)strtof(cast_const(str, char), dcast(endptr, char));
 #endif
 
     if (err != NULL)
@@ -205,18 +220,21 @@ real32_t blib_strtof(const char_t *str, char_t **endptr, bool_t *err)
 
 real64_t blib_strtod(const char_t *str, char_t **endptr, bool_t *err)
 {
+    real64_t v = 0;
+    errno = 0;
+
 #if defined(_MSC_VER)
 #if _MSC_VER >= 1100
-    real64_t v = (real64_t)strtod(cast_const(str, char), dcast(endptr, char));
+    v = (real64_t)strtod(cast_const(str, char), dcast(endptr, char));
 #elif _MSC_VER > 1004
-    real64_t v = (real64_t)atod(cast_const(str, char));
+    v = (real64_t)atod(cast_const(str, char));
     unref(endptr);
 #else
-    real64_t v = (real64_t)atof(cast_const(str, char));
+    v = (real64_t)atof(cast_const(str, char));
     unref(endptr);
 #endif
 #else
-    real64_t v = (real64_t)strtod(cast_const(str, char), dcast(endptr, char));
+    v = (real64_t)strtod(cast_const(str, char), dcast(endptr, char));
 #endif
 
     if (err != NULL)

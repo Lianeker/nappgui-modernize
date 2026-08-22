@@ -172,10 +172,40 @@ _core_api uint32_t str_find(const ArrPt(String) *array, const char_t *str);
  *                "129"     ->   0, error in base 8 ('9' is not an octal digit)
  *                "99999999999999999999" -> limit of the type, error
  *
- * The real versions below follow a different criterion: they reject any
- * trailing character, trailing spaces included ('str_to_r32(" 42 ", &err)' is
- * an error, while 'str_to_i32(" 42 ", 10, &err)' is not), and they accept the
- * empty string as 0 without error.
+ * The real versions ('str_to_r32', 'str_to_r64') follow the same criterion:
+ * the whole string must be a single decimal literal. Formally:
+ *
+ *      space* [ '+' | '-' ] ( digit+ [ '.' digit* ] | '.' digit+ )
+ *             [ ( 'e' | 'E' ) [ '+' | '-' ] digit+ ] space* '\0'
+ *
+ * - Leading and trailing spaces are allowed and ignored, exactly like in the
+ *   integer versions.
+ * - At least one digit is required in the mantissa, so "" and "  " are errors
+ *   and not 0, and "." and "-" are errors too.
+ * - The decimal separator is always '.', whatever the locale of the process.
+ *   The exponent, when present, needs at least one digit.
+ * - "nan", "inf", "infinity" and the hexadecimal floats "0x1p3" are format
+ *   errors: some C libraries read them in 'strtod' and others do not, so they
+ *   are not part of this API.
+ * - There is no 'base' parameter: a real is always decimal.
+ *
+ * '*error' is TRUE when the string does not follow that grammar, and also when
+ * the value is too large for the type ("1e400"), in which case the result is
+ * the overflow value of the C library (an infinity). A value too small is not
+ * an error: it converts to 0 or to a subnormal, which is still the closest
+ * representable answer. On a format error the result is 0.
+ *
+ * Examples:      "-3.5"    -> -3.5, no error
+ *                ".5"      ->  0.5, no error
+ *                "1e-3"    -> 0.001, no error
+ *                " 4.5 "   ->  4.5, no error       (surrounding spaces ignored)
+ *                "42"      ->   42, no error       (the point is optional)
+ *                "42abc"   ->    0, error          (trailing garbage)
+ *                ""        ->    0, error          (no digits)
+ *                "  "      ->    0, error          (no digits)
+ *                "1,5"     ->    0, error          (',' is not a separator)
+ *                "1e"      ->    0, error          (exponent without digits)
+ *                "1e400"   -> infinity, error      (out of range)
  */
 _core_api int8_t str_to_i8(const char_t *str, const uint32_t base, bool_t *error);
 
