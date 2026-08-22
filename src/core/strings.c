@@ -1149,78 +1149,179 @@ uint32_t str_find(const ArrPt(String) *array, const char_t *str)
 
 /*---------------------------------------------------------------------------*/
 
-static ___INLINE bool_t i_ok(const char_t *str, const bool_t allow_minus)
+static ___INLINE bool_t i_is_space(const char_t c)
 {
-    unref(str);
-    unref(allow_minus);
-    return TRUE;
+    if (c == ' ' || c == '\t' || c == '\n' || c == '\v' || c == '\f' || c == '\r')
+        return TRUE;
+    return FALSE;
+}
 
-    /*    if (errno == ERANGE)
-   {
-       return FALSE;
-   }
-   else
-   {
-       while (*str == ' ')
-           str += 1;
+/*---------------------------------------------------------------------------*/
 
-       if (*str == '-')
-       {
-           if (allow_minus == FALSE)
-               return FALSE;
-           str += 1;
-       }
+/* Value of 'c' as a digit in 'base' or UINT32_MAX if it is not a valid digit. */
+static ___INLINE uint32_t i_digit(const char_t c, const uint32_t base)
+{
+    uint32_t d = UINT32_MAX;
 
-       while (*str == ' ')
-           str += 1;
+    if (c >= '0' && c <= '9')
+        d = (uint32_t)(c - '0');
+    else if (c >= 'a' && c <= 'z')
+        d = (uint32_t)(c - 'a') + 10;
+    else if (c >= 'A' && c <= 'Z')
+        d = (uint32_t)(c - 'A') + 10;
 
-       while (*str != '\0' && !(*str == ' ' || *str == '\t' || *str == '\n' || *str == '\v' || *str == '\f' || *str == '\r'))
-       {
-           if (*str < '0' || *str > '9')
-           {
-               return FALSE;
-           }
+    if (d >= base)
+        return UINT32_MAX;
 
-           str += 1;
-       }
+    return d;
+}
 
-       return TRUE;
-   }
+/*---------------------------------------------------------------------------*/
+
+/*
+ * Integer scanner for the 'str_to_XXX' family. Accepted grammar (documented in
+ * 'strings.h'):
+ *
+ *      space* [ '+' | '-' ] [ "0x" | "0X" ] digit+ space* '\0'
+ *
+ * The '0x' prefix is only recognized in base 16 and the '-' sign only when
+ * 'allow_minus' is TRUE. At least one digit valid in 'base' is required and no
+ * other character is tolerated, neither between the sign and the digits nor
+ * after them.
+ *
+ * Returns TRUE if the string is well formed. In that case '*minus' tells if it
+ * was negative, '*absval' holds the absolute value and '*overflow' is TRUE when
+ * the digits are correct but the value does not fit in 64 bits.
+ *
+ * 'errno' is deliberately not used: 'blib_strtol' never resets it before
+ * calling the C library (see 'blib.c'), so its value may come from a previous
+ * unrelated call. This scanner only depends on the string it receives.
  */
+static bool_t i_scan_int(const char_t *str, const uint32_t base, const bool_t allow_minus, bool_t *minus, uint64_t *absval, bool_t *overflow)
+{
+    uint64_t v = 0;
+    uint32_t ndigits = 0;
+    uint32_t d = 0;
+    bool_t neg = FALSE;
+    bool_t ovf = FALSE;
+
+    cassert_no_null(minus);
+    cassert_no_null(absval);
+    cassert_no_null(overflow);
+    *minus = FALSE;
+    *absval = 0;
+    *overflow = FALSE;
+
+    if (str == NULL)
+        return FALSE;
+
+    if (base < 2 || base > 36)
+        return FALSE;
+
+    while (i_is_space(*str) == TRUE)
+        str += 1;
+
+    if (*str == '+')
+    {
+        str += 1;
+    }
+    else if (*str == '-')
+    {
+        if (allow_minus == FALSE)
+            return FALSE;
+        neg = TRUE;
+        str += 1;
+    }
+
+    if (base == 16 && str[0] == '0' && (str[1] == 'x' || str[1] == 'X'))
+    {
+        if (i_digit(str[2], 16) != UINT32_MAX)
+            str += 2;
+    }
+
+    for (;;)
+    {
+        d = i_digit(*str, base);
+        if (d == UINT32_MAX)
+            break;
+
+        if (ovf == FALSE)
+        {
+            if (v > UINT64_MAX / base)
+            {
+                ovf = TRUE;
+            }
+            else
+            {
+                v *= base;
+                if (v > UINT64_MAX - d)
+                    ovf = TRUE;
+                else
+                    v += d;
+            }
+        }
+
+        ndigits += 1;
+        str += 1;
+    }
+
+    if (ndigits == 0)
+        return FALSE;
+
+    while (i_is_space(*str) == TRUE)
+        str += 1;
+
+    if (*str != '\0')
+        return FALSE;
+
+    *minus = neg;
+    *absval = v;
+    *overflow = ovf;
+    return TRUE;
 }
 
 /*---------------------------------------------------------------------------*/
 
 static bool_t i_str_to_i64(const char_t *str, int64_t *value, const uint32_t base, const int64_t min, const int64_t max)
 {
-    bool_t err;
-    int64_t v = blib_strtol(str, NULL, base, &err);
+    bool_t minus = FALSE;
+    bool_t overflow = FALSE;
+    uint64_t absval = 0;
+    uint64_t limit = 0;
 
     cassert_no_null(value);
-    if (i_ok(str, TRUE) == TRUE)
+    cassert(min < 0);
+
+    if (i_scan_int(str, base, TRUE, &minus, &absval, &overflow) == FALSE)
     {
-        if (v <= max && v >= min)
-        {
-            *value = v;
-            return TRUE;
-        }
-        else if (v < min)
-        {
-            *value = min;
-            return FALSE;
-        }
-        else
-        {
-            *value = max;
-            return FALSE;
-        }
+        *value = 0;
+        return FALSE;
     }
 
-    if (err == TRUE)
-        *value = max;
-    else
-        *value = 0;
+    if (minus == TRUE)
+    {
+        /* Absolute value of 'min', computed without overflowing int64_t */
+        limit = (uint64_t)(-(min + 1)) + 1;
+        if (overflow == FALSE && absval <= limit)
+        {
+            if (absval == (uint64_t)INT64_MAX + 1)
+                *value = INT64_MIN;
+            else
+                *value = -(int64_t)absval;
+            return TRUE;
+        }
 
+        *value = min;
+        return FALSE;
+    }
+
+    if (overflow == FALSE && absval <= (uint64_t)max)
+    {
+        *value = (int64_t)absval;
+        return TRUE;
+    }
+
+    *value = max;
     return FALSE;
 }
 
@@ -1268,29 +1369,26 @@ int64_t str_to_i64(const char_t *str, const uint32_t base, bool_t *error)
 
 static bool_t i_str_to_u64(const char_t *str, uint64_t *value, const uint32_t base, const uint64_t max)
 {
-    bool_t err;
-    uint64_t v = blib_strtoul(str, NULL, base, &err);
+    bool_t minus = FALSE;
+    bool_t overflow = FALSE;
+    uint64_t absval = 0;
 
     cassert_no_null(value);
-    if (i_ok(str, FALSE) == TRUE)
+
+    /* A minus sign is a format error here, not a value to wrap around */
+    if (i_scan_int(str, base, FALSE, &minus, &absval, &overflow) == FALSE)
     {
-        if (v <= max)
-        {
-            *value = v;
-            return TRUE;
-        }
-        else
-        {
-            *value = max;
-            return FALSE;
-        }
+        *value = 0;
+        return FALSE;
     }
 
-    if (err == TRUE)
-        *value = max;
-    else
-        *value = 0;
+    if (overflow == FALSE && absval <= max)
+    {
+        *value = absval;
+        return TRUE;
+    }
 
+    *value = max;
     return FALSE;
 }
 

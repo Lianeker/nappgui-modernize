@@ -155,24 +155,111 @@ static void i_strings(void)
         str_destroy(&r);
     }
 
-    /* Conversiones numericas, incluido el caso de error. */
+    /* Conversiones numericas, incluido el caso de error. El criterio esta
+       documentado en core/strings.h: espacios alrededor si, basura no. */
     {
         bool_t err = FALSE;
         ntest_equ_i32(str_to_i32("-42", 10, &err), -42, "str_to_i32");
         ntest_false(err, "str_to_i32 no marca error con entrada valida");
 
-        /* Deberia marcar error. No lo hace: i_ok() en core/strings.c:1152 esta
-           desactivada (hace `return TRUE` con toda la validacion comentada
-           debajo), asi que el parametro `error` de todas las conversiones de
-           cadena a numero nunca detecta un formato invalido. Ver NAP-021. */
         err = FALSE;
-        str_to_i32("no soy un numero", 10, &err);
-        if (err == FALSE)
-            ntest_pending("str_to_i32 deberia marcar error con entrada invalida", "NAP-021");
-        else
-            ntest_true(err, "str_to_i32 marca error con entrada invalida");
+        ntest_equ_i32(str_to_i32("no soy un numero", 10, &err), 0, "str_to_i32 con entrada invalida devuelve 0");
+        ntest_true(err, "str_to_i32 marca error con entrada invalida");
 
-        ntest_equ_u32(str_to_u32("255", 16, NULL), 597, "str_to_u32 en base 16");
+        /* Cadena vacia: no hay ni un digito. */
+        err = FALSE;
+        ntest_equ_i32(str_to_i32("", 10, &err), 0, "str_to_i32 con cadena vacia devuelve 0");
+        ntest_true(err, "str_to_i32 marca error con la cadena vacia");
+
+        /* Solo espacios: tampoco hay digitos. */
+        err = FALSE;
+        str_to_i32("   ", 10, &err);
+        ntest_true(err, "str_to_i32 marca error con solo espacios");
+
+        /* Basura detras del numero. */
+        err = FALSE;
+        ntest_equ_i32(str_to_i32("42abc", 10, &err), 0, "str_to_i32 con basura detras devuelve 0");
+        ntest_true(err, "str_to_i32 marca error con basura detras del numero");
+
+        /* Espacios alrededor: validos, se ignoran. */
+        err = TRUE;
+        ntest_equ_i32(str_to_i32(" 42 ", 10, &err), 42, "str_to_i32 ignora los espacios alrededor");
+        ntest_false(err, "str_to_i32 no marca error con espacios alrededor");
+
+        /* Un espacio en medio parte el numero: es error. */
+        err = FALSE;
+        str_to_i32("4 2", 10, &err);
+        ntest_true(err, "str_to_i32 marca error con un espacio en medio");
+
+        /* Signo mas explicito. */
+        err = TRUE;
+        ntest_equ_i32(str_to_i32("+42", 10, &err), 42, "str_to_i32 acepta el signo mas");
+        ntest_false(err, "str_to_i32 no marca error con el signo mas");
+
+        /* Negativo en una funcion sin signo: error de formato, no un valor enorme. */
+        err = FALSE;
+        ntest_equ_u32(str_to_u32("-5", 10, &err), 0, "str_to_u32 con un negativo devuelve 0");
+        ntest_true(err, "str_to_u32 marca error con un negativo");
+
+        /* Bases distintas de 10. */
+        err = TRUE;
+        ntest_equ_u32(str_to_u32("255", 16, &err), 597, "str_to_u32 en base 16");
+        ntest_false(err, "str_to_u32 no marca error en base 16");
+
+        err = TRUE;
+        ntest_equ_u32(str_to_u32("ff", 16, &err), 255, "str_to_u32 en base 16 con letras minusculas");
+        ntest_false(err, "str_to_u32 no marca error con letras hexadecimales validas");
+
+        err = TRUE;
+        ntest_equ_u32(str_to_u32("FF", 16, &err), 255, "str_to_u32 en base 16 con letras mayusculas");
+        ntest_false(err, "str_to_u32 no marca error con letras hexadecimales mayusculas");
+
+        err = FALSE;
+        ntest_equ_u32(str_to_u32("gg", 16, &err), 0, "str_to_u32 con letras no hexadecimales devuelve 0");
+        ntest_true(err, "str_to_u32 marca error con letras no hexadecimales");
+
+        err = TRUE;
+        ntest_equ_u32(str_to_u32("1010", 2, &err), 10, "str_to_u32 en base 2");
+        ntest_false(err, "str_to_u32 no marca error en base 2");
+
+        err = FALSE;
+        ntest_equ_u32(str_to_u32("1012", 2, &err), 0, "str_to_u32 con un digito fuera de la base 2 devuelve 0");
+        ntest_true(err, "str_to_u32 marca error con un digito fuera de la base");
+
+        /* Desbordamiento: el valor satura al limite del tipo y avisa. */
+        err = FALSE;
+        ntest_equ_u32(str_to_u32("99999999999999999999", 10, &err), UINT32_MAX, "str_to_u32 satura al desbordar");
+        ntest_true(err, "str_to_u32 marca error al desbordar");
+
+        err = FALSE;
+        ntest_equ_i32(str_to_i32("99999999999999999999", 10, &err), INT32_MAX, "str_to_i32 satura al desbordar");
+        ntest_true(err, "str_to_i32 marca error al desbordar");
+
+        err = FALSE;
+        ntest_true(str_to_u64("99999999999999999999", 10, &err) == UINT64_MAX, "str_to_u64 satura al desbordar 64 bits");
+        ntest_true(err, "str_to_u64 marca error al desbordar 64 bits");
+
+        /* Los limites exactos si caben. */
+        err = TRUE;
+        ntest_true(str_to_i64("-9223372036854775808", 10, &err) == INT64_MIN, "str_to_i64 con el minimo de 64 bits");
+        ntest_false(err, "str_to_i64 no marca error con el minimo de 64 bits");
+
+        err = TRUE;
+        ntest_true(str_to_u64("18446744073709551615", 10, &err) == UINT64_MAX, "str_to_u64 con el maximo de 64 bits");
+        ntest_false(err, "str_to_u64 no marca error con el maximo de 64 bits");
+
+        /* str_to_r32/r64 no siguen el mismo criterio: rechazan la basura detras
+           pero aceptan la cadena vacia como 0 sin avisar. Ver NAP-023. */
+        err = FALSE;
+        str_to_r32("no soy un numero", &err);
+        ntest_true(err, "str_to_r32 marca error con basura");
+
+        err = FALSE;
+        str_to_r32("", &err);
+        if (err == FALSE)
+            ntest_pending("str_to_r32 deberia marcar error con la cadena vacia", "NAP-023");
+        else
+            ntest_true(err, "str_to_r32 marca error con la cadena vacia");
     }
 
     /* split_pathname sobre una ruta. */

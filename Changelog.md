@@ -2,6 +2,32 @@
 
 ## v1.6.3 - WIP
 
+### Changed
+
+- The `error` parameter of `str_to_i8()`, `str_to_i16()`, `str_to_i32()`,
+  `str_to_i64()`, `str_to_u8()`, `str_to_u16()`, `str_to_u32()` and
+  `str_to_u64()` now detects invalid formats, not only out-of-range values. The
+  internal validation was disabled (it always returned `TRUE`), so
+  `str_to_i32("not a number", 10, &error)` returned 0 with `error` == `FALSE`.
+  The new validation walks the string and does not depend on `errno`.
+    - The accepted format is now documented in `core/strings.h`: optional
+      surrounding spaces, optional sign, one or more digits valid in the
+      requested base (optional `0x` prefix in base 16) and nothing else. So
+      `" 42 "` is 42 without error, while `"42abc"`, `""` and `"  "` are errors.
+    - **This changes the returned value too, not only `error`.** On a format
+      error the result is now 0: `str_to_i32("42abc", 10, NULL)` returned 42 and
+      now returns 0. A well formed number out of range still saturates to the
+      limit of the type, as before.
+    - A `-` sign is now a format error in the unsigned versions instead of
+      wrapping around: `str_to_u64("-5", 10, NULL)` returned 18446744073709551611
+      and now returns 0.
+    - Only bases from 2 to 36 are accepted. Base 0 no longer means "guess the
+      base from the prefix", it is an error.
+    - Code that ignores `error` only sees a difference with strings that were
+      invalid to begin with. Code that checks `error` will start seeing errors
+      that were silently accepted before.
+    - `str_to_r32()` and `str_to_r64()` are not affected by this change.
+
 ## v1.6.2 - July 02, 2026 (r6905)
 
 ### Added
