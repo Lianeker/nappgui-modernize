@@ -84,8 +84,8 @@ typedef enum _drawop_t
 
 /*
  * Alignment is split by axis. Horizontal and vertical values do not share
- * numbers on purpose: the previous single alignment type had LEFT == TOP == 1 and
- * RIGHT == BOTTOM == 3, so swapping the two arguments of a call such as
+ * numbers on purpose: the previous single alignment type had LEFT == TOP == 1
+ * and RIGHT == BOTTOM == 3, so swapping the two arguments of a call such as
  * draw_text_align(ctx, halign, valign) generated identical code and drew the
  * wrong thing with no diagnostic at all. With disjoint ranges a value of the
  * wrong axis reaches the 'default' branch of every switch and fires
