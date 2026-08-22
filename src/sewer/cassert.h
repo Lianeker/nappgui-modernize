@@ -11,6 +11,9 @@
 
 /* Code assertion */
 
+#ifndef __SEWER_CASSERT_H__
+#define __SEWER_CASSERT_H__
+
 #include "sewer.hxx"
 
 __EXTERN_C
@@ -71,3 +74,5 @@ __END_C
 #define cassert_unref(cond, v) unref(v)
 
 #endif
+
+#endif /* __SEWER_CASSERT_H__ */

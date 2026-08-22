@@ -10,6 +10,9 @@
 
 /* Operating System native custom view */
 
+#ifndef __OSGUI_OSVIEW_H__
+#define __OSGUI_OSVIEW_H__
+
 #include "osgui.hxx"
 
 __EXTERN_C
@@ -85,3 +88,5 @@ _osgui_api void osview_origin(const OSView *view, real32_t *x, real32_t *y);
 _osgui_api void osview_frame(OSView *view, const real32_t x, const real32_t y, const real32_t width, const real32_t height);
 
 __END_C
+
+#endif /* __OSGUI_OSVIEW_H__ */

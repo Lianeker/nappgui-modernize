@@ -11,6 +11,9 @@
 
 /* 2D rectangles */
 
+#ifndef __GEOM2D_R2D_H__
+#define __GEOM2D_R2D_H__
+
 #include "geom2d.hxx"
 
 __EXTERN_C
@@ -43,3 +46,5 @@ _geom2d_api extern const R2Df kR2D_ZEROf;
 _geom2d_api extern const R2Dd kR2D_ZEROd;
 
 __END_C
+
+#endif /* __GEOM2D_R2D_H__ */

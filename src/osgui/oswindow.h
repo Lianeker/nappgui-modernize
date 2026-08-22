@@ -10,6 +10,9 @@
 
 /* Operating System native window */
 
+#ifndef __OSGUI_OSWINDOW_H__
+#define __OSGUI_OSWINDOW_H__
+
 #include "osgui.hxx"
 
 __EXTERN_C
@@ -91,3 +94,5 @@ _osgui_api void oswindow_set_cursor(OSWindow *window, Cursor *cursor);
 _osgui_api void oswindow_property(OSWindow *window, const gui_prop_t prop, const void *value);
 
 __END_C
+
+#endif /* __OSGUI_OSWINDOW_H__ */

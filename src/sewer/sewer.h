@@ -11,6 +11,9 @@
 
 /* Sewer library */
 
+#ifndef __SEWER_SEWER_H__
+#define __SEWER_SEWER_H__
+
 #include "sewer.hxx"
 
 __EXTERN_C
@@ -30,3 +33,5 @@ _sewer_api uint32_t sewer_nappgui_build(void);
 _sewer_api const char_t *sewer_nappgui_version(const bool_t full);
 
 __END_C
+
+#endif /* __SEWER_SEWER_H__ */

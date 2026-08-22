@@ -11,6 +11,9 @@
 
 /* Oriented Box 2d */
 
+#ifndef __GEOM2D_OBB2D_H__
+#define __GEOM2D_OBB2D_H__
+
 #include "geom2d.hxx"
 
 __EXTERN_C
@@ -76,3 +79,5 @@ _geom2d_api Box2Df obb2d_boxf(const OBB2Df *obb);
 _geom2d_api Box2Dd obb2d_boxd(const OBB2Dd *obb);
 
 __END_C
+
+#endif /* __GEOM2D_OBB2D_H__ */

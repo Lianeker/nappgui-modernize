@@ -11,6 +11,9 @@
 
 /* Core library */
 
+#ifndef __CORE_CORE_H__
+#define __CORE_CORE_H__
+
 #include "core.hxx"
 
 __EXTERN_C
@@ -20,3 +23,5 @@ _core_api void core_start(void);
 _core_api void core_finish(void);
 
 __END_C
+
+#endif /* __CORE_CORE_H__ */

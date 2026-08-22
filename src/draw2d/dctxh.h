@@ -10,6 +10,9 @@
 
 /* Undocumented (hidden) API about drawing context */
 
+#ifndef __DRAW2D_DCTXH_H__
+#define __DRAW2D_DCTXH_H__
+
 #include "draw2d.hxx"
 
 __EXTERN_C
@@ -72,3 +75,5 @@ __END_C
 
 #define dctx_get_data(ctx, type) \
     cast(dctx_get_data_imp(ctx), type)
+
+#endif /* __DRAW2D_DCTXH_H__ */

@@ -11,6 +11,9 @@
 
 /* Processes */
 
+#ifndef __OSBS_BPROC_H__
+#define __OSBS_BPROC_H__
+
 #include "osbs.hxx"
 
 __EXTERN_C
@@ -40,3 +43,5 @@ _osbs_api bool_t bproc_write_close(Proc *proc);
 _osbs_api void bproc_exit(const uint32_t code);
 
 __END_C
+
+#endif /* __OSBS_BPROC_H__ */

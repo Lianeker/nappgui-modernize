@@ -11,6 +11,9 @@
 
 /* Windows */
 
+#ifndef __GUI_WINDOW_H__
+#define __GUI_WINDOW_H__
+
 #include "gui.hxx"
 
 __EXTERN_C
@@ -88,3 +91,5 @@ _gui_api void window_cursor(Window *window, const gui_cursor_t cursor, const Ima
 _gui_api void *window_imp(const Window *window);
 
 __END_C
+
+#endif /* __GUI_WINDOW_H__ */

@@ -11,6 +11,9 @@
 
 /* Label */
 
+#ifndef __GUI_LABEL_H__
+#define __GUI_LABEL_H__
+
 #include "gui.hxx"
 
 __EXTERN_C
@@ -48,3 +51,5 @@ _gui_api const char_t *label_get_text(const Label *label);
 _gui_api const Font *label_get_font(const Label *label);
 
 __END_C
+
+#endif /* __GUI_LABEL_H__ */

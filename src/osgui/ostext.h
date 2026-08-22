@@ -10,6 +10,9 @@
 
 /* Operating System native text view */
 
+#ifndef __OSGUI_OSTEXT_H__
+#define __OSGUI_OSTEXT_H__
+
 #include "osgui.hxx"
 
 __EXTERN_C
@@ -57,3 +60,5 @@ _osgui_api void ostext_origin(const OSText *view, real32_t *x, real32_t *y);
 _osgui_api void ostext_frame(OSText *view, const real32_t x, const real32_t y, const real32_t width, const real32_t height);
 
 __END_C
+
+#endif /* __OSGUI_OSTEXT_H__ */

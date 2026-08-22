@@ -11,6 +11,9 @@
 
 /* Trees */
 
+#ifndef __CORE_TREEST_H__
+#define __CORE_TREEST_H__
+
 #define treest_create(type) \
     treest_##type##_create()
 
@@ -160,3 +163,5 @@
 #define treest_end() \
     } \
     }
+
+#endif /* __CORE_TREEST_H__ */

@@ -10,6 +10,9 @@
 
 /* Text filters */
 
+#ifndef __CORE_TFILTER_H__
+#define __CORE_TFILTER_H__
+
 #include "core.hxx"
 
 __EXTERN_C
@@ -19,3 +22,5 @@ _core_api void tfilter_date(const char_t *src, char_t *dest, const uint32_t size
 _core_api Date tfilter_to_date(const char_t *text, const char_t *pattern);
 
 __END_C
+
+#endif /* __CORE_TFILTER_H__ */

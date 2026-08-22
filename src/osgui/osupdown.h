@@ -10,6 +10,9 @@
 
 /* Operating System native updown */
 
+#ifndef __OSGUI_OSUPDOWN_H__
+#define __OSGUI_OSUPDOWN_H__
+
 #include "osgui.hxx"
 
 __EXTERN_C
@@ -37,3 +40,5 @@ _osgui_api void osupdown_origin(const OSUpDown *updown, real32_t *x, real32_t *y
 _osgui_api void osupdown_frame(OSUpDown *updown, const real32_t x, const real32_t y, const real32_t width, const real32_t height);
 
 __END_C
+
+#endif /* __OSGUI_OSUPDOWN_H__ */

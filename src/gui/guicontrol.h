@@ -11,6 +11,9 @@
 
 /* Generic-virtual gui control */
 
+#ifndef __GUI_GUICONTROL_H__
+#define __GUI_GUICONTROL_H__
+
 #include "gui.hxx"
 
 __EXTERN_C
@@ -60,3 +63,5 @@ _gui_api Window *guicontrol_get_window(const GuiControl *control);
 __END_C
 
 #define guicontrol(control) cast(control, GuiControl)
+
+#endif /* __GUI_GUICONTROL_H__ */

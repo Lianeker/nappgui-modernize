@@ -11,6 +11,9 @@
 
 /* Fast memory allocator and auditor */
 
+#ifndef __CORE_HEAP_H__
+#define __CORE_HEAP_H__
+
 #include "core.hxx"
 
 __EXTERN_C
@@ -80,3 +83,5 @@ __END_C
 #define heap_delete_n(objs, n, type) \
     ((void)((objs) == dcast(objs, type)), \
      heap_free(dcast(objs, byte_t), ((uint32_t)sizeof(type) * (uint32_t)(n)), cast_const(#type HEAPARR, char_t)))
+
+#endif /* __CORE_HEAP_H__ */

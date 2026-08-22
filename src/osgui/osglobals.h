@@ -10,6 +10,9 @@
 
 /* Operating System globals */
 
+#ifndef __OSGUI_OSGLOBALS_H__
+#define __OSGUI_OSGLOBALS_H__
+
 #include "osgui.hxx"
 
 __EXTERN_C
@@ -38,3 +41,5 @@ _osgui_api void osglobals_OnIdle(void *nonused, Listener *listener);
 _osgui_api void osglobals_theme_changed(void);
 
 __END_C
+
+#endif /* __OSGUI_OSGLOBALS_H__ */

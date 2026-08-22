@@ -10,6 +10,9 @@
 
 /* Operating System native line */
 
+#ifndef __OSGUI_OSLINE_H__
+#define __OSGUI_OSLINE_H__
+
 #include "osgui.hxx"
 
 __EXTERN_C
@@ -35,3 +38,5 @@ _osgui_api void osline_origin(const OSLine *line, real32_t *x, real32_t *y);
 _osgui_api void osline_frame(OSLine *line, const real32_t x, const real32_t y, const real32_t width, const real32_t height);
 
 __END_C
+
+#endif /* __OSGUI_OSLINE_H__ */

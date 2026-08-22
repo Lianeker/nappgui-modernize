@@ -11,6 +11,9 @@
 
 /* Custom view */
 
+#ifndef __GUI_VIEW_H__
+#define __GUI_VIEW_H__
+
 #include "gui.hxx"
 
 __EXTERN_C
@@ -97,3 +100,5 @@ __END_C
 
 #define view_get_data(view, type) \
     cast(view_get_data_imp(view), type)
+
+#endif /* __GUI_VIEW_H__ */

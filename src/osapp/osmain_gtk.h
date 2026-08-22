@@ -10,6 +10,9 @@
 
 /* Cross-platform main */
 
+#ifndef __OSAPP_OSMAIN_GTK_H__
+#define __OSAPP_OSMAIN_GTK_H__
+
 #define osmain(func_create, func_destroy, options, type) \
     int main(int argc, char *argv[]) \
     { \
@@ -38,3 +41,5 @@
                 (char_t *)options); \
         return 0; \
     }
+
+#endif /* __OSAPP_OSMAIN_GTK_H__ */

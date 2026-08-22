@@ -11,6 +11,9 @@
 
 /* Base64 encoding */
 
+#ifndef __ENCODE_BASE64_H__
+#define __ENCODE_BASE64_H__
+
 #include "encode.hxx"
 
 __EXTERN_C
@@ -38,3 +41,5 @@ _encode_api Buffer *b64_decode_from_str(const String *base64);
 _encode_api Buffer *b64_decode_from_data(const byte_t *data, const uint32_t size);
 
 __END_C
+
+#endif /* __ENCODE_BASE64_H__ */

@@ -11,6 +11,9 @@
 
 /* Color */
 
+#ifndef __DRAW2D_COLOR_H__
+#define __DRAW2D_COLOR_H__
+
 #include "draw2d.hxx"
 
 __EXTERN_C
@@ -74,3 +77,5 @@ _draw2d_api extern const color_t kCOLOR_CYAN;
 _draw2d_api extern const color_t kCOLOR_MAGENTA;
 
 __END_C
+
+#endif /* __DRAW2D_COLOR_H__ */

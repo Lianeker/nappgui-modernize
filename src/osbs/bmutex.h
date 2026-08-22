@@ -11,6 +11,9 @@
 
 /* Basic synchronization services */
 
+#ifndef __OSBS_BMUTEX_H__
+#define __OSBS_BMUTEX_H__
+
 #include "osbs.hxx"
 
 __EXTERN_C
@@ -24,3 +27,5 @@ _osbs_api void bmutex_lock(Mutex *mutex);
 _osbs_api void bmutex_unlock(Mutex *mutex);
 
 __END_C
+
+#endif /* __OSBS_BMUTEX_H__ */

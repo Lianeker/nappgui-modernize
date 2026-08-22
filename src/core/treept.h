@@ -11,6 +11,9 @@
 
 /* Trees (pointer) */
 
+#ifndef __CORE_TREEPT_H__
+#define __CORE_TREEPT_H__
+
 #define treept_create(type) \
     treept_##type##_create()
 
@@ -160,3 +163,5 @@
 #define treept_end() \
     } \
     }
+
+#endif /* __CORE_TREEPT_H__ */

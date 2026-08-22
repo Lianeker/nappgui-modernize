@@ -10,7 +10,14 @@
 
 /* N-Ary tree structure */
 
+/* El include va deliberadamente FUERA del guard: core.hxx incluye este
+   fichero y despues expande DeclSt/DeclPt, que llaman a estas funciones.
+   Si la unidad de traduccion entra por aqui y el guard bloquease esa
+   re-inclusion, core.hxx veria declaraciones implicitas. Ver NAP-006. */
 #include "core.hxx"
+
+#ifndef __CORE_NTREE_H__
+#define __CORE_NTREE_H__
 
 __EXTERN_C
 
@@ -87,3 +94,5 @@ _core_api void ntree_node_delete(NNode *node, const uint32_t pos, FPtr_remove fu
 _core_api void ntree_node_delete_ptr(NNode *node, const uint32_t pos, FPtr_destroy func_destroy);
 
 __END_C
+
+#endif /* __CORE_NTREE_H__ */

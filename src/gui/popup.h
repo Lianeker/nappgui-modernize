@@ -11,6 +11,9 @@
 
 /* Pop-up button */
 
+#ifndef __GUI_POPUP_H__
+#define __GUI_POPUP_H__
+
 #include "gui.hxx"
 
 __EXTERN_C
@@ -44,3 +47,5 @@ _gui_api const char_t *popup_get_text(const PopUp *popup, const uint32_t index);
 _gui_api const Image *popup_get_image(const PopUp *popup, const uint32_t index);
 
 __END_C
+
+#endif /* __GUI_POPUP_H__ */

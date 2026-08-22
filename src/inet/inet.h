@@ -11,6 +11,9 @@
 
 /* inet library */
 
+#ifndef __INET_INET_H__
+#define __INET_INET_H__
+
 #include "inet.hxx"
 
 __EXTERN_C
@@ -20,3 +23,5 @@ _inet_api void inet_start(void);
 _inet_api void inet_finish(void);
 
 __END_C
+
+#endif /* __INET_INET_H__ */

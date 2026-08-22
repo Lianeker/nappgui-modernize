@@ -11,6 +11,9 @@
 
 /* Box 2d */
 
+#ifndef __GEOM2D_BOX2D_H__
+#define __GEOM2D_BOX2D_H__
+
 #include "geom2d.hxx"
 
 __EXTERN_C
@@ -59,3 +62,5 @@ _geom2d_api extern const Box2Df kBOX2D_NULLf;
 _geom2d_api extern const Box2Dd kBOX2D_NULLd;
 
 __END_C
+
+#endif /* __GEOM2D_BOX2D_H__ */

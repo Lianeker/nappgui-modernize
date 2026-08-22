@@ -11,6 +11,9 @@
 
 /* OpenGL Context */
 
+#ifndef __OGL3D_OGL3D_H__
+#define __OGL3D_OGL3D_H__
+
 #include "ogl3d.hxx"
 
 __EXTERN_C
@@ -32,3 +35,5 @@ _ogl3d_api void ogl3d_set_size(OGLCtx *ogl, const uint32_t width, const uint32_t
 _ogl3d_api const char_t *ogl3d_err_str(const oglerr_t err);
 
 __END_C
+
+#endif /* __OGL3D_OGL3D_H__ */

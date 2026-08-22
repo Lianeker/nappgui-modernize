@@ -10,7 +10,14 @@
 
 /* Array data structure */
 
+/* El include va deliberadamente FUERA del guard: core.hxx incluye este
+   fichero y despues expande DeclSt/DeclPt, que llaman a estas funciones.
+   Si la unidad de traduccion entra por aqui y el guard bloquease esa
+   re-inclusion, core.hxx veria declaraciones implicitas. Ver NAP-006. */
 #include "core.hxx"
+
+#ifndef __CORE_ARRAY_H__
+#define __CORE_ARRAY_H__
 
 __EXTERN_C
 
@@ -95,3 +102,5 @@ _core_api byte_t *array_bsearch(const Array *array, FPtr_compare func_compare, c
 _core_api byte_t *array_bsearch_ptr(const Array *array, FPtr_compare func_compare, const void *key, uint32_t *pos);
 
 __END_C
+
+#endif /* __CORE_ARRAY_H__ */

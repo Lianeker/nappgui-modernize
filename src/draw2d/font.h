@@ -11,6 +11,9 @@
 
 /* Fonts */
 
+#ifndef __DRAW2D_FONT_H__
+#define __DRAW2D_FONT_H__
+
 #include "draw2d.hxx"
 
 __EXTERN_C
@@ -72,3 +75,5 @@ _draw2d_api ArrPt(String) *font_installed_monospace(void);
 _draw2d_api const void *font_native(const Font *font);
 
 __END_C
+
+#endif /* __DRAW2D_FONT_H__ */

@@ -11,6 +11,9 @@
 
 /* Layouts */
 
+#ifndef __GUI_LAYOUT_H__
+#define __GUI_LAYOUT_H__
+
 #include "gui.hxx"
 
 __EXTERN_C
@@ -193,3 +196,5 @@ __END_C
             cast_const(#mtype, char_t), \
             (uint16_t)STRUCT_MEMBER_OFFSET(type, mname), \
             (uint16_t)STRUCT_MEMBER_SIZE(type, mname)))
+
+#endif /* __GUI_LAYOUT_H__ */

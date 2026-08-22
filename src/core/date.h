@@ -11,6 +11,9 @@
 
 /* Dates */
 
+#ifndef __CORE_DATE_H__
+#define __CORE_DATE_H__
+
 #include "core.hxx"
 
 __EXTERN_C
@@ -46,3 +49,5 @@ _core_api String *date_format(const Date *date, const char_t *format);
 _core_api extern Date kDATE_NULL;
 
 __END_C
+
+#endif /* __CORE_DATE_H__ */

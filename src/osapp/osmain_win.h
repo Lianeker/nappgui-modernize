@@ -10,6 +10,9 @@
 
 /* Cross-platform main */
 
+#ifndef __OSAPP_OSMAIN_WIN_H__
+#define __OSAPP_OSMAIN_WIN_H__
+
 #include <sewer/nowarn.hxx>
 #include <Windows.h>
 #include <sewer/warn.hxx>
@@ -76,3 +79,5 @@
                 options); \
         return 0; \
     }
+
+#endif /* __OSAPP_OSMAIN_WIN_H__ */

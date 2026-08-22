@@ -11,6 +11,9 @@
 
 /* Keyboard buffer */
 
+#ifndef __CORE_KEYBUF_H__
+#define __CORE_KEYBUF_H__
+
 #include "core.hxx"
 
 __EXTERN_C
@@ -32,3 +35,5 @@ _core_api const char_t *keybuf_str(const vkey_t key);
 _core_api void keybuf_dump(const KeyBuf *buffer);
 
 __END_C
+
+#endif /* __CORE_KEYBUF_H__ */

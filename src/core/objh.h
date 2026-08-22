@@ -10,6 +10,9 @@
 
 /* Undocumented (hidden) API about generic object utilities */
 
+#ifndef __CORE_OBJH_H__
+#define __CORE_OBJH_H__
+
 #include "core.hxx"
 
 __EXTERN_C
@@ -70,3 +73,5 @@ __END_C
     ((void)(cast(object, type) == (object)), \
      FUNC_CHECK_EVENT_HANDLER(func_event_handler, type), \
      obj_listener_imp(cast(object, void), (FPtr_event_handler)(func_event_handler)))
+
+#endif /* __CORE_OBJH_H__ */

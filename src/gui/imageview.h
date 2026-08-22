@@ -11,6 +11,9 @@
 
 /* Image view */
 
+#ifndef __GUI_IMAGEVIEW_H__
+#define __GUI_IMAGEVIEW_H__
+
 #include "gui.hxx"
 
 __EXTERN_C
@@ -30,3 +33,5 @@ _gui_api void imageview_OnOverDraw(ImageView *view, Listener *listener);
 _gui_api const Image *imageview_get_image(const ImageView *view);
 
 __END_C
+
+#endif /* __GUI_IMAGEVIEW_H__ */

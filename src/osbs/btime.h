@@ -11,6 +11,9 @@
 
 /* Basic time services */
 
+#ifndef __OSBS_BTIME_H__
+#define __OSBS_BTIME_H__
+
 #include "osbs.hxx"
 
 __EXTERN_C
@@ -24,3 +27,5 @@ _osbs_api uint64_t btime_to_micro(const Date *date);
 _osbs_api void btime_to_date(const uint64_t micro, Date *date);
 
 __END_C
+
+#endif /* __OSBS_BTIME_H__ */

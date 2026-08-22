@@ -11,6 +11,9 @@
 
 /* Text view */
 
+#ifndef __GUI_TEXTVIEW_H__
+#define __GUI_TEXTVIEW_H__
+
 #include "gui.hxx"
 
 __EXTERN_C
@@ -84,3 +87,5 @@ _gui_api void textview_paste(TextView *view);
 _gui_api void textview_wrap(TextView *view, const bool_t wrap);
 
 __END_C
+
+#endif /* __GUI_TEXTVIEW_H__ */

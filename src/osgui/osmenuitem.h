@@ -10,6 +10,9 @@
 
 /* Operating System native menu item */
 
+#ifndef __OSGUI_OSMENUITEM_H__
+#define __OSGUI_OSMENUITEM_H__
+
 #include "osgui.hxx"
 
 __EXTERN_C
@@ -37,3 +40,5 @@ _osgui_api void osmenuitem_submenu(OSMenuItem *item, OSMenu *menu);
 _osgui_api void osmenuitem_unset_submenu(OSMenuItem *item, OSMenu *menu);
 
 __END_C
+
+#endif /* __OSGUI_OSMENUITEM_H__ */

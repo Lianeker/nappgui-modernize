@@ -11,6 +11,9 @@
 
 /* URL parser */
 
+#ifndef __ENCODE_URL_H__
+#define __ENCODE_URL_H__
+
 #include "encode.hxx"
 
 __EXTERN_C
@@ -40,3 +43,5 @@ _encode_api String *url_resource(const Url *url);
 _encode_api uint16_t url_port(const Url *url);
 
 __END_C
+
+#endif /* __ENCODE_URL_H__ */

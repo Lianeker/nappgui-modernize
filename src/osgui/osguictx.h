@@ -10,6 +10,9 @@
 
 /* Native Gui Context */
 
+#ifndef __OSGUI_OSGUICTX_H__
+#define __OSGUI_OSGUICTX_H__
+
 #include "osgui.hxx"
 
 __EXTERN_C
@@ -17,3 +20,5 @@ __EXTERN_C
 _osgui_api GuiCtx *osguictx(void);
 
 __END_C
+
+#endif /* __OSGUI_OSGUICTX_H__ */

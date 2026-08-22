@@ -10,6 +10,9 @@
 
 /* Operating System native slider */
 
+#ifndef __OSGUI_OSSLIDER_H__
+#define __OSGUI_OSSLIDER_H__
+
 #include "osgui.hxx"
 
 __EXTERN_C
@@ -45,3 +48,5 @@ _osgui_api void osslider_origin(const OSSlider *slider, real32_t *x, real32_t *y
 _osgui_api void osslider_frame(OSSlider *slider, const real32_t x, const real32_t y, const real32_t width, const real32_t height);
 
 __END_C
+
+#endif /* __OSGUI_OSSLIDER_H__ */

@@ -10,6 +10,9 @@
 
 /* Core library all-in-one headers include */
 
+#ifndef __CORE_COREALL_H__
+#define __CORE_COREALL_H__
+
 #include "core.h"
 #include "arrpt.h"
 #include "arrst.h"
@@ -32,3 +35,5 @@
 #include "treest.h"
 #include "tfilter.h"
 #include <osbs/osbsall.h>
+
+#endif /* __CORE_COREALL_H__ */

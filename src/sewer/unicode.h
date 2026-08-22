@@ -11,6 +11,9 @@
 
 /* Unicode */
 
+#ifndef __SEWER_UNICODE_H__
+#define __SEWER_UNICODE_H__
+
 #include "sewer.hxx"
 
 __EXTERN_C
@@ -74,3 +77,5 @@ _sewer_api uint32_t unicode_tolower(const uint32_t codepoint);
 _sewer_api uint32_t unicode_toupper(const uint32_t codepoint);
 
 __END_C
+
+#endif /* __SEWER_UNICODE_H__ */

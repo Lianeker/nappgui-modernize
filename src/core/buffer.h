@@ -11,6 +11,9 @@
 
 /* Fixed size memory buffers */
 
+#ifndef __CORE_BUFFER_H__
+#define __CORE_BUFFER_H__
+
 #include "core.hxx"
 
 __EXTERN_C
@@ -32,3 +35,5 @@ _core_api const byte_t *buffer_const(const Buffer *buffer);
 _core_api void buffer_write(Stream *stream, const Buffer *buffer);
 
 __END_C
+
+#endif /* __CORE_BUFFER_H__ */

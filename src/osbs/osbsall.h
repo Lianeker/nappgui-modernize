@@ -10,6 +10,9 @@
 
 /* Osbs library all-in-one headers include */
 
+#ifndef __OSBS_OSBSALL_H__
+#define __OSBS_OSBSALL_H__
+
 #include "osbs.h"
 #include "bfile.h"
 #include "bmutex.h"
@@ -20,3 +23,5 @@
 #include "dlib.h"
 #include "log.h"
 #include <sewer/sewerall.h>
+
+#endif /* __OSBS_OSBSALL_H__ */

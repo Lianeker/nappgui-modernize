@@ -11,6 +11,9 @@
 
 /* Listbox */
 
+#ifndef __GUI_LISTBOX_H__
+#define __GUI_LISTBOX_H__
+
 #include "gui.hxx"
 
 __EXTERN_C
@@ -58,3 +61,5 @@ _gui_api bool_t listbox_selected(const ListBox *listbox, uint32_t index);
 _gui_api bool_t listbox_checked(const ListBox *listbox, uint32_t index);
 
 __END_C
+
+#endif /* __GUI_LISTBOX_H__ */

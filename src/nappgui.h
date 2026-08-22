@@ -10,5 +10,10 @@
 
 /* All-In-One NAppGUI headers */
 
+#ifndef __NAPPGUI_H__
+#define __NAPPGUI_H__
+
 #include <osapp/osapp.h>
 #include <gui/guiall.h>
+
+#endif /* __NAPPGUI_H__ */

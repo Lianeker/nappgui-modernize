@@ -10,6 +10,9 @@
 
 /* Operating System native progress indicator */
 
+#ifndef __OSGUI_OSPROGRESS_H__
+#define __OSGUI_OSPROGRESS_H__
+
 #include "osgui.hxx"
 
 __EXTERN_C
@@ -37,3 +40,5 @@ _osgui_api void osprogress_origin(const OSProgress *progress, real32_t *x, real3
 _osgui_api void osprogress_frame(OSProgress *progress, const real32_t x, const real32_t y, const real32_t width, const real32_t height);
 
 __END_C
+
+#endif /* __OSGUI_OSPROGRESS_H__ */

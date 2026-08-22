@@ -11,6 +11,9 @@
 
 /* Menu Item */
 
+#ifndef __GUI_MENUITEM_H__
+#define __GUI_MENUITEM_H__
+
 #include "gui.hxx"
 
 __EXTERN_C
@@ -50,3 +53,5 @@ _gui_api gui_state_t menuitem_get_state(const MenuItem *item);
 _gui_api Menu *menuitem_get_submenu(const MenuItem *item);
 
 __END_C
+
+#endif /* __GUI_MENUITEM_H__ */

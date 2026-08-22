@@ -10,6 +10,9 @@
 
 /* Cross-platform main */
 
+#ifndef __OSAPP_OSMAIN_H__
+#define __OSAPP_OSMAIN_H__
+
 #include "osmain.hxx"
 
 __EXTERN_C
@@ -27,3 +30,5 @@ __END_C
 #else
 #error Unknown platform
 #endif
+
+#endif /* __OSAPP_OSMAIN_H__ */

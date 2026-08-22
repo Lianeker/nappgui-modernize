@@ -10,6 +10,9 @@
 
 /* Operating system native gui */
 
+#ifndef __OSGUI_OSGUI_H__
+#define __OSGUI_OSGUI_H__
+
 #include "osgui.hxx"
 
 __EXTERN_C
@@ -35,3 +38,5 @@ _osgui_api void osgui_terminate(void);
 _osgui_api void osgui_set_app(void *app, void *icon);
 
 __END_C
+
+#endif /* __OSGUI_OSGUI_H__ */

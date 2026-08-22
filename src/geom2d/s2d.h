@@ -11,6 +11,9 @@
 
 /* Size 2d */
 
+#ifndef __GEOM2D_S2D_H__
+#define __GEOM2D_S2D_H__
+
 #include "geom2d.hxx"
 
 __EXTERN_C
@@ -25,3 +28,5 @@ _geom2d_api extern const S2Df kS2D_ZEROf;
 _geom2d_api extern const S2Dd kS2D_ZEROd;
 
 __END_C
+
+#endif /* __GEOM2D_S2D_H__ */

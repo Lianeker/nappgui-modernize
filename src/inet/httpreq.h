@@ -11,6 +11,9 @@
 
 /* HTTP request */
 
+#ifndef __INET_HTTPREQ_H__
+#define __INET_HTTPREQ_H__
+
 #include "inet.hxx"
 
 __EXTERN_C
@@ -72,3 +75,5 @@ _inet_api Stream *http_dget(const char_t *url, uint32_t *result, ierror_t *error
 _inet_api bool_t http_exists(const char_t *url);
 
 __END_C
+
+#endif /* __INET_HTTPREQ_H__ */

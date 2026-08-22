@@ -11,6 +11,9 @@
 
 /* Arrays */
 
+#ifndef __CORE_ARRST_H__
+#define __CORE_ARRST_H__
+
 #define arrst_create(type) \
     arrst_##type##_create((uint16_t)sizeof(type))
 
@@ -171,3 +174,5 @@
 #define arrst_end() \
     } \
     }
+
+#endif /* __CORE_ARRST_H__ */

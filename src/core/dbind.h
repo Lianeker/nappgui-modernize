@@ -11,6 +11,9 @@
 
 /* Data binding */
 
+#ifndef __CORE_DBIND_H__
+#define __CORE_DBIND_H__
+
 #include "core.hxx"
 
 __EXTERN_C
@@ -204,3 +207,5 @@ __END_C
             cast_const(#type, char_t), \
             cast_const(#mname, char_t), \
             suffix))
+
+#endif /* __CORE_DBIND_H__ */

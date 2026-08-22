@@ -11,6 +11,9 @@
 
 /* Manages an application log */
 
+#ifndef __OSBS_LOG_H__
+#define __OSBS_LOG_H__
+
 #include "osbs.hxx"
 
 __EXTERN_C
@@ -24,3 +27,5 @@ _osbs_api void log_file(const char_t *pathname);
 _osbs_api const char_t *log_get_file(void);
 
 __END_C
+
+#endif /* __OSBS_LOG_H__ */

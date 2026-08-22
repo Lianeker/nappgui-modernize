@@ -10,6 +10,9 @@
 
 /* Operating System native combo box */
 
+#ifndef __OSGUI_OSCOMBO_H__
+#define __OSGUI_OSCOMBO_H__
+
 #include "osgui.hxx"
 
 __EXTERN_C
@@ -73,3 +76,5 @@ _osgui_api void oscombo_origin(const OSCombo *combo, real32_t *x, real32_t *y);
 _osgui_api void oscombo_frame(OSCombo *combo, const real32_t x, const real32_t y, const real32_t width, const real32_t height);
 
 __END_C
+
+#endif /* __OSGUI_OSCOMBO_H__ */

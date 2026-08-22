@@ -10,6 +10,9 @@
 
 /* Undocumented (hidden) API about Layouts */
 
+#ifndef __GUI_LAYOUTH_H__
+#define __GUI_LAYOUTH_H__
+
 #include "gui.hxx"
 
 __EXTERN_C
@@ -57,3 +60,5 @@ _gui_api void layout_remove_cell(Layout *layout, const uint32_t col, const uint3
 _gui_api void layout_name(Layout *layout, const char_t *name);
 
 __END_C
+
+#endif /* __GUI_LAYOUTH_H__ */

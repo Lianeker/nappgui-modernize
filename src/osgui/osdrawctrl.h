@@ -10,6 +10,9 @@
 
 /* Operating System Custom Control Drawing */
 
+#ifndef __OSGUI_OSDRAWCTRL_H__
+#define __OSGUI_OSDRAWCTRL_H__
+
 #include "osgui.hxx"
 
 __EXTERN_C
@@ -45,3 +48,5 @@ _osgui_api void osdrawctrl_checkbox(DCtx *ctx, const int32_t x, const int32_t y,
 _osgui_api void osdrawctrl_uncheckbox(DCtx *ctx, const int32_t x, const int32_t y, const uint32_t width, const uint32_t height, const ctrl_state_t state);
 
 __END_C
+
+#endif /* __OSGUI_OSDRAWCTRL_H__ */

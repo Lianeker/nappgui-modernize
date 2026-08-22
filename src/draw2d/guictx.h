@@ -10,6 +10,9 @@
 
 /* Gui rendering context */
 
+#ifndef __DRAW2D_GUICTX_H__
+#define __DRAW2D_GUICTX_H__
+
 #include "guictx.hxx"
 
 __EXTERN_C
@@ -1584,3 +1587,5 @@ _draw2d_api void guictx_append_drawctrl_manager_imp(
             (FPtr_gctx_draw_rect)func_drawctrl_uncheckbox))
 
 __END_C
+
+#endif /* __DRAW2D_GUICTX_H__ */

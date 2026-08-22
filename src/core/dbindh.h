@@ -8,6 +8,9 @@
  *
  */
 
+#ifndef __CORE_DBINDH_H__
+#define __CORE_DBINDH_H__
+
 /*
  * Undocumented (hidden) API to use DBind database
  * obj: Memory address that represent an object (struct instance).
@@ -251,3 +254,5 @@ __END_C
     ( \
         dbind_defaults_unreg_imp( \
             cast_const(#type, char_t)))
+
+#endif /* __CORE_DBINDH_H__ */
