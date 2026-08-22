@@ -80,8 +80,42 @@
       the 0 and now leaves the field at its default value.
     - Affects a bound `Edit`, which reverts to the stored value instead of
       writing a 0. Its text filter only lets a number through, but it also lets
-      through the empty field and a `,` as decimal separator, and neither is a
-      number for `str_to_r64()`.
+      through the empty field, and the empty field is not a number for
+      `str_to_r64()`. The `,` it also let through is translated now, see the
+      entry below.
+
+- The text filter of a number bound to an `Edit` writes `.` in the field when
+  the user types `,` as decimal separator, instead of leaving the `,` in the
+  text. It has always accepted both keys, because `,` is the one a Spanish or a
+  French keyboard offers, but the conversion that comes next
+  (`dbind_st_set_value_str()` -> `str_to_r64()`) only understands `.`, whatever
+  the locale of the process. The two ends of the same path did not agree: `"1,5"`
+  used to store 1 in silence and, since the change above, is rejected and leaves
+  the control out of sync with the value. It stores 1.5 now.
+    - The translation only happens where a decimal separator is accepted, so a
+      member with no decimals (an integer, or a real with a precision of 1) still
+      drops the `,` like any other character that is not a digit.
+    - It keeps the length of the text, so the caret of the `Edit` does not move,
+      and the output of the filter is still a valid input of the filter.
+    - `str_to_r32()` and `str_to_r64()` are **not** affected: the decimal
+      separator of the conversions is still `.` and nothing else. What changed is
+      the filter that feeds them.
+
+- `tfilter_to_date()` returns `kDATE_NULL` when any of the three fields of the
+  text is not a number, instead of a date with a 0 in that field. The filter of
+  a date works in overwrite mode, so the user can leave a letter on top of a
+  digit and the text still has the length of the pattern: `"1a/02/2020"` with the
+  pattern `"dd/mm/yyyy"` used to return day 0 of February 2020, a date that does
+  not exist, and before the change of `str_to_u8()` above it returned the 1st of
+  February, a date the user never typed. The function already answered
+  `kDATE_NULL` when the text and the pattern had different lengths, so this is
+  the same answer for the same kind of input, and the signature does not change.
+    - A pattern without one of the three fields (`"dd/mm"`) is `kDATE_NULL` too.
+      It used to invent the year 2000.
+    - The contract is documented in `core/tfilter.h` now, including what the
+      function does *not* do: a text whose three fields are numbers is not
+      checked against the calendar, so `"31/02/2020"` is still read as day 31 of
+      month 2 and has to be checked with `date_is_valid()`.
 
 ### Migration
 
@@ -148,6 +182,30 @@
   42. It is 0 with an error now, like on every other compiler. Cut the string at
   the first character that is not part of the number if the old reading is what
   you want.
+
+- **A bound `Edit` that reads its own text.** The text of the field now holds a
+  `.` where the user typed a `,`, so an `OnFilter` or an `OnChange` handler that
+  looked for the `,` will not find it. Nothing else changes: the field never held
+  a text that `str_to_r64()` accepted with a `,` in it.
+
+- **`tfilter_to_date()` with a text that is not a date.** It returns
+  `kDATE_NULL` now instead of a made up date. The result was never usable, but
+  the caller has to ask for it explicitly:
+
+    ```c
+    /* Before: "1a/02/2020" gave day 0 of February 2020 */
+    Date date = tfilter_to_date(text, "dd/mm/yyyy");
+
+    /* After: check that the text was a date at all */
+    Date date = tfilter_to_date(text, "dd/mm/yyyy");
+    if (date_is_null(&date) == TRUE)
+        /* the text is not a date, ask the user again */;
+    else if (date_is_valid(&date) == FALSE)
+        /* the three fields are numbers, but the day does not exist */;
+    ```
+
+  A pattern that does not carry the three fields never gave a date either: it
+  used to fill the missing year with 2000. Add the year to the pattern.
 
 ## v1.6.2 - July 02, 2026 (r6905)
 

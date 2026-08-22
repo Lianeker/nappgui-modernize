@@ -27,6 +27,20 @@ typedef enum _state_t
 
 /*---------------------------------------------------------------------------*/
 
+/*
+ * Writes in 'dest' the number that 'src' holds, dropping everything that does
+ * not fit the grammar. It accepts ',' as decimal separator, because that is the
+ * key a Spanish or French user presses, but writes '.' in 'dest': what comes
+ * next is 'str_to_r64', whose separator is always '.' whatever the locale
+ * (NAP-023). Leaving the ',' through made the filter and the conversion
+ * disagree, so "1,5" first stored 1 in silence and, after NAP-030, was rejected
+ * with the control left out of sync. NAP-031.
+ *
+ * The translation keeps the length in bytes and in characters, so the caret of
+ * the 'Edit' does not move, and the output of the filter is again a valid input
+ * of the filter. On an integer member ('num_decimals' == 0) there is no
+ * separator at all and the ',' keeps being dropped like any other character.
+ */
 void _tfilter_number(const char_t *src, char_t *dest, const uint32_t size, const uint32_t num_decimals, const bool_t allow_negatives)
 {
     uint32_t csize, i = 0;
@@ -34,9 +48,11 @@ void _tfilter_number(const char_t *src, char_t *dest, const uint32_t size, const
     uint32_t decimals = 0;
     gui_state_t state = stSTART;
     bool_t valid = FALSE;
+    uint32_t wcodepoint = 0;
     while (codepoint != 0)
     {
         valid = FALSE;
+        wcodepoint = codepoint;
         switch (state)
         {
         case stSTART:
@@ -54,6 +70,7 @@ void _tfilter_number(const char_t *src, char_t *dest, const uint32_t size, const
             {
                 if (num_decimals > 0)
                 {
+                    wcodepoint = '.';
                     state = stREAL;
                     valid = TRUE;
                 }
@@ -73,6 +90,7 @@ void _tfilter_number(const char_t *src, char_t *dest, const uint32_t size, const
             {
                 if (codepoint == '.' || codepoint == ',')
                 {
+                    wcodepoint = '.';
                     state = stREAL;
                     valid = TRUE;
                 }
@@ -89,6 +107,7 @@ void _tfilter_number(const char_t *src, char_t *dest, const uint32_t size, const
             {
                 if (num_decimals > 0)
                 {
+                    wcodepoint = '.';
                     state = stREAL;
                     valid = TRUE;
                 }
@@ -115,7 +134,7 @@ void _tfilter_number(const char_t *src, char_t *dest, const uint32_t size, const
         {
             if (i + csize < size - 1)
             {
-                dest += unicode_to_char(codepoint, dest, ekUTF8);
+                dest += unicode_to_char(wcodepoint, dest, ekUTF8);
                 i += csize;
             }
         }
@@ -201,6 +220,9 @@ Date tfilter_to_date(const char_t *text, const char_t *pattern)
         char_t month[3];
         char_t year[5];
         uint32_t id = 0, im = 0, iy = 0, i = 0;
+        uint8_t vday = 0, vmonth = 0;
+        int16_t vyear = 0;
+        bool_t err = FALSE, ferr = FALSE;
         while (i < n)
         {
             if (pattern[i] == 'd' || pattern[i] == 'D')
@@ -235,9 +257,29 @@ Date tfilter_to_date(const char_t *text, const char_t *pattern)
         month[im] = '\0';
         year[iy] = '\0';
 
-        date.mday = str_to_u8(day, 10, NULL);
-        date.month = str_to_u8(month, 10, NULL);
-        date.year = str_to_i16(year, 10, NULL);
+        /* Every field has to be a number. The filter works in overwrite mode,
+           so the user can leave a letter on top of a digit and the text still
+           has the length of the pattern: "1a/02/2020" is not a date. The
+           conversion error was discarded, so the field became 0 and the caller
+           got 00/02/2020 without a way to notice. NAP-029. */
+        vday = str_to_u8(day, 10, &ferr);
+        if (ferr == TRUE)
+            err = TRUE;
+
+        vmonth = str_to_u8(month, 10, &ferr);
+        if (ferr == TRUE)
+            err = TRUE;
+
+        vyear = str_to_i16(year, 10, &ferr);
+        if (ferr == TRUE)
+            err = TRUE;
+
+        if (err == TRUE)
+            return kDATE_NULL;
+
+        date.mday = vday;
+        date.month = vmonth;
+        date.year = vyear;
 
         /* Two digits year */
         /* https://www.ibm.com/docs/en/i/7.2?topic=mcdtdi-conversion-2-digit-years-4-digit-years-centuries */

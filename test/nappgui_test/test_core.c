@@ -15,7 +15,10 @@
 #include <core/stream.h>
 #include <core/buffer.h>
 #include <core/heap.h>
+#include <core/date.h>
+#include <core/dbind.h>
 #include <core/dbindh.h>
+#include <core/tfilter.h>
 #include <sewer/bmem.h>
 
 /*---------------------------------------------------------------------------*/
@@ -508,8 +511,10 @@ static void i_dbind_str_real(void)
     ntest_true(dbind_set_value_str(bind, cast(&v, byte_t), "") == ekBINDSET_NOT_ALLOWED, "dbind rechaza la cadena vacia en un real");
     ntest_equ_r32(v, -1, "dbind no toca el destino al rechazar la cadena vacia");
 
-    /* La coma decimal que deja pasar el filtro del Edit no es un numero: antes
-       escribia la parte entera en silencio. Ver NAP-031. */
+    /* La conversion sigue sin entender la coma decimal: el separador es siempre
+       el punto, no dependa de la localizacion (NAP-023). Quien traduce la coma
+       del teclado europeo es el filtro del Edit, no esta funcion: ver
+       'i_dbind_str_filter' mas abajo. NAP-031. */
     v = -1;
     ntest_true(dbind_set_value_str(bind, cast(&v, byte_t), "1,5") == ekBINDSET_NOT_ALLOWED, "dbind rechaza \"1,5\" en un real");
     ntest_equ_r32(v, -1, "dbind no toca el destino al rechazar \"1,5\"");
@@ -525,6 +530,121 @@ static void i_dbind_str_real(void)
         ntest_true(dbind_set_value_str(bind64, cast(&v64, byte_t), "hola") == ekBINDSET_NOT_ALLOWED, "dbind rechaza \"hola\" en un real de 64 bits");
         ntest_true(v64 == -1, "dbind no toca el destino de 64 bits al rechazar \"hola\"");
     }
+}
+
+/*---------------------------------------------------------------------------*/
+
+typedef struct _numbers_t Numbers;
+
+struct _numbers_t
+{
+    real32_t real_val;
+    int32_t int_val;
+};
+
+/*---------------------------------------------------------------------------*/
+
+/* 'dbind_st_str_filter' es el filtro del Edit enlazado (gui/editimp.c ->
+   gui/layout.c). Dejaba pasar la coma decimal tal cual, y la conversion que
+   viene detras solo entiende el punto: los dos extremos de la misma ruta no
+   estaban de acuerdo. Ahora el filtro la traduce. Ver NAP-031. */
+static void i_dbind_str_filter(void)
+{
+    const DBind *stbind = NULL;
+    uint32_t rid = 0, iid = 0;
+    Numbers obj;
+    char_t dest[64];
+
+    dbind(Numbers, real32_t, real_val);
+    dbind(Numbers, int32_t, int_val);
+
+    stbind = dbind_from_typename("Numbers", NULL);
+    if (ntest_true(stbind != NULL, "el struct Numbers esta registrado en dbind") == FALSE)
+        return;
+
+    rid = dbind_st_member_id(stbind, "real_val");
+    iid = dbind_st_member_id(stbind, "int_val");
+
+    /* La coma del teclado europeo llega al Edit como separador decimal y sale
+       del filtro como punto, que es lo que entiende 'str_to_r64'. */
+    ntest_true(dbind_st_str_filter(stbind, rid, "1,5", dest, sizeof(dest)), "el filtro se aplica en un campo real");
+    ntest_equ_str(dest, "1.5", "el filtro traduce la coma decimal a punto");
+
+    ntest_true(dbind_st_str_filter(stbind, rid, "0,25", dest, sizeof(dest)), "el filtro se aplica con parte entera cero");
+    ntest_equ_str(dest, "0.25", "el filtro traduce la coma detras de un cero");
+
+    ntest_true(dbind_st_str_filter(stbind, rid, ",5", dest, sizeof(dest)), "el filtro se aplica con la coma al principio");
+    ntest_equ_str(dest, ".5", "el filtro traduce la coma inicial a punto");
+
+    /* El punto no se toca, asi que la salida del filtro vuelve a entrar por el
+       filtro sin cambiar. */
+    ntest_true(dbind_st_str_filter(stbind, rid, "1.5", dest, sizeof(dest)), "el filtro se aplica con un punto");
+    ntest_equ_str(dest, "1.5", "el filtro deja el punto como esta");
+
+    /* Y lo que sale del filtro lo acepta la conversion: es el invariante que
+       faltaba. */
+    obj.real_val = -1;
+    obj.int_val = 0;
+    dbind_st_str_filter(stbind, rid, "1,5", dest, sizeof(dest));
+    ntest_true(dbind_st_set_value_str(stbind, rid, cast(&obj, byte_t), dest) != ekBINDSET_NOT_ALLOWED, "dbind acepta el texto que sale del filtro");
+    ntest_equ_r32(obj.real_val, 1.5f, "teclear \"1,5\" en un Edit enlazado guarda 1.5");
+
+    /* En un campo entero no hay separador decimal que valga: la coma se cae,
+       como cualquier otro caracter que no sea un digito. */
+    ntest_true(dbind_st_str_filter(stbind, iid, "1,5", dest, sizeof(dest)), "el filtro se aplica en un campo entero");
+    ntest_equ_str(dest, "15", "el filtro descarta la coma en un campo entero");
+
+    dbind_unreg(Numbers);
+}
+
+/*---------------------------------------------------------------------------*/
+
+/* 'tfilter_to_date' se inventaba una fecha con un texto que no lo era: el
+   filtro trabaja en modo sobreescritura, asi que "1a/02/2020" tiene la longitud
+   del patron y el error de 'str_to_u8' se descartaba, dejando el dia en 0. Ver
+   NAP-029. */
+static void i_tfilter_date(void)
+{
+    Date date;
+
+    /* Un texto correcto se lee entero. */
+    date = tfilter_to_date("01/02/2020", "dd/mm/yyyy");
+    ntest_false(date_is_null(&date), "tfilter_to_date lee una fecha correcta");
+    ntest_equ_u32(date.mday, 1, "tfilter_to_date lee el dia");
+    ntest_equ_u32(date.month, 2, "tfilter_to_date lee el mes");
+    ntest_equ_i32(date.year, 2020, "tfilter_to_date lee el ano");
+
+    /* Una letra sobre un digito ya no da la fecha 00/02/2020. */
+    date = tfilter_to_date("1a/02/2020", "dd/mm/yyyy");
+    ntest_true(date_is_null(&date), "tfilter_to_date devuelve kDATE_NULL con un dia no numerico");
+
+    date = tfilter_to_date("01/x2/2020", "dd/mm/yyyy");
+    ntest_true(date_is_null(&date), "tfilter_to_date devuelve kDATE_NULL con un mes no numerico");
+
+    date = tfilter_to_date("01/02/20a0", "dd/mm/yyyy");
+    ntest_true(date_is_null(&date), "tfilter_to_date devuelve kDATE_NULL con un ano no numerico");
+
+    /* Un texto mas corto que el patron nunca se ha leido. */
+    date = tfilter_to_date("01/02", "dd/mm/yyyy");
+    ntest_true(date_is_null(&date), "tfilter_to_date devuelve kDATE_NULL con un texto mas corto que el patron");
+
+    /* Un patron sin los tres campos no puede dar una fecha: antes rellenaba el
+       ano que falta con 2000. */
+    date = tfilter_to_date("01/02", "dd/mm");
+    ntest_true(date_is_null(&date), "tfilter_to_date devuelve kDATE_NULL con un patron sin ano");
+
+    /* El ano de dos digitos se completa, como antes. */
+    date = tfilter_to_date("01/02/85", "dd/mm/yy");
+    ntest_equ_i32(date.year, 1985, "tfilter_to_date completa un ano de dos digitos alto");
+
+    date = tfilter_to_date("01/02/20", "dd/mm/yy");
+    ntest_equ_i32(date.year, 2020, "tfilter_to_date completa un ano de dos digitos bajo");
+
+    /* Los tres campos son numeros, pero la fecha no existe: la funcion no
+       valida el calendario, eso es cosa de 'date_is_valid'. */
+    date = tfilter_to_date("31/02/2020", "dd/mm/yyyy");
+    ntest_false(date_is_null(&date), "tfilter_to_date lee 31/02/2020, que son tres numeros");
+    ntest_false(date_is_valid(&date), "31/02/2020 no pasa date_is_valid");
 }
 
 /*---------------------------------------------------------------------------*/
@@ -628,6 +748,8 @@ uint32_t ntest_core(void)
     i_strings();
     i_dbind_str();
     i_dbind_str_real();
+    i_dbind_str_filter();
+    i_tfilter_date();
     i_stream();
     i_buffer();
     return ntest_end();
