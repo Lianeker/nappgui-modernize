@@ -284,27 +284,93 @@ static void i_strings(void)
         ntest_equ_u32(str_to_u32("42", 37, &err), 0, "str_to_u32 rechaza una base mayor que 36");
         ntest_true(err, "str_to_u32 marca error con una base mayor que 36");
 
-        /* str_to_r32/r64 no siguen el mismo criterio: rechazan la basura detras
-           pero aceptan la cadena vacia como 0 sin avisar. Ver NAP-023. */
+        /* str_to_r32/r64 siguen el mismo criterio que las enteras: toda la
+           cadena tiene que ser el numero, los espacios de alrededor se ignoran
+           y hace falta al menos un digito. Ver NAP-023. */
         err = FALSE;
-        str_to_r32("no soy un numero", &err);
+        ntest_equ_r32(str_to_r32("no soy un numero", &err), 0, "str_to_r32 devuelve 0 con basura");
         ntest_true(err, "str_to_r32 marca error con basura");
 
-        /* Y rechazan tambien los espacios de detras, al reves que str_to_iXX. */
         err = FALSE;
-        str_to_r32(" 42 ", &err);
-        ntest_true(err, "str_to_r32 marca error con un espacio detras del numero");
+        ntest_equ_r32(str_to_r32("abc", &err), 0, "str_to_r32 devuelve 0 con letras");
+        ntest_true(err, "str_to_r32 marca error con letras");
+
+        /* La cadena vacia es un error, no un 0 silencioso: era el defecto. */
+        err = FALSE;
+        ntest_equ_r32(str_to_r32("", &err), 0, "str_to_r32 devuelve 0 con la cadena vacia");
+        ntest_true(err, "str_to_r32 marca error con la cadena vacia");
+
+        err = FALSE;
+        ntest_equ_r32(str_to_r64("", &err), 0, "str_to_r64 devuelve 0 con la cadena vacia");
+        ntest_true(err, "str_to_r64 marca error con la cadena vacia");
+
+        err = FALSE;
+        ntest_equ_r32(str_to_r32("  ", &err), 0, "str_to_r32 devuelve 0 con solo espacios");
+        ntest_true(err, "str_to_r32 marca error con solo espacios");
+
+        /* Los espacios de alrededor se aceptan, igual que en str_to_iXX. */
+        err = TRUE;
+        ntest_equ_r32(str_to_r32(" 42 ", &err), 42, "str_to_r32 acepta los espacios alrededor del numero");
+        ntest_false(err, "str_to_r32 no marca error con los espacios alrededor");
 
         err = TRUE;
         ntest_equ_i32(str_to_i32(" 42 ", 10, &err), 42, "str_to_i32 si acepta el espacio detras del numero");
         ntest_false(err, "str_to_i32 no marca error con un espacio detras del numero");
 
+        err = TRUE;
+        ntest_equ_r32(str_to_r32("42 ", &err), 42, "str_to_r32 acepta un espacio detras del numero");
+        ntest_false(err, "str_to_r32 no marca error con un espacio detras del numero");
+
+        /* Pero la basura pegada al numero no. */
         err = FALSE;
-        str_to_r32("", &err);
-        if (err == FALSE)
-            ntest_pending("str_to_r32 deberia marcar error con la cadena vacia", "NAP-023");
-        else
-            ntest_true(err, "str_to_r32 marca error con la cadena vacia");
+        ntest_equ_r32(str_to_r32("42abc", &err), 0, "str_to_r32 devuelve 0 con basura detras del numero");
+        ntest_true(err, "str_to_r32 marca error con basura detras del numero");
+
+        /* Formatos validos: signo, decimales sin parte entera y exponente. */
+        err = TRUE;
+        ntest_equ_r32(str_to_r32("-3.5", &err), -3.5, "str_to_r32 con un negativo con decimales");
+        ntest_false(err, "str_to_r32 no marca error con un negativo con decimales");
+
+        err = TRUE;
+        ntest_equ_r32(str_to_r32(".5", &err), 0.5, "str_to_r32 sin parte entera");
+        ntest_false(err, "str_to_r32 no marca error sin parte entera");
+
+        err = TRUE;
+        ntest_equ_r32(str_to_r32("1e-3", &err), 0.001, "str_to_r32 con exponente negativo");
+        ntest_false(err, "str_to_r32 no marca error con exponente");
+
+        err = TRUE;
+        ntest_true(str_to_r64("-3.5", &err) == -3.5, "str_to_r64 con un negativo con decimales");
+        ntest_false(err, "str_to_r64 no marca error con un negativo con decimales");
+
+        /* Un exponente sin digitos detras no es un numero. */
+        err = FALSE;
+        ntest_equ_r32(str_to_r32("1e", &err), 0, "str_to_r32 devuelve 0 con un exponente vacio");
+        ntest_true(err, "str_to_r32 marca error con un exponente vacio");
+
+        /* La coma no es separador decimal en ninguna localizacion. */
+        err = FALSE;
+        ntest_equ_r32(str_to_r32("1,5", &err), 0, "str_to_r32 devuelve 0 con una coma decimal");
+        ntest_true(err, "str_to_r32 marca error con una coma decimal");
+
+        /* Desbordamiento: la libc lo avisa por ERANGE. */
+        err = FALSE;
+        str_to_r32("1e400", &err);
+        ntest_true(err, "str_to_r32 marca error al desbordar");
+
+        err = FALSE;
+        str_to_r64("1e400", &err);
+        ntest_true(err, "str_to_r64 marca error al desbordar");
+
+        /* Y ese ERANGE no se cuela en la llamada siguiente: antes se leia
+           'errno' sin reiniciarlo antes de llamar a la libc. */
+        err = TRUE;
+        ntest_equ_r32(str_to_r32("1.5", &err), 1.5, "str_to_r32 convierte 1.5 tras un desbordamiento");
+        ntest_false(err, "str_to_r32 no arrastra el ERANGE de la llamada anterior");
+
+        err = TRUE;
+        ntest_true(str_to_r64("1.5", &err) == 1.5, "str_to_r64 convierte 1.5 tras un desbordamiento");
+        ntest_false(err, "str_to_r64 no arrastra el ERANGE de la llamada anterior");
     }
 
     /* split_pathname sobre una ruta. */
@@ -396,6 +462,68 @@ static void i_dbind_str(void)
             ntest_true(dbind_set_value_str(ubind, cast(&u, byte_t), "0xff") != ekBINDSET_NOT_ALLOWED, "dbind acepta \"0xff\" en un entero sin signo");
             ntest_equ_u32(u, 255, "dbind convierte \"0xff\" en 255");
         }
+    }
+}
+
+/*---------------------------------------------------------------------------*/
+
+/* 'dbind_set_value_str' sobre un real: la misma puerta de entrada que el caso
+   entero de arriba, pero descartaba el error de 'str_to_r64', asi que "hola"
+   escribia un 0 y respondia ekBINDSET_OK. Dos campos del mismo struct, uno
+   entero y otro real, respondian distinto al mismo texto. Ver NAP-030. */
+static void i_dbind_str_real(void)
+{
+    const DBind *bind = dbind_from_typename("real32_t", NULL);
+    const DBind *bind64 = dbind_from_typename("real64_t", NULL);
+    real32_t v = 0;
+    real64_t v64 = 0;
+
+    if (ntest_true(bind != NULL, "el tipo real32_t esta registrado en dbind") == FALSE)
+        return;
+
+    /* Un numero correcto entra, con y sin decimales. */
+    v = -1;
+    ntest_true(dbind_set_value_str(bind, cast(&v, byte_t), "1.5") != ekBINDSET_NOT_ALLOWED, "dbind acepta \"1.5\" en un real");
+    ntest_equ_r32(v, 1.5, "dbind convierte \"1.5\" en 1.5");
+
+    v = -1;
+    ntest_true(dbind_set_value_str(bind, cast(&v, byte_t), "-3.5") != ekBINDSET_NOT_ALLOWED, "dbind acepta \"-3.5\" en un real");
+    ntest_equ_r32(v, -3.5, "dbind convierte \"-3.5\" en -3.5");
+
+    v = -1;
+    ntest_true(dbind_set_value_str(bind, cast(&v, byte_t), "42") != ekBINDSET_NOT_ALLOWED, "dbind acepta \"42\" en un real");
+    ntest_equ_r32(v, 42, "dbind convierte \"42\" en 42");
+
+    /* El texto que no es un numero se rechaza y no toca el destino. */
+    v = -1;
+    ntest_true(dbind_set_value_str(bind, cast(&v, byte_t), "hola") == ekBINDSET_NOT_ALLOWED, "dbind rechaza \"hola\" en un real");
+    ntest_equ_r32(v, -1, "dbind no toca el destino al rechazar \"hola\"");
+
+    v = -1;
+    ntest_true(dbind_set_value_str(bind, cast(&v, byte_t), "1.5abc") == ekBINDSET_NOT_ALLOWED, "dbind rechaza \"1.5abc\" en un real");
+    ntest_equ_r32(v, -1, "dbind no toca el destino al rechazar \"1.5abc\"");
+
+    /* La cadena vacia tampoco es un 0 (NAP-023), igual que en el entero. */
+    v = -1;
+    ntest_true(dbind_set_value_str(bind, cast(&v, byte_t), "") == ekBINDSET_NOT_ALLOWED, "dbind rechaza la cadena vacia en un real");
+    ntest_equ_r32(v, -1, "dbind no toca el destino al rechazar la cadena vacia");
+
+    /* La coma decimal que deja pasar el filtro del Edit no es un numero: antes
+       escribia la parte entera en silencio. Ver NAP-031. */
+    v = -1;
+    ntest_true(dbind_set_value_str(bind, cast(&v, byte_t), "1,5") == ekBINDSET_NOT_ALLOWED, "dbind rechaza \"1,5\" en un real");
+    ntest_equ_r32(v, -1, "dbind no toca el destino al rechazar \"1,5\"");
+
+    /* El mismo criterio en real64_t. */
+    if (ntest_true(bind64 != NULL, "el tipo real64_t esta registrado en dbind"))
+    {
+        v64 = -1;
+        ntest_true(dbind_set_value_str(bind64, cast(&v64, byte_t), "1.5") != ekBINDSET_NOT_ALLOWED, "dbind acepta \"1.5\" en un real de 64 bits");
+        ntest_true(v64 == 1.5, "dbind convierte \"1.5\" en 1.5 en un real de 64 bits");
+
+        v64 = -1;
+        ntest_true(dbind_set_value_str(bind64, cast(&v64, byte_t), "hola") == ekBINDSET_NOT_ALLOWED, "dbind rechaza \"hola\" en un real de 64 bits");
+        ntest_true(v64 == -1, "dbind no toca el destino de 64 bits al rechazar \"hola\"");
     }
 }
 
@@ -499,6 +627,7 @@ uint32_t ntest_core(void)
     i_arrpt();
     i_strings();
     i_dbind_str();
+    i_dbind_str_real();
     i_stream();
     i_buffer();
     return ntest_end();

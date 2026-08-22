@@ -34,6 +34,17 @@ _sewer_api int blib_strncmp(const char_t *str1, const char_t *str2, const uint32
 
 _sewer_api uint32_t blib_strftime(char_t *dest, const uint32_t size, const char_t *format, const int16_t year, const uint8_t month, const uint8_t mday, const uint8_t wday, const uint8_t hour, const uint8_t minute, const uint8_t second);
 
+/*
+ * Thin wrappers over 'strtol', 'strtoul', 'strtof' and 'strtod'. '*err' is TRUE
+ * when the C library reported ERANGE for this call, which covers both overflow
+ * and underflow, and FALSE otherwise; it says nothing about the format of the
+ * string, which the caller has to check with 'endptr'. 'err' and 'endptr' can
+ * be NULL. Note that 'endptr' is not written with MSVC <= 1700, where there is
+ * no 'strtof' and 'atof' is used instead.
+ *
+ * To validate a whole string as a number use the 'str_to_XXX' family of
+ * 'core/strings.h', which documents an exact grammar.
+ */
 _sewer_api int64_t blib_strtol(const char_t *str, char_t **endptr, uint32_t base, bool_t *err);
 
 _sewer_api uint64_t blib_strtoul(const char_t *str, char_t **endptr, uint32_t base, bool_t *err);
