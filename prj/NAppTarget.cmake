@@ -696,6 +696,19 @@ function(nap_link_opengl_depends targetName)
 
         endif()
 
+    elseif (${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
+        # En macOS ${OPENGL_LIBRARY} es la ruta absoluta del framework dentro
+        # del sysroot del Xcode con el que se compilo el SDK, y meterla en el
+        # paquete exportado lo ataria a esa instalacion. '-framework OpenGL' no.
+        # Es el mismo motivo por el que NAP-002 dejo de usar ${COCOA_LIB}.
+        # find_package se sigue llamando para fallar pronto y con un mensaje
+        # claro si OpenGL no esta.
+        #
+        # ogl3d/osx/ogl3dimp.m usa NSOpenGLContext, que es de AppKit, asi que
+        # tambien necesita Cocoa y el runtime de Objective-C.
+        find_package(OpenGL REQUIRED)
+        target_link_libraries(${targetName} ${napScope} "-framework OpenGL" "-framework Cocoa" "objc")
+
     else()
         find_package(OpenGL REQUIRED)
         target_link_libraries(${targetName} ${napScope} ${OPENGL_LIBRARY})
@@ -710,13 +723,14 @@ function(nap_link_opengl targetName)
 
     nap_link_scope(napScope ${ARGN})
 
+    # OpenGL ya no se anade aqui: es un requisito de uso de la propia libreria
+    # 'ogl3d' (nap_library_requires), asi que llega igual por el arbol y por el
+    # paquete exportado. Ver NAP-034.
     if(NAPPGUI_IS_PACKAGE)
         target_link_libraries(${targetName} ${napScope} nappgui::ogl3d)
     else()
         target_link_libraries(${targetName} ${napScope} ogl3d)
     endif()
-
-    nap_link_opengl_depends(${targetName} ${napScope})
 
     if(NOT NAPPGUI_IS_PACKAGE)
         get_target_property(TARGET_TYPE ogl3d TYPE)
@@ -890,6 +904,19 @@ function(nap_library_requires libName scope)
                 target_link_libraries(${libName} ${scope} "-framework UniformTypeIdentifiers")
             endif()
         endif()
+    endif()
+
+    #
+    # ogl3d: OpenGL (NAP-034)
+    #
+    # Se declara sin condiciones, igual que 'inet' declara libCURL/wininet. La
+    # busqueda no anade ningun requisito nuevo para construir el SDK: 'ogl3d' se
+    # compila siempre y su 'glew.h' ya incluye <GL/glu.h> (o <OpenGL/glu.h> en
+    # macOS), asi que sin las cabeceras de OpenGL el SDK no compilaba tampoco
+    # antes. Lo unico que cambia es que ahora tambien se busca la libreria.
+    #
+    if (${libName} STREQUAL "ogl3d")
+        nap_link_opengl_depends(${libName} ${scope})
     endif()
 
     #

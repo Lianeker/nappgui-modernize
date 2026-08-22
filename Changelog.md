@@ -97,6 +97,18 @@
       from `nappgui::osapp`, because nothing in the GUI stack depends on them.
       Link them explicitly when you use them.
 
+- `nappgui::ogl3d` now declares OpenGL as a usage requirement, so
+  `target_link_libraries(app PRIVATE nappgui::ogl3d)` links `opengl32`,
+  `libGL` + EGL or `-framework OpenGL` on its own. Before, the only way to get
+  them was `nap_link_opengl()`, a macro of the NAppGUI build system that the
+  package neither exports nor documents. `nap_link_opengl()` keeps working and
+  is still the way to link OpenGL from a project built with the SDK macros.
+    - `ogl3d` stays out of `NAPPGUI_LIBRARIES` on purpose. It is optional, and
+      putting it there would make every consumer link OpenGL.
+    - On macOS the package declares `-framework OpenGL` instead of the absolute
+      path that `find_package(OpenGL)` returns, which points inside the SDK of
+      the Xcode that built the package.
+
 ### Migration
 
 - **`str_to_iXX()` / `str_to_uXX()` with malformed input.** The result is 0 now,
