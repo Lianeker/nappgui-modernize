@@ -15,7 +15,9 @@
 #include <core/stream.h>
 #include <core/buffer.h>
 #include <core/heap.h>
+#include <core/date.h>
 #include <core/dbindh.h>
+#include <core/tfilter.h>
 #include <sewer/bmem.h>
 
 /*---------------------------------------------------------------------------*/
@@ -529,6 +531,56 @@ static void i_dbind_str_real(void)
 
 /*---------------------------------------------------------------------------*/
 
+/* 'tfilter_to_date' se inventaba una fecha con un texto que no lo era: el
+   filtro trabaja en modo sobreescritura, asi que "1a/02/2020" tiene la longitud
+   del patron y el error de 'str_to_u8' se descartaba, dejando el dia en 0. Ver
+   NAP-029. */
+static void i_tfilter_date(void)
+{
+    Date date;
+
+    /* Un texto correcto se lee entero. */
+    date = tfilter_to_date("01/02/2020", "dd/mm/yyyy");
+    ntest_false(date_is_null(&date), "tfilter_to_date lee una fecha correcta");
+    ntest_equ_u32(date.mday, 1, "tfilter_to_date lee el dia");
+    ntest_equ_u32(date.month, 2, "tfilter_to_date lee el mes");
+    ntest_equ_i32(date.year, 2020, "tfilter_to_date lee el ano");
+
+    /* Una letra sobre un digito ya no da la fecha 00/02/2020. */
+    date = tfilter_to_date("1a/02/2020", "dd/mm/yyyy");
+    ntest_true(date_is_null(&date), "tfilter_to_date devuelve kDATE_NULL con un dia no numerico");
+
+    date = tfilter_to_date("01/x2/2020", "dd/mm/yyyy");
+    ntest_true(date_is_null(&date), "tfilter_to_date devuelve kDATE_NULL con un mes no numerico");
+
+    date = tfilter_to_date("01/02/20a0", "dd/mm/yyyy");
+    ntest_true(date_is_null(&date), "tfilter_to_date devuelve kDATE_NULL con un ano no numerico");
+
+    /* Un texto mas corto que el patron nunca se ha leido. */
+    date = tfilter_to_date("01/02", "dd/mm/yyyy");
+    ntest_true(date_is_null(&date), "tfilter_to_date devuelve kDATE_NULL con un texto mas corto que el patron");
+
+    /* Un patron sin los tres campos no puede dar una fecha: antes rellenaba el
+       ano que falta con 2000. */
+    date = tfilter_to_date("01/02", "dd/mm");
+    ntest_true(date_is_null(&date), "tfilter_to_date devuelve kDATE_NULL con un patron sin ano");
+
+    /* El ano de dos digitos se completa, como antes. */
+    date = tfilter_to_date("01/02/85", "dd/mm/yy");
+    ntest_equ_i32(date.year, 1985, "tfilter_to_date completa un ano de dos digitos alto");
+
+    date = tfilter_to_date("01/02/20", "dd/mm/yy");
+    ntest_equ_i32(date.year, 2020, "tfilter_to_date completa un ano de dos digitos bajo");
+
+    /* Los tres campos son numeros, pero la fecha no existe: la funcion no
+       valida el calendario, eso es cosa de 'date_is_valid'. */
+    date = tfilter_to_date("31/02/2020", "dd/mm/yyyy");
+    ntest_false(date_is_null(&date), "tfilter_to_date lee 31/02/2020, que son tres numeros");
+    ntest_false(date_is_valid(&date), "31/02/2020 no pasa date_is_valid");
+}
+
+/*---------------------------------------------------------------------------*/
+
 static void i_stream(void)
 {
     Stream *stm = stm_memory(256);
@@ -628,6 +680,7 @@ uint32_t ntest_core(void)
     i_strings();
     i_dbind_str();
     i_dbind_str_real();
+    i_tfilter_date();
     i_stream();
     i_buffer();
     return ntest_end();

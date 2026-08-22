@@ -83,6 +83,22 @@
       through the empty field and a `,` as decimal separator, and neither is a
       number for `str_to_r64()`.
 
+- `tfilter_to_date()` returns `kDATE_NULL` when any of the three fields of the
+  text is not a number, instead of a date with a 0 in that field. The filter of
+  a date works in overwrite mode, so the user can leave a letter on top of a
+  digit and the text still has the length of the pattern: `"1a/02/2020"` with the
+  pattern `"dd/mm/yyyy"` used to return day 0 of February 2020, a date that does
+  not exist, and before the change of `str_to_u8()` above it returned the 1st of
+  February, a date the user never typed. The function already answered
+  `kDATE_NULL` when the text and the pattern had different lengths, so this is
+  the same answer for the same kind of input, and the signature does not change.
+    - A pattern without one of the three fields (`"dd/mm"`) is `kDATE_NULL` too.
+      It used to invent the year 2000.
+    - The contract is documented in `core/tfilter.h` now, including what the
+      function does *not* do: a text whose three fields are numbers is not
+      checked against the calendar, so `"31/02/2020"` is still read as day 31 of
+      month 2 and has to be checked with `date_is_valid()`.
+
 ### Migration
 
 - **`str_to_iXX()` / `str_to_uXX()` with malformed input.** The result is 0 now,
@@ -148,6 +164,25 @@
   42. It is 0 with an error now, like on every other compiler. Cut the string at
   the first character that is not part of the number if the old reading is what
   you want.
+
+- **`tfilter_to_date()` with a text that is not a date.** It returns
+  `kDATE_NULL` now instead of a made up date. The result was never usable, but
+  the caller has to ask for it explicitly:
+
+    ```c
+    /* Before: "1a/02/2020" gave day 0 of February 2020 */
+    Date date = tfilter_to_date(text, "dd/mm/yyyy");
+
+    /* After: check that the text was a date at all */
+    Date date = tfilter_to_date(text, "dd/mm/yyyy");
+    if (date_is_null(&date) == TRUE)
+        /* the text is not a date, ask the user again */;
+    else if (date_is_valid(&date) == FALSE)
+        /* the three fields are numbers, but the day does not exist */;
+    ```
+
+  A pattern that does not carry the three fields never gave a date either: it
+  used to fill the missing year with 2000. Add the year to the pattern.
 
 ## v1.6.2 - July 02, 2026 (r6905)
 

@@ -201,6 +201,9 @@ Date tfilter_to_date(const char_t *text, const char_t *pattern)
         char_t month[3];
         char_t year[5];
         uint32_t id = 0, im = 0, iy = 0, i = 0;
+        uint8_t vday = 0, vmonth = 0;
+        int16_t vyear = 0;
+        bool_t err = FALSE, ferr = FALSE;
         while (i < n)
         {
             if (pattern[i] == 'd' || pattern[i] == 'D')
@@ -235,9 +238,29 @@ Date tfilter_to_date(const char_t *text, const char_t *pattern)
         month[im] = '\0';
         year[iy] = '\0';
 
-        date.mday = str_to_u8(day, 10, NULL);
-        date.month = str_to_u8(month, 10, NULL);
-        date.year = str_to_i16(year, 10, NULL);
+        /* Every field has to be a number. The filter works in overwrite mode,
+           so the user can leave a letter on top of a digit and the text still
+           has the length of the pattern: "1a/02/2020" is not a date. The
+           conversion error was discarded, so the field became 0 and the caller
+           got 00/02/2020 without a way to notice. NAP-029. */
+        vday = str_to_u8(day, 10, &ferr);
+        if (ferr == TRUE)
+            err = TRUE;
+
+        vmonth = str_to_u8(month, 10, &ferr);
+        if (ferr == TRUE)
+            err = TRUE;
+
+        vyear = str_to_i16(year, 10, &ferr);
+        if (ferr == TRUE)
+            err = TRUE;
+
+        if (err == TRUE)
+            return kDATE_NULL;
+
+        date.mday = vday;
+        date.month = vmonth;
+        date.year = vyear;
 
         /* Two digits year */
         /* https://www.ibm.com/docs/en/i/7.2?topic=mcdtdi-conversion-2-digit-years-4-digit-years-centuries */
