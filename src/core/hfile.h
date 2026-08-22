@@ -14,7 +14,7 @@
 #ifndef __CORE_HFILE_H__
 #define __CORE_HFILE_H__
 
-#include "core.hxx"
+#include "coredecl.hxx"
 
 __EXTERN_C
 

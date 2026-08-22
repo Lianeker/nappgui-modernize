@@ -14,7 +14,7 @@
 #ifndef __ENCODE_HXX__
 #define __ENCODE_HXX__
 
-#include <core/core.hxx>
+#include <core/coredecl.hxx>
 #include "encode.hdf"
 
 typedef struct _url_t Url;

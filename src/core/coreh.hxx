@@ -13,7 +13,7 @@
 #ifndef __COREH_HXX__
 #define __COREH_HXX__
 
-#include "core.hxx"
+#include "coredecl.hxx"
 
 typedef enum _dtype_t
 {

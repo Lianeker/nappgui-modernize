@@ -330,47 +330,10 @@ struct _evfiledir_t
     uint32_t depth;
 };
 
-#include "array.h"
-#include "rbtree.h"
-#include "ntree.h"
-#include "arrst.hxx"
-#include "arrpt.hxx"
-#include "setst.hxx"
-#include "setpt.hxx"
-#include "treest.hxx"
-#include "treept.hxx"
-
-#define DeclSt(type) \
-    ArrStDebug(type); \
-    SetStDebug(type); \
-    TreeStDebug(type); \
-    ArrStFuncs(type); \
-    SetStFuncs(type); \
-    TreeStFuncs(type)
-
-#define DeclPt(type) \
-    ArrPtDebug(type); \
-    SetPtDebug(type); \
-    TreePtDebug(type); \
-    ArrPtFuncs(type); \
-    SetPtFuncs(type); \
-    TreePtFuncs(type)
-
-DeclSt(bool_t);
-DeclSt(int8_t);
-DeclSt(int16_t);
-DeclSt(int32_t);
-DeclSt(int64_t);
-DeclSt(uint8_t);
-DeclSt(uint16_t);
-DeclSt(uint32_t);
-DeclSt(uint64_t);
-DeclSt(real32_t);
-DeclSt(real64_t);
-DeclPt(String);
-DeclSt(DirEntry);
-DeclPt(ResPack);
-DeclPt(RegEx);
+/* 'DeclSt'/'DeclPt' and the type-checked containers they generate need the
+   'array.h', 'rbtree.h' and 'ntree.h' function declarations, which in turn
+   need the types declared here. To keep the include graph acyclic this file
+   holds only the types: see 'coredecl.hxx' for the declarations. */
 
 #ifdef __cplusplus
 

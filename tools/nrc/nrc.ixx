@@ -13,7 +13,7 @@
 #ifndef __NRC_IXX__
 #define __NRC_IXX__
 
-#include <core/core.hxx>
+#include <core/coredecl.hxx>
 
 typedef struct _resource_pack_t ResourcePack;
 
