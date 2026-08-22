@@ -974,20 +974,32 @@ function(nap_target targetName targetType dependList nrcMode)
         set_property(TARGET ${targetName} APPEND PROPERTY RUNTIME_OUTPUT_DIRECTORY_${configUpper} "${CMAKE_BINARY_DIR}/${config}/bin")
     endforeach()
 
+    # Los targets bajo test/ son andamiaje de desarrollo: no forman parte del
+    # SDK, asi que ni se instalan ni entran en el conjunto exportado. Sin esto,
+    # find_package(nappgui) importaria nappgui::nappgui_test. Ver NAP-010.
+    # (Las demos si se exportan hoy; eso es NAP-022.)
+    set(napSkipInstall FALSE)
+    string(FIND "${targetPath}" "test/" napTestPos)
+    if (napTestPos EQUAL 0)
+        set(napSkipInstall TRUE)
+    endif()
+
     # Install binaries and headers
     get_filename_component(targetPathSingle ${targetPath} NAME)
-    install(TARGETS ${targetName} EXPORT nappgui-targets
-                LIBRARY DESTINATION "bin" PERMISSIONS ${INSTALL_PERM}
-                RUNTIME DESTINATION "bin" PERMISSIONS ${INSTALL_PERM}
-                ARCHIVE DESTINATION "lib" PERMISSIONS ${INSTALL_PERM}
-                BUNDLE DESTINATION "bin"
-                PUBLIC_HEADER DESTINATION "inc/${targetPathSingle}")
+    if (NOT napSkipInstall)
+        install(TARGETS ${targetName} EXPORT nappgui-targets
+                    LIBRARY DESTINATION "bin" PERMISSIONS ${INSTALL_PERM}
+                    RUNTIME DESTINATION "bin" PERMISSIONS ${INSTALL_PERM}
+                    ARCHIVE DESTINATION "lib" PERMISSIONS ${INSTALL_PERM}
+                    BUNDLE DESTINATION "bin"
+                    PUBLIC_HEADER DESTINATION "inc/${targetPathSingle}")
 
-    # Install the .pdb files
-    if (targetType STREQUAL STATIC_LIB)
-        install(FILES "$<TARGET_FILE_DIR:${targetName}>/${targetName}.pdb" DESTINATION "lib" PERMISSIONS ${INSTALL_PERM} OPTIONAL)
-    else()
-        install(FILES "$<TARGET_FILE_DIR:${targetName}>/${targetName}.pdb" DESTINATION "bin" PERMISSIONS ${INSTALL_PERM} OPTIONAL)
+        # Install the .pdb files
+        if (targetType STREQUAL STATIC_LIB)
+            install(FILES "$<TARGET_FILE_DIR:${targetName}>/${targetName}.pdb" DESTINATION "lib" PERMISSIONS ${INSTALL_PERM} OPTIONAL)
+        else()
+            install(FILES "$<TARGET_FILE_DIR:${targetName}>/${targetName}.pdb" DESTINATION "bin" PERMISSIONS ${INSTALL_PERM} OPTIONAL)
+        endif()
     endif()
 
     # Install the .exp files

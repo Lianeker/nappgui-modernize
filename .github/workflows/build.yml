@@ -1,0 +1,148 @@
+name: build
+
+# Solo configura, compila y ejecuta la suite. Los avisos del compilador son
+# informativos de momento: subir ese liston es otra tarea.
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      # Que un trabajo falle no debe ocultar el resultado de los demas: lo
+      # interesante suele ser justo saber en cuantas plataformas falla.
+      fail-fast: false
+      matrix:
+        include:
+          - name: windows-x64-ninja
+            os: windows-latest
+            generator: Ninja
+            arch: x64
+
+          - name: windows-x64-msbuild
+            os: windows-latest
+            generator: Visual Studio 17 2022
+            arch: x64
+            multiconfig: true
+
+          - name: linux-x64-gcc
+            os: ubuntu-latest
+            generator: Ninja
+            arch: x64
+
+          - name: linux-arm64-gcc
+            os: ubuntu-24.04-arm
+            generator: Ninja
+            arch: arm64
+
+          - name: macos-arm64
+            os: macos-latest
+            generator: Ninja
+            arch: arm64
+
+          - name: macos-x64
+            os: macos-13
+            generator: Ninja
+            arch: x64
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Dependencias de Linux
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ninja-build libgtk-3-dev libcurl4-openssl-dev \
+                                  libglu1-mesa-dev freeglut3-dev mesa-common-dev \
+                                  libwebkit2gtk-4.1-dev
+
+      - name: Dependencias de macOS
+        if: runner.os == 'macOS'
+        run: brew install ninja
+
+      - name: Ninja en Windows
+        if: runner.os == 'Windows' && matrix.generator == 'Ninja'
+        uses: seanmiddleditch/gha-setup-ninja@v5
+
+      - name: Entorno MSVC
+        if: runner.os == 'Windows' && matrix.generator == 'Ninja'
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: ${{ matrix.arch }}
+
+      # NAPPGUI_WEB=NO a proposito: con WebView activo, el consumidor externo
+      # no enlaza porque el paquete exportado no arrastra el loader de
+      # WebView2 (CreateCoreWebView2EnvironmentWithOptions). Es parte de
+      # NAP-002; cuando se cierre, quitar esta linea.
+      - name: Configure
+        run: >
+          cmake -S . -B build -G "${{ matrix.generator }}"
+          -DCMAKE_BUILD_TYPE=Debug
+          -DNAPPGUI_DEMO=YES
+          -DNAPPGUI_TESTS=YES
+          -DNAPPGUI_WEB=NO
+          -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}/install
+
+      - name: Build
+        run: cmake --build build --config Debug
+
+      - name: Tests
+        run: ctest --test-dir build -C Debug --output-on-failure
+
+      - name: Install
+        run: cmake --install build --config Debug
+
+      # El consumidor externo es la prueba de que el paquete exportado sirve
+      # para algo: compila contra el SDK instalado con find_package(), igual
+      # que lo haria un usuario. Los parches de su CMakeLists documentan
+      # NAP-002 y deben poder borrarse cuando esa tarea se cierre.
+      - name: Consumidor externo
+        run: >
+          cmake -S test/consumer -B build-consumer -G "${{ matrix.generator }}"
+          -DCMAKE_BUILD_TYPE=Debug
+          -Dnappgui_DIR=${{ github.workspace }}/install/cmake
+
+      - name: Build del consumidor
+        run: cmake --build build-consumer --config Debug
+
+      # Las dos pruebas de consola se ejecutan; la de ventana no, porque los
+      # runners no tienen sesion grafica.
+      - name: Pruebas de regresion del consumidor
+        shell: bash
+        run: |
+          set -e
+          find build-consumer -name 'MacroHazards*' -type f -perm -u+x -exec {} \;
+          find build-consumer -name 'Col2dPrecision*' -type f -perm -u+x -exec {} \;
+
+  # Trabajo aparte: la configuracion menos ejercitada del proyecto.
+  shared:
+    name: linux-x64-shared
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Dependencias
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ninja-build libgtk-3-dev libcurl4-openssl-dev \
+                                  libglu1-mesa-dev freeglut3-dev mesa-common-dev \
+                                  libwebkit2gtk-4.1-dev
+
+      - name: Configure
+        run: >
+          cmake -S . -B build -G Ninja
+          -DCMAKE_BUILD_TYPE=Release
+          -DNAPPGUI_SHARED=YES
+          -DNAPPGUI_DEMO=YES
+          -DNAPPGUI_TESTS=YES
+          -DNAPPGUI_WEB=NO
+
+      - name: Build
+        run: cmake --build build
+
+      - name: Tests
+        run: ctest --test-dir build --output-on-failure
