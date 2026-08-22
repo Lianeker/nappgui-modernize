@@ -109,6 +109,24 @@
       path that `find_package(OpenGL)` returns, which points inside the SDK of
       the Xcode that built the package.
 
+- **The install no longer publishes the internal headers.** `install/inc/`
+  used to carry the whole native backend, and every installed header is a
+  promise of stability: publishing the backend turns any internal refactor into
+  an API change. What is public is now written down in `docs/api-policy.md` and
+  applied by the build itself, with the new `PRIVATE_HEADERS` argument of
+  `nap_library()`.
+    - `inc/osgui/` is gone, all 24 headers (`osgui.h`, `oswindow.h`,
+      `osbutton.h`, `osguictx.h`...). It is the layer that talks to Win32,
+      Cocoa and GTK3. `nappgui::osgui` is still exported and still linked,
+      because `nappgui::osapp` needs it; what is no longer published is its
+      interface.
+    - `inc/draw2d/guictx.h` is gone. It is the registration interface of the
+      backend vtable (`guictx_append_*_manager`), used only by the `.c` files
+      of `gui` and `osapp` inside the SDK.
+    - `inc/draw2d/guictx.hxx` **is still installed**, because `gui/gui.hxx`
+      includes it and that is on the include path of `<nappgui.h>`. Being
+      installed does not make it public: see `docs/api-policy.md`.
+
 - **`find_package(nappgui)` no longer writes unprefixed variables into the
   calling project.** The build options of the package (`VERSION`, `COMPILER`,
   `CMAKE`, `GENERATOR`, `BUILD_TYPE`, `BUILD_ARCH`, `HOST_ARCH`, `PACKAGE_ID`,
@@ -189,6 +207,26 @@
   42. It is 0 with an error now, like on every other compiler. Cut the string at
   the first character that is not part of the number if the old reading is what
   you want.
+
+- **`#include <osgui/...>` or `<draw2d/guictx.h>` from an installed SDK.** Those
+  headers are not installed any more. There is no replacement, and that is the
+  point: they are the native backend, they are not documented on nappgui.com
+  and they were never meant to be part of the API.
+
+    ```c
+    /* Before: reached into the backend from application code */
+    #include <osgui/oswindow.h>
+    oswindow_title(oswindow, "Hello");
+
+    /* After: the same thing through the public gui layer */
+    #include <gui/window.h>
+    window_title(window, "Hello");
+    ```
+
+  If you were writing a backend of your own, keep building against the source
+  tree: the in-tree path is unchanged and everything still compiles the same.
+  What is gone is the promise that these headers keep their shape between
+  releases, which is what installing them was implying.
 
 - **Build options read after `find_package(nappgui)`.** Add the `NAPPGUI_`
   prefix to the name:

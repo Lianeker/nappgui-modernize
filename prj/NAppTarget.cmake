@@ -303,6 +303,58 @@ function(nap_add_public_header targetName file extLower publicHeaders)
 endfunction()
 
 #------------------------------------------------------------------------------
+# Cabeceras que se compilan pero no se instalan (NAP-011)
+#
+# nap_target() marca como PUBLIC_HEADER todo fichero de cabecera que hay en la
+# raiz del modulo, y install(TARGETS ... PUBLIC_HEADER ...) lo publica en
+# 'inc/<modulo>'. Cada cabecera instalada es una promesa de estabilidad:
+# publicar el backend nativo convierte cualquier refactor interno en un cambio
+# de API.
+#
+# docs/api-policy.md fija que es publico; el argumento PRIVATE_HEADERS de
+# nap_library() es como se aplica, y esta funcion quien lo resuelve. El filtro
+# tiene que ocurrir aqui, antes de install(TARGETS ...): esa orden se queda con
+# la lista de cabeceras tal como esta en el momento de llamarla, asi que
+# vaciar la propiedad despues no sirve de nada.
+#
+#   PRIVATE_HEADERS ALL          el modulo entero es interno
+#   PRIVATE_HEADERS "guictx.h"   solo esas cabeceras
+#
+function(nap_filter_public_headers publicHeaders privateHeaders _ret)
+
+    if (NOT privateHeaders)
+        set(${_ret} "${publicHeaders}" PARENT_SCOPE)
+        return()
+    endif()
+
+    if ("${privateHeaders}" STREQUAL "ALL")
+        set(${_ret} "" PARENT_SCOPE)
+        return()
+    endif()
+
+    set(napResult "${publicHeaders}")
+    foreach(napPrivate ${privateHeaders})
+        set(napFound FALSE)
+        foreach(napHeader ${publicHeaders})
+            get_filename_component(napName ${napHeader} NAME)
+            if (napName STREQUAL napPrivate)
+                list(REMOVE_ITEM napResult ${napHeader})
+                set(napFound TRUE)
+            endif()
+        endforeach()
+
+        # Si la cabecera se renombra o desaparece, mejor enterarse en el
+        # configure que descubrir meses despues que se volvio a instalar.
+        if (NOT napFound)
+            message(FATAL_ERROR "PRIVATE_HEADERS: '${napPrivate}' no es una cabecera de este target")
+        endif()
+    endforeach()
+
+    set(${_ret} "${napResult}" PARENT_SCOPE)
+
+endfunction()
+
+#------------------------------------------------------------------------------
 
 function(nap_source_files targetName dir group publicHeaders)
 
@@ -947,7 +999,7 @@ endfunction()
 
 #------------------------------------------------------------------------------
 
-function(nap_target targetName targetType dependList nrcMode)
+function(nap_target targetName targetType dependList nrcMode privateHeaders)
 
     # Get source files
     set(${targetName}_SRCFILES "" CACHE INTERNAL "")
@@ -957,6 +1009,10 @@ function(nap_target targetName targetType dependList nrcMode)
     set(srcFiles ${${targetName}_SRCFILES})
     set(srcSubDirs ${${targetName}_SRCSUBDIRS})
     set(publicHeaders ${${targetName}_PUBLICHEADERS})
+
+    # Las cabeceras internas se compilan como el resto, pero no se instalan.
+    # Ver nap_filter_public_headers() y NAP-011.
+    nap_filter_public_headers("${publicHeaders}" "${privateHeaders}" publicHeaders)
 
     # Get resources
     set(${targetName}_SRCPATH "${CMAKE_CURRENT_SOURCE_DIR}" CACHE INTERNAL "")
@@ -1174,14 +1230,31 @@ endfunction()
 
 function(nap_library libName dependList buildShared nrcMode)
 
+    # Argumentos opcionales con palabra clave:
+    #
+    #   PRIVATE_HEADERS <ALL|fichero...>  cabeceras que se compilan pero no se
+    #                                     instalan (NAP-011)
+    #
+    set(napPrivateHeaders "")
+    set(napKeyword "")
+    foreach(napArg ${ARGN})
+        if (napArg STREQUAL "PRIVATE_HEADERS")
+            set(napKeyword "PRIVATE_HEADERS")
+        elseif (napKeyword STREQUAL "PRIVATE_HEADERS")
+            list(APPEND napPrivateHeaders ${napArg})
+        else()
+            message(FATAL_ERROR "- ${libName}: argumento desconocido '${napArg}'")
+        endif()
+    endforeach()
+
     if (buildShared)
-        nap_target(${libName} DYNAMIC_LIB "${dependList}" ${nrcMode})
+        nap_target(${libName} DYNAMIC_LIB "${dependList}" ${nrcMode} "${napPrivateHeaders}")
         nap_link_with_libraries(${libName} DYNAMIC_LIB "${dependList}")
         nap_target_rpath(${libName} NO "")
         set(napReqScope PUBLIC)
 
     else()
-        nap_target(${libName} STATIC_LIB "${dependList}" ${nrcMode})
+        nap_target(${libName} STATIC_LIB "${dependList}" ${nrcMode} "${napPrivateHeaders}")
 
         # # In Linux, static libs must link with other libs
         # if (${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
@@ -1234,7 +1307,7 @@ function(nap_command_app appName dependList nrcMode)
     endif()
 
     if (WIN32)
-        nap_target("${appName}" WIN_CONSOLE "${dependList}" ${nrcMode})
+        nap_target("${appName}" WIN_CONSOLE "${dependList}" ${nrcMode} "")
 
         if (${CMAKE_CXX_COMPILER_ID} STREQUAL MSVC)
             foreach(config ${CMAKE_CONFIGURATION_TYPES})
@@ -1244,10 +1317,10 @@ function(nap_command_app appName dependList nrcMode)
         endif()
 
     elseif (${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
-        nap_target("${appName}" APPLE_CONSOLE "${dependList}" ${nrcMode})
+        nap_target("${appName}" APPLE_CONSOLE "${dependList}" ${nrcMode} "")
 
     elseif (${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
-        nap_target("${appName}" LINUX_CONSOLE "${dependList}" ${nrcMode})
+        nap_target("${appName}" LINUX_CONSOLE "${dependList}" ${nrcMode} "")
 
     else()
         message(FATAL_ERROR "No se puede construir la aplicacion '${appName}': sistema no soportado (${CMAKE_SYSTEM_NAME}). NAppGUI soporta Windows, Darwin y Linux.")
@@ -1274,7 +1347,7 @@ function(nap_desktop_app appName dependList nrcMode)
     endif()
 
     if (WIN32)
-        nap_target(${appName} WIN_DESKTOP "${dependList}" ${nrcMode})
+        nap_target(${appName} WIN_DESKTOP "${dependList}" ${nrcMode} "")
         if (${CMAKE_CXX_COMPILER_ID} STREQUAL MSVC)
             foreach(config ${CMAKE_CONFIGURATION_TYPES})
                 string(TOUPPER ${config} configUpper)
@@ -1284,7 +1357,7 @@ function(nap_desktop_app appName dependList nrcMode)
         set(macOSBundle NO)
 
     elseif (${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
-        nap_target(${appName} APPLE_BUNDLE "${dependList}" ${nrcMode})
+        nap_target(${appName} APPLE_BUNDLE "${dependList}" ${nrcMode} "")
 
         # Info.plist configure
         # Proyect provides its own Info.plist?
@@ -1302,7 +1375,7 @@ function(nap_desktop_app appName dependList nrcMode)
         set(macOSBundle YES)
 
     elseif (${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
-        nap_target("${appName}" LINUX_DESKTOP "${dependList}" ${nrcMode})
+        nap_target("${appName}" LINUX_DESKTOP "${dependList}" ${nrcMode} "")
         set(macOSBundle NO)
 
     else()
