@@ -139,13 +139,13 @@ void _draw_imgimp(DCtx *ctx, const OSImage *image, const uint32_t frame_index, c
 
     switch (ctx->image_halign)
     {
-    case ekLEFT:
-    case ekJUSTIFY:
+    case ekHLEFT:
+    case ekHJUSTIFY:
         break;
-    case ekCENTER:
+    case ekHCENTER:
         lx -= width / 2;
         break;
-    case ekRIGHT:
+    case ekHRIGHT:
         lx -= width;
         break;
     default:
@@ -154,13 +154,13 @@ void _draw_imgimp(DCtx *ctx, const OSImage *image, const uint32_t frame_index, c
 
     switch (ctx->image_valign)
     {
-    case ekTOP:
-    case ekJUSTIFY:
+    case ekVTOP:
+    case ekVJUSTIFY:
         break;
-    case ekCENTER:
+    case ekVCENTER:
         ly -= height / 2;
         break;
-    case ekBOTTOM:
+    case ekVBOTTOM:
         ly -= height;
         break;
     default:
@@ -727,16 +727,16 @@ void draw_font(DCtx *ctx, const Font *font)
 
 /*---------------------------------------------------------------------------*/
 
-static Gdiplus::StringAlignment i_align(const align_t align)
+static Gdiplus::StringAlignment i_align(const halign_t align)
 {
     switch (align)
     {
-    case ekLEFT:
-    case ekJUSTIFY:
+    case ekHLEFT:
+    case ekHJUSTIFY:
         return Gdiplus::StringAlignmentNear;
-    case ekCENTER:
+    case ekHCENTER:
         return Gdiplus::StringAlignmentCenter;
-    case ekRIGHT:
+    case ekHRIGHT:
         return Gdiplus::StringAlignmentFar;
     default:
         cassert_default(align);
@@ -774,7 +774,7 @@ static Gdiplus::RectF i_text_origin(DCtx *ctx, const WCHAR *wtext, const real32_
 
     size.Height = 1e8f;
 
-    if (ctx->text_halign != ekLEFT || ctx->text_valign != ekTOP || ctx->text_intalign != ekLEFT || ctx->text_width >= 0)
+    if (ctx->text_halign != ekHLEFT || ctx->text_valign != ekVTOP || ctx->text_intalign != ekHLEFT || ctx->text_width >= 0)
     {
         Gdiplus::RectF layout;
         Gdiplus::RectF out;
@@ -808,20 +808,20 @@ static Gdiplus::RectF i_text_origin(DCtx *ctx, const WCHAR *wtext, const real32_
          */
         switch (ctx->text_halign)
         {
-        case ekLEFT:
-        case ekJUSTIFY:
+        case ekHLEFT:
+        case ekHJUSTIFY:
             switch (ctx->text_intalign)
             {
-            case ekLEFT:
-            case ekJUSTIFY:
+            case ekHLEFT:
+            case ekHJUSTIFY:
                 break;
 
-            case ekCENTER:
+            case ekHCENTER:
                 if (trimmed == FALSE)
                     origin.X += out.Width / 2;
                 break;
 
-            case ekRIGHT:
+            case ekHRIGHT:
                 if (trimmed == FALSE)
                     origin.X += out.Width;
                 break;
@@ -831,20 +831,20 @@ static Gdiplus::RectF i_text_origin(DCtx *ctx, const WCHAR *wtext, const real32_
             }
             break;
 
-        case ekCENTER:
+        case ekHCENTER:
             switch (ctx->text_intalign)
             {
-            case ekLEFT:
-            case ekJUSTIFY:
+            case ekHLEFT:
+            case ekHJUSTIFY:
                 origin.X -= out.Width / 2;
                 break;
 
-            case ekCENTER:
+            case ekHCENTER:
                 if (trimmed == TRUE)
                     origin.X -= out.Width / 2;
                 break;
 
-            case ekRIGHT:
+            case ekHRIGHT:
                 if (trimmed == TRUE)
                     origin.X -= out.Width / 2;
                 else
@@ -856,22 +856,22 @@ static Gdiplus::RectF i_text_origin(DCtx *ctx, const WCHAR *wtext, const real32_
             }
             break;
 
-        case ekRIGHT:
+        case ekHRIGHT:
             switch (ctx->text_intalign)
             {
-            case ekLEFT:
-            case ekJUSTIFY:
+            case ekHLEFT:
+            case ekHJUSTIFY:
                 origin.X -= out.Width;
                 break;
 
-            case ekCENTER:
+            case ekHCENTER:
                 if (trimmed == TRUE)
                     origin.X -= out.Width;
                 else
                     origin.X -= out.Width / 2;
                 break;
 
-            case ekRIGHT:
+            case ekHRIGHT:
                 if (trimmed == TRUE)
                     origin.X -= out.Width;
                 break;
@@ -887,13 +887,13 @@ static Gdiplus::RectF i_text_origin(DCtx *ctx, const WCHAR *wtext, const real32_
 
         switch (ctx->text_valign)
         {
-        case ekTOP:
-        case ekJUSTIFY:
+        case ekVTOP:
+        case ekVJUSTIFY:
             break;
-        case ekCENTER:
+        case ekVCENTER:
             origin.Y -= out.Height / 2;
             break;
-        case ekBOTTOM:
+        case ekVBOTTOM:
             origin.Y -= out.Height;
             break;
         default:
@@ -1024,7 +1024,7 @@ void draw_text_trim(DCtx *ctx, const ellipsis_t ellipsis)
 
 /*---------------------------------------------------------------------------*/
 
-void draw_text_align(DCtx *ctx, const align_t halign, const align_t valign)
+void draw_text_align(DCtx *ctx, const halign_t halign, const valign_t valign)
 {
     cassert_no_null(ctx);
     ctx->text_halign = halign;
@@ -1033,7 +1033,7 @@ void draw_text_align(DCtx *ctx, const align_t halign, const align_t valign)
 
 /*---------------------------------------------------------------------------*/
 
-void draw_text_halign(DCtx *ctx, const align_t halign)
+void draw_text_halign(DCtx *ctx, const halign_t halign)
 {
     cassert_no_null(ctx);
     ctx->text_intalign = halign;
@@ -1069,7 +1069,7 @@ void draw_text_extents(DCtx *ctx, const char_t *text, const real32_t refwidth, r
 
 /*---------------------------------------------------------------------------*/
 
-void draw_image_align(DCtx *ctx, const align_t halign, const align_t valign)
+void draw_image_align(DCtx *ctx, const halign_t halign, const valign_t valign)
 {
     cassert_no_null(ctx);
     ctx->image_halign = halign;

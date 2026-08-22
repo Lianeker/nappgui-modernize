@@ -32,8 +32,8 @@ struct _cdata_t
 {
     gint x;
     gint y;
-    align_t halign;
-    align_t valign;
+    halign_t halign;
+    valign_t valign;
     GtkWidget *parent;
 };
 
@@ -129,20 +129,20 @@ static void i_OnRealize(GtkWidget *widget, CData *data)
 {
     cassert_no_null(data);
 
-    if (data->halign != ekLEFT || data->valign != ekTOP)
+    if (data->halign != ekHLEFT || data->valign != ekVTOP)
     {
         gint width, height;
         gtk_window_get_size(GTK_WINDOW(widget), &width, &height);
 
         switch (data->halign)
         {
-        case ekLEFT:
-        case ekJUSTIFY:
+        case ekHLEFT:
+        case ekHJUSTIFY:
             break;
-        case ekCENTER:
+        case ekHCENTER:
             data->x -= width / 2;
             break;
-        case ekRIGHT:
+        case ekHRIGHT:
             data->x -= width;
             break;
         default:
@@ -151,13 +151,13 @@ static void i_OnRealize(GtkWidget *widget, CData *data)
 
         switch (data->valign)
         {
-        case ekTOP:
-        case ekJUSTIFY:
+        case ekVTOP:
+        case ekVJUSTIFY:
             break;
-        case ekCENTER:
+        case ekVCENTER:
             data->y -= height / 2;
             break;
-        case ekRIGHT:
+        case ekVBOTTOM:
             data->y -= height;
             break;
         default:
@@ -170,7 +170,7 @@ static void i_OnRealize(GtkWidget *widget, CData *data)
 
 /*---------------------------------------------------------------------------*/
 
-void oscomwin_color(OSWindow *parent, const char_t *title, const real32_t x, const real32_t y, const align_t halign, const align_t valign, const color_t current, color_t *colors, const uint32_t n, Listener *OnChange)
+void oscomwin_color(OSWindow *parent, const char_t *title, const real32_t x, const real32_t y, const halign_t halign, const valign_t valign, const color_t current, color_t *colors, const uint32_t n, Listener *OnChange)
 {
     GtkWidget *dialog = NULL;
     GtkColorChooser *chooser = NULL;

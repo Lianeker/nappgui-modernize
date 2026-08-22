@@ -958,7 +958,7 @@ OSButton *osbutton_create(const uint32_t flags)
     {
         cell->text = str_c("");
         _oscontrol_init_textattr(&cell->attrs);
-        _oscontrol_set_align(button, &cell->attrs, ekCENTER);
+        _oscontrol_set_align(button, &cell->attrs, ekHCENTER);
         _oscontrol_set_font(button, &cell->attrs, cell->attrs.font);
         cell->size = _osgui_size_font(font_size(cell->attrs.font));
         _oscontrol_set_text(button, &cell->attrs, tc(cell->text));
@@ -1071,7 +1071,7 @@ void osbutton_font(OSButton *button, const Font *font)
 
 /*---------------------------------------------------------------------------*/
 
-void osbutton_align(OSButton *button, const align_t align)
+void osbutton_align(OSButton *button, const halign_t align)
 {
     OSXButton *lbutton = cast(button, OSXButton);
     OSXButtonCell *cell = nil;

@@ -138,7 +138,7 @@ static void i_update_vpadding(OSEdit *edit)
 OSEdit *osedit_create(const uint32_t flags)
 {
     OSEdit *edit = heap_new0(OSEdit);
-    DWORD dwStyle = WS_CHILD | WS_CLIPSIBLINGS | _oscontrol_es_halign(ekLEFT) | i_flags(flags);
+    DWORD dwStyle = WS_CHILD | WS_CLIPSIBLINGS | _oscontrol_es_halign(ekHLEFT) | i_flags(flags);
     edit->control.type = ekGUI_TYPE_EDITBOX;
     edit->flags = flags;
     _oscontrol_init(cast(edit, OSControl), PARAM(dwExStyle, WS_EX_NOPARENTNOTIFY | WS_EX_CLIENTEDGE), dwStyle, WC_EDIT, 0, 0, i_WndProc, kDEFAULT_PARENT_WINDOW);
@@ -218,7 +218,7 @@ void osedit_tooltip(OSEdit *edit, const char_t *text)
 
 /*---------------------------------------------------------------------------*/
 
-void osedit_align(OSEdit *edit, const align_t align)
+void osedit_align(OSEdit *edit, const halign_t align)
 {
     DWORD dwStyle = 0;
     cassert_no_null(edit);

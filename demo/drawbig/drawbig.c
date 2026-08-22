@@ -119,8 +119,8 @@ static void i_draw_clipped(App *app, DCtx *ctx, const real32_t x, const real32_t
     draw_fill_color(ctx, color_gray(200));
     draw_line_color(ctx, kCOLOR_BLUE);
     draw_line_width(ctx, 1);
-    draw_text_align(ctx, ekCENTER, ekCENTER);
-    draw_text_halign(ctx, ekCENTER);
+    draw_text_align(ctx, ekHCENTER, ekVCENTER);
+    draw_text_halign(ctx, ekHCENTER);
 
     for (j = stj; j < edj; ++j)
     {
@@ -491,8 +491,8 @@ static Layout *i_control_layout(App *app)
     label_text(label1, "Goto Col:");
     label_text(label2, "Row:");
     label_text(label3, "Margin:");
-    edit_align(edit1, ekRIGHT);
-    edit_align(edit2, ekRIGHT);
+    edit_align(edit1, ekHRIGHT);
+    edit_align(edit2, ekHRIGHT);
     button_text(button1, "Draw overlay");
     button_text(button2, "Flyout");
     button_text(button3, "Colored");
@@ -551,7 +551,7 @@ static Layout *i_info_layout(App *app)
     Progress *progress = progress_create();
     char_t text[256];
 
-    label_align(label2, ekRIGHT);
+    label_align(label2, ekHRIGHT);
 
     layout_label(layout, label1, 0, 0);
     layout_label(layout, label2, 3, 0);
@@ -759,8 +759,8 @@ static void i_OnDrawFull(App *app, Event *e)
     /* Draw a text centered into view */
     draw_text_color(p->ctx, gui_label_color());
     draw_font(p->ctx, app->fullfont);
-    draw_text_align(p->ctx, ekCENTER, ekCENTER);
-    draw_text_halign(p->ctx, ekCENTER);
+    draw_text_align(p->ctx, ekHCENTER, ekVCENTER);
+    draw_text_halign(p->ctx, ekHCENTER);
     bstd_sprintf(text, sizeof(text), "Cell col: %d\nCell row: %d", app->sel_cell_x, app->sel_cell_y);
     draw_text(p->ctx, text, p->width / 2, p->height / 2);
 

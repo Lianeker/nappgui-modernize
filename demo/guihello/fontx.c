@@ -98,8 +98,8 @@ static Layout *i_label_layout(FontX *fontx)
     layout_label(layout2, label5, 0, 5);
     layout_label(layout2, label6, 0, 6);
     layout_vmargin(layout2, 0, 5);
-    layout_valign(layout1, 0, 0, ekTOP);
-    layout_valign(layout1, 1, 0, ekTOP);
+    layout_valign(layout1, 0, 0, ekVTOP);
+    layout_valign(layout1, 1, 0, ekVTOP);
     layout_hsize(layout1, 1, 300);
     layout_layout(layout1, layout2, 0, 0);
     layout_label(layout1, label7, 1, 0);
@@ -138,12 +138,12 @@ static Layout *i_button_layout(FontX *fontx)
     layout_button(layout, button4, 0, 3);
     layout_button(layout, button5, 0, 4);
     layout_button(layout, button6, 0, 5);
-    layout_halign(layout, 0, 0, ekLEFT);
-    layout_halign(layout, 0, 1, ekLEFT);
-    layout_halign(layout, 0, 2, ekLEFT);
-    layout_halign(layout, 0, 3, ekLEFT);
-    layout_halign(layout, 0, 4, ekLEFT);
-    layout_halign(layout, 0, 5, ekLEFT);
+    layout_halign(layout, 0, 0, ekHLEFT);
+    layout_halign(layout, 0, 1, ekHLEFT);
+    layout_halign(layout, 0, 2, ekHLEFT);
+    layout_halign(layout, 0, 3, ekHLEFT);
+    layout_halign(layout, 0, 4, ekHLEFT);
+    layout_halign(layout, 0, 5, ekHLEFT);
     return layout;
 }
 

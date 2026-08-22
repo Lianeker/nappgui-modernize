@@ -30,7 +30,7 @@ void _osentry_text(OSEntry *entry, const char_t *text);
 
 void _osentry_font(OSEntry *entry, const Font *font);
 
-void _osentry_align(OSEntry *entry, const align_t align);
+void _osentry_align(OSEntry *entry, const halign_t align);
 
 void _osentry_passmode(OSEntry *entry, const bool_t passmode);
 

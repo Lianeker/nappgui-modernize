@@ -172,7 +172,7 @@ static void i_OnTableData(AppData *data, Event *e)
         switch (pos->col)
         {
         case 0:
-            cell->align = ekLEFT;
+            cell->align = ekHLEFT;
             if (pos->node != NULL)
                 bstd_sprintf(data->temp_string, sizeof(data->temp_string), "%s", cast_const(pos->node, TreeNode)->name);
             else
@@ -180,7 +180,7 @@ static void i_OnTableData(AppData *data, Event *e)
             break;
 
         case 1:
-            cell->align = ekLEFT;
+            cell->align = ekHLEFT;
             if (pos->row % 3 == 0)
                 cell->icon = gui_image(ERROR16_PNG);
             else if (pos->row % 3 == 1)
@@ -192,37 +192,37 @@ static void i_OnTableData(AppData *data, Event *e)
             break;
 
         case 2:
-            cell->align = ekLEFT;
+            cell->align = ekHLEFT;
             bstd_sprintf(data->temp_string, sizeof(data->temp_string), "City %d", pos->row);
             break;
 
         case 3:
-            cell->align = ekRIGHT;
+            cell->align = ekHRIGHT;
             bstd_sprintf(data->temp_string, sizeof(data->temp_string), "%d", pos->row);
             break;
 
         case 4:
-            cell->align = ekRIGHT;
+            cell->align = ekHRIGHT;
             bstd_sprintf(data->temp_string, sizeof(data->temp_string), "%.2f", 10.5f + (real32_t)pos->row);
             break;
 
         case 5:
-            cell->align = ekCENTER;
+            cell->align = ekHCENTER;
             bstd_sprintf(data->temp_string, sizeof(data->temp_string), "Extra Data 1 %d", pos->row);
             break;
 
         case 6:
-            cell->align = ekCENTER;
+            cell->align = ekHCENTER;
             bstd_sprintf(data->temp_string, sizeof(data->temp_string), "Extra Data 2 %d", pos->row);
             break;
 
         case 7:
-            cell->align = ekCENTER;
+            cell->align = ekHCENTER;
             bstd_sprintf(data->temp_string, sizeof(data->temp_string), "Extra Data 3 %d", pos->row);
             break;
 
         case 8:
-            cell->align = ekCENTER;
+            cell->align = ekHCENTER;
             bstd_sprintf(data->temp_string, sizeof(data->temp_string), "Extra Data 4 %d", pos->row);
             break;
 
@@ -374,8 +374,8 @@ static Layout *i_table_control_layout(AppData *data)
     layout_vmargin(layout2, 3, 5.f);
     layout_vmargin(layout2, 4, 5.f);
     layout_vmargin(layout2, 5, 5.f);
-    layout_halign(layout2, 0, 0, ekLEFT);
-    layout_halign(layout2, 0, 6, ekLEFT);
+    layout_halign(layout2, 0, 0, ekHLEFT);
+    layout_halign(layout2, 0, 6, ekHLEFT);
     button_OnClick(button1, listener(data, i_OnMultisel, AppData));
     button_OnClick(button2, listener(data, i_OnMultisel, AppData));
     button_OnClick(button3, listener(data, i_OnMultisel, AppData));
@@ -438,15 +438,15 @@ Panel *table_view(void)
     tableview_column_width(table, 8, 200);
     tableview_column_limits(table, 2, 50, 100);
     tableview_column_freeze(table, 1);
-    tableview_header_align(table, 0, ekLEFT);
-    tableview_header_align(table, 1, ekLEFT);
-    tableview_header_align(table, 2, ekLEFT);
-    tableview_header_align(table, 3, ekRIGHT);
-    tableview_header_align(table, 4, ekRIGHT);
-    tableview_header_align(table, 5, ekCENTER);
-    tableview_header_align(table, 6, ekCENTER);
-    tableview_header_align(table, 7, ekCENTER);
-    tableview_header_align(table, 8, ekCENTER);
+    tableview_header_align(table, 0, ekHLEFT);
+    tableview_header_align(table, 1, ekHLEFT);
+    tableview_header_align(table, 2, ekHLEFT);
+    tableview_header_align(table, 3, ekHRIGHT);
+    tableview_header_align(table, 4, ekHRIGHT);
+    tableview_header_align(table, 5, ekHCENTER);
+    tableview_header_align(table, 6, ekHCENTER);
+    tableview_header_align(table, 7, ekHCENTER);
+    tableview_header_align(table, 8, ekHCENTER);
     tableview_multisel(table, FALSE, FALSE);
     tableview_header_visible(table, TRUE);
     tableview_grid(table, TRUE, TRUE);
@@ -455,7 +455,7 @@ Panel *table_view(void)
     {
         uint32_t row = 20;
         tableview_select(table, &row, 1);
-        tableview_focus_row(table, row, ekBOTTOM);
+        tableview_focus_row(table, row, ekVBOTTOM);
     }
 
     layout_layout(layout1, layout2, 0, 0);

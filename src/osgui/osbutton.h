@@ -29,7 +29,7 @@ _osgui_api void osbutton_tooltip(OSButton *button, const char_t *text);
 
 _osgui_api void osbutton_font(OSButton *button, const Font *font);
 
-_osgui_api void osbutton_align(OSButton *button, const align_t align);
+_osgui_api void osbutton_align(OSButton *button, const halign_t align);
 
 _osgui_api void osbutton_image(OSButton *button, const Image *image);
 

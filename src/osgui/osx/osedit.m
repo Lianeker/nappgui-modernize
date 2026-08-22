@@ -220,7 +220,7 @@ void osedit_font(OSEdit *edit, const Font *font)
 
 /*---------------------------------------------------------------------------*/
 
-void osedit_align(OSEdit *edit, const align_t align)
+void osedit_align(OSEdit *edit, const halign_t align)
 {
     cassert_no_null(edit);
     cassert([cast(edit, NSObject) isKindOfClass:[OSXEdit class]] == YES);

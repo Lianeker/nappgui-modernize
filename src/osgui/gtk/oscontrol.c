@@ -147,17 +147,17 @@ void _oscontrol_destroy(OSControl *control)
 
 /*---------------------------------------------------------------------------*/
 
-static GtkAlign i_align(const align_t align)
+static GtkAlign i_align(const halign_t align)
 {
     switch (align)
     {
-    case ekLEFT:
+    case ekHLEFT:
         return GTK_ALIGN_START;
-    case ekCENTER:
+    case ekHCENTER:
         return GTK_ALIGN_CENTER;
-    case ekRIGHT:
+    case ekHRIGHT:
         return GTK_ALIGN_END;
-    case ekJUSTIFY:
+    case ekHJUSTIFY:
         return GTK_ALIGN_FILL;
     default:
         cassert_default(align);
@@ -167,7 +167,7 @@ static GtkAlign i_align(const align_t align)
 
 /*---------------------------------------------------------------------------*/
 
-void _oscontrol_set_halign(OSControl *control, const align_t align)
+void _oscontrol_set_halign(OSControl *control, const halign_t align)
 {
     GtkAlign a = i_align(align);
     cassert_no_null(control);
@@ -705,17 +705,17 @@ void _oscontrol_to_gdkrgba(const color_t color, GdkRGBA *gdkcolor)
 
 /*---------------------------------------------------------------------------*/
 
-GtkJustification _oscontrol_justification(const align_t align)
+GtkJustification _oscontrol_justification(const halign_t align)
 {
     switch (align)
     {
-    case ekLEFT:
+    case ekHLEFT:
         return GTK_JUSTIFY_LEFT;
-    case ekCENTER:
+    case ekHCENTER:
         return GTK_JUSTIFY_CENTER;
-    case ekJUSTIFY:
+    case ekHJUSTIFY:
         return GTK_JUSTIFY_FILL;
-    case ekRIGHT:
+    case ekHRIGHT:
         return GTK_JUSTIFY_RIGHT;
     default:
         cassert_default(align);
@@ -726,16 +726,16 @@ GtkJustification _oscontrol_justification(const align_t align)
 
 /*---------------------------------------------------------------------------*/
 
-PangoAlignment _oscontrol_alignment(const align_t align)
+PangoAlignment _oscontrol_alignment(const halign_t align)
 {
     switch (align)
     {
-    case ekLEFT:
-    case ekJUSTIFY:
+    case ekHLEFT:
+    case ekHJUSTIFY:
         return PANGO_ALIGN_LEFT;
-    case ekCENTER:
+    case ekHCENTER:
         return PANGO_ALIGN_CENTER;
-    case ekRIGHT:
+    case ekHRIGHT:
         return PANGO_ALIGN_RIGHT;
     default:
         cassert_default(align);

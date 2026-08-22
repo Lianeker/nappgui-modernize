@@ -109,9 +109,9 @@ static void i_value_labels(Layout *layout)
     for (i = 0; i < i_NUM_CONTROLS; ++i)
     {
         Label *label = label_create();
-        label_align(label, ekCENTER);
+        label_align(label, ekHCENTER);
         layout_label(layout, label, 2, i);
-        layout_halign(layout, 2, i, ekJUSTIFY);
+        layout_halign(layout, 2, i, ekHJUSTIFY);
     }
 
     layout_hsize(layout, 2, 80);
@@ -153,8 +153,8 @@ static Layout *i_layout(void)
     layout_listbox(layout, listbox, 1, 6);
     layout_slider(layout, slider, 1, 7);
     layout_updown(layout, updown, 1, 8);
-    layout_halign(layout, 1, 0, ekJUSTIFY);
-    layout_halign(layout, 1, 8, ekLEFT);
+    layout_halign(layout, 1, 0, ekHJUSTIFY);
+    layout_halign(layout, 1, 8, ekHLEFT);
     cell_dbind(layout_cell(layout, 1, 0), BasicTypes, String *, str_val);
     cell_dbind(layout_cell(layout, 1, 1), BasicTypes, String *, str_val);
     cell_dbind(layout_cell(layout, 1, 2), BasicTypes, bool_t, bool_val);

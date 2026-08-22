@@ -32,7 +32,7 @@ _gui_api void combo_width(Combo *combo, const real32_t width);
 
 _gui_api void combo_text(Combo *combo, const char_t *text);
 
-_gui_api void combo_align(Combo *combo, const align_t align);
+_gui_api void combo_align(Combo *combo, const halign_t align);
 
 _gui_api void combo_passmode(Combo *combo, const bool_t passmode);
 

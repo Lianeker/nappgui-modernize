@@ -143,7 +143,7 @@ static Panel *i_panel(App *app)
     layout_vmargin(layout1, 3, 5);
     layout_vmargin(layout1, 4, 5);
     layout_hexpand(layout, 0);
-    layout_valign(layout, 1, 0, ekTOP);
+    layout_valign(layout, 1, 0, ekVTOP);
     panel_layout(panel, layout);
     return panel;
 }

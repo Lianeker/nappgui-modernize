@@ -623,24 +623,24 @@ void plot_draw_graph1(Plot *plot, DCtx *ctx, const real32_t width, const real32_
     if (db_canvas_point.x != REAL32_MAX)
     {
         char_t text[16];
-        align_t align = db_canvas_point.x < width / 2 ? ekLEFT : ekRIGHT;
+        halign_t align = db_canvas_point.x < width / 2 ? ekHLEFT : ekHRIGHT;
         draw_fill_color(ctx, plot->colgrap11);
         draw_text_color(ctx, plot->colgrap11);
         draw_circle(ctx, ekFILL, db_canvas_point.x, height - db_canvas_point.y, 4);
         bstd_sprintf(text, sizeof(text), "%.3f", db_point.y);
-        draw_text_align(ctx, align, ekBOTTOM);
+        draw_text_align(ctx, align, ekVBOTTOM);
         draw_text(ctx, text, db_canvas_point.x, height - db_canvas_point.y);
     }
 
     if (phase_canvas_point.x != REAL32_MAX)
     {
         char_t text[16];
-        align_t align = db_canvas_point.x < width / 2 ? ekLEFT : ekRIGHT;
+        halign_t align = db_canvas_point.x < width / 2 ? ekHLEFT : ekHRIGHT;
         draw_fill_color(ctx, plot->colgrap21);
         draw_text_color(ctx, plot->colgrap21);
         draw_circle(ctx, ekFILL, phase_canvas_point.x, height - phase_canvas_point.y, 4);
         bstd_sprintf(text, sizeof(text), "%.3f", phase_point.y);
-        draw_text_align(ctx, align, ekBOTTOM);
+        draw_text_align(ctx, align, ekVBOTTOM);
         draw_text(ctx, text, phase_canvas_point.x, height - phase_canvas_point.y);
     }
 
@@ -671,17 +671,17 @@ void plot_draw_graph1(Plot *plot, DCtx *ctx, const real32_t width, const real32_
         if (db_canvas_point.x != REAL32_MAX)
         {
             char_t text[16];
-            align_t align = db_canvas_point.x < width / 2 ? ekLEFT : ekRIGHT;
+            halign_t align = db_canvas_point.x < width / 2 ? ekHLEFT : ekHRIGHT;
             p0.x = bmath_roundf(db_canvas_point.x);
             p0.y = height - (iframe.pos.y + 30.f);
             bstd_sprintf(text, sizeof(text), "%.3f", db_point.x);
-            draw_text_align(ctx, align, ekTOP);
+            draw_text_align(ctx, align, ekVTOP);
         }
 
         graph_x = min_db_grid_x_value;
         p0.y = height - iframe.pos.y;
         p1.y = height - (iframe.pos.y + 10.f);
-        draw_text_align(ctx, ekCENTER, ekTOP);
+        draw_text_align(ctx, ekHCENTER, ekVTOP);
 
         for (i = 0; i <= num_db_grid_x_steps; ++i)
         {
@@ -706,7 +706,7 @@ void plot_draw_graph1(Plot *plot, DCtx *ctx, const real32_t width, const real32_
         graph_y = min_db_grid_y_value;
         p0.x = iframe.pos.x;
         p1.x = iframe.pos.x + 10.f;
-        draw_text_align(ctx, ekRIGHT, ekCENTER);
+        draw_text_align(ctx, ekHRIGHT, ekVCENTER);
 
         for (i = 0; i <= num_db_grid_y_steps; ++i)
         {
@@ -733,7 +733,7 @@ void plot_draw_graph1(Plot *plot, DCtx *ctx, const real32_t width, const real32_
         graph_y = min_phase_grid_y_value;
         p0.x = iframe.pos.x + iframe.size.width;
         p1.x = p0.x - 10.f;
-        draw_text_align(ctx, ekLEFT, ekCENTER);
+        draw_text_align(ctx, ekHLEFT, ekVCENTER);
 
         for (i = 0; i <= num_phase_grid_y_steps; ++i)
         {
@@ -760,7 +760,7 @@ void plot_draw_graph1(Plot *plot, DCtx *ctx, const real32_t width, const real32_
         V2Df text_pos;
         text_pos.x = LMARGIN;
         text_pos.y = 0.f;
-        draw_text_align(ctx, ekRIGHT, ekTOP);
+        draw_text_align(ctx, ekHRIGHT, ekVTOP);
         draw_text_color(ctx, plot->colgrap11);
         draw_text(ctx, "dB", text_pos.x, text_pos.y);
 
@@ -873,12 +873,12 @@ void plot_draw_graph2(Plot *plot, DCtx *ctx, const real32_t width, const real32_
     if (simu_canvas_point.x != REAL32_MAX)
     {
         char_t text[16];
-        align_t align = simu_canvas_point.x < width / 2 ? ekLEFT : ekRIGHT;
+        halign_t align = simu_canvas_point.x < width / 2 ? ekHLEFT : ekHRIGHT;
         draw_fill_color(ctx, plot->colgrap11);
         draw_text_color(ctx, plot->colgrap11);
         draw_circle(ctx, ekFILL, simu_canvas_point.x, height - simu_canvas_point.y, 4);
         bstd_sprintf(text, sizeof(text), "%.3f", simu_point.y);
-        draw_text_align(ctx, align, ekBOTTOM);
+        draw_text_align(ctx, align, ekVBOTTOM);
         draw_text(ctx, text, simu_canvas_point.x, height - simu_canvas_point.y);
     }
 
@@ -924,18 +924,18 @@ void plot_draw_graph2(Plot *plot, DCtx *ctx, const real32_t width, const real32_
         if (simu_canvas_point.x != REAL32_MAX)
         {
             char_t text[16];
-            align_t align = simu_canvas_point.x < width / 2 ? ekLEFT : ekRIGHT;
+            halign_t align = simu_canvas_point.x < width / 2 ? ekHLEFT : ekHRIGHT;
             p0.x = bmath_roundf(simu_canvas_point.x);
             p0.y = height - (iframe.pos.y + 30.f);
             bstd_sprintf(text, sizeof(text), "%.3f", simu_point.x);
-            draw_text_align(ctx, align, ekTOP);
+            draw_text_align(ctx, align, ekVTOP);
             draw_text(ctx, text, p0.x, p0.y);
         }
 
         graph_x = min_simu_grid_x_value;
         p0.y = height - iframe.pos.y;
         p1.y = height - (iframe.pos.y + 10.f);
-        draw_text_align(ctx, ekCENTER, ekTOP);
+        draw_text_align(ctx, ekHCENTER, ekVTOP);
 
         for (i = 0; i <= num_simu_grid_x_steps; ++i)
         {
@@ -960,7 +960,7 @@ void plot_draw_graph2(Plot *plot, DCtx *ctx, const real32_t width, const real32_
         graph_y = min_simu_grid_y_value;
         p0.x = iframe.pos.x;
         p1.x = iframe.pos.x + 10.f;
-        draw_text_align(ctx, ekRIGHT, ekCENTER);
+        draw_text_align(ctx, ekHRIGHT, ekVCENTER);
 
         for (i = 0; i <= num_simu_grid_y_steps; ++i)
         {
@@ -990,7 +990,7 @@ void plot_draw_graph2(Plot *plot, DCtx *ctx, const real32_t width, const real32_
         text_pos.x = 5.f;
         text_pos.y = 0.f;
         draw_text_color(ctx, plot->colgrap11);
-        draw_text_align(ctx, ekLEFT, ekTOP);
+        draw_text_align(ctx, ekHLEFT, ekVTOP);
         draw_text(ctx, "y", text_pos.x, text_pos.y);
     }
 }

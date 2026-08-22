@@ -83,7 +83,7 @@ _draw2d_api void guictx_append_button_manager_imp(
         FUNC_CHECK_GCTX_SET_TEXT(func_button_set_text, button_type), \
         FUNC_CHECK_GCTX_SET_TEXT(func_button_set_tooltip, button_type), \
         FUNC_CHECK_GCTX_SET_CPTR(func_button_set_font, button_type, font_type), \
-        FUNC_CHECK_GCTX_SET_ENUM(func_button_set_align, button_type, align_t), \
+        FUNC_CHECK_GCTX_SET_ENUM(func_button_set_align, button_type, halign_t), \
         FUNC_CHECK_GCTX_SET_CPTR(func_button_set_image, button_type, image_type), \
         FUNC_CHECK_GCTX_SET_ENUM(func_button_set_image_pos, button_type, gui_pos_t), \
         FUNC_CHECK_GCTX_SET_ENUM(func_button_set_state, button_type, gui_state_t), \
@@ -263,7 +263,7 @@ _draw2d_api void guictx_append_edit_manager_imp(
         FUNC_CHECK_GCTX_SET_TEXT(func_edit_set_text, edit_type), \
         FUNC_CHECK_GCTX_SET_TEXT(func_edit_set_tooltip, edit_type), \
         FUNC_CHECK_GCTX_SET_CPTR(func_edit_set_font, edit_type, font_type), \
-        FUNC_CHECK_GCTX_SET_ENUM(func_edit_set_align, edit_type, align_t), \
+        FUNC_CHECK_GCTX_SET_ENUM(func_edit_set_align, edit_type, halign_t), \
         FUNC_CHECK_GCTX_SET_BOOL(func_edit_set_passmode, edit_type), \
         FUNC_CHECK_GCTX_SET_BOOL(func_edit_set_editable, edit_type), \
         FUNC_CHECK_GCTX_SET_BOOL(func_edit_set_autoselect, edit_type), \
@@ -381,7 +381,7 @@ _draw2d_api void guictx_append_combo_manager_imp(
         FUNC_CHECK_GCTX_SET_TEXT(func_combo_set_text, combo_type), \
         FUNC_CHECK_GCTX_SET_TEXT(func_combo_set_tooltip, combo_type), \
         FUNC_CHECK_GCTX_SET_CPTR(func_combo_set_font, combo_type, font_type), \
-        FUNC_CHECK_GCTX_SET_ENUM(func_combo_set_align, combo_type, align_t), \
+        FUNC_CHECK_GCTX_SET_ENUM(func_combo_set_align, combo_type, halign_t), \
         FUNC_CHECK_GCTX_SET_BOOL(func_combo_set_passmode, combo_type), \
         FUNC_CHECK_GCTX_SET_BOOL(func_combo_set_editable, combo_type), \
         FUNC_CHECK_GCTX_SET_BOOL(func_combo_set_autoselect, combo_type), \

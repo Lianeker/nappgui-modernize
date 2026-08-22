@@ -48,7 +48,7 @@ struct _ostext_t
     uint32_t fstyle;
     color_t color;
     color_t bgcolor;
-    align_t align;
+    halign_t align;
     gint lspacing_px;
     gint bfspace_px;
     gint afspace_px;
@@ -210,7 +210,7 @@ static GtkTextTag *i_tag_attribs(OSText *view)
         g_value_unset(&gvalue);
     }
 
-    if (view->align != ekLEFT)
+    if (view->align != ekHLEFT)
     {
         GtkJustification justif = _oscontrol_justification(view->align);
         GValue gvalue = G_VALUE_INIT;
@@ -882,9 +882,9 @@ void ostext_property(OSText *view, const gui_text_t prop, const void *value)
     }
 
     case ekGUI_TEXT_PARALIGN:
-        if (view->align != *cast(value, align_t))
+        if (view->align != *cast(value, halign_t))
         {
-            view->align = *cast(value, align_t);
+            view->align = *cast(value, halign_t);
             view->tag_attribs = NULL;
         }
         break;

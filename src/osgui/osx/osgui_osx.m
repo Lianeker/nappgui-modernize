@@ -168,11 +168,11 @@ void _osgui_start_imp(void)
     kUNDERLINE_STYLE_NONE = [[NSNumber alloc] initWithInt:NSUnderlineStyleNone];
     kUNDERLINE_STYLE_SINGLE = [[NSNumber alloc] initWithInt:NSUnderlineStyleSingle];
     kLEFT_PARAGRAPH_STYLE = [[NSParagraphStyle defaultParagraphStyle] mutableCopy];
-    [kLEFT_PARAGRAPH_STYLE setAlignment:_oscontrol_text_alignment(ekLEFT)];
+    [kLEFT_PARAGRAPH_STYLE setAlignment:_oscontrol_text_alignment(ekHLEFT)];
     kCENTER_PARAGRAPH_STYLE = [[NSParagraphStyle defaultParagraphStyle] mutableCopy];
-    [kCENTER_PARAGRAPH_STYLE setAlignment:_oscontrol_text_alignment(ekCENTER)];
+    [kCENTER_PARAGRAPH_STYLE setAlignment:_oscontrol_text_alignment(ekHCENTER)];
     kRIGHT_PARAGRAPH_STYLE = [[NSParagraphStyle defaultParagraphStyle] mutableCopy];
-    [kRIGHT_PARAGRAPH_STYLE setAlignment:_oscontrol_text_alignment(ekRIGHT)];
+    [kRIGHT_PARAGRAPH_STYLE setAlignment:_oscontrol_text_alignment(ekHRIGHT)];
     kEMPTY_MENUBAR = [[NSMenu alloc] initWithTitle:@""];
     _osglobals_init();
     _ossplit_create_tracks();
@@ -417,7 +417,7 @@ void _osgui_groupbox_text(const NSRect *frame, const char_t *text)
         Font *font = _osgui_create_default_font();
         NSMutableParagraphStyle *pstyle = [[NSMutableParagraphStyle alloc] init];
         [pstyle setLineBreakMode:NSLineBreakByTruncatingTail];
-        [pstyle setAlignment:_oscontrol_text_alignment(ekLEFT)];
+        [pstyle setAlignment:_oscontrol_text_alignment(ekHLEFT)];
         kGROUP_BOX_ATTRS = [[NSMutableDictionary alloc] init];
         [kGROUP_BOX_ATTRS setValue:cast(font_native(font), NSFont) forKey:NSFontAttributeName];
         [kGROUP_BOX_ATTRS setValue:_oscontrol_label_color() forKey:NSForegroundColorAttributeName];

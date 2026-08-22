@@ -88,7 +88,7 @@ static void i_OnColorSel(WCommons *coms, Event *e)
     unref(e);
     pos = window_get_origin(coms->parent);
     size = window_get_size(coms->parent);
-    comwin_color(coms->parent, "This is title for color dialog", pos.x + size.width / 2, pos.y + size.height / 2, ekCENTER, ekCENTER, coms->color, coms->colors, sizeof(coms->colors) / sizeof(color_t), listener(coms, i_OnColorChange, WCommons));
+    comwin_color(coms->parent, "This is title for color dialog", pos.x + size.width / 2, pos.y + size.height / 2, ekHCENTER, ekVCENTER, coms->color, coms->colors, sizeof(coms->colors) / sizeof(color_t), listener(coms, i_OnColorChange, WCommons));
 }
 
 /*---------------------------------------------------------------------------*/

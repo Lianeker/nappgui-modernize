@@ -341,18 +341,18 @@ static void i_draw_wrap_gradient(DCtx *ctx)
 
 /*---------------------------------------------------------------------------*/
 
-static void i_draw_text_rect(DCtx *ctx, const real32_t x, const real32_t y, const real32_t w, const real32_t h, const align_t halign, const align_t valign)
+static void i_draw_text_rect(DCtx *ctx, const real32_t x, const real32_t y, const real32_t w, const real32_t h, const halign_t halign, const valign_t valign)
 {
     real32_t rx = x, ry = y;
     switch (halign)
     {
-    case ekLEFT:
-    case ekJUSTIFY:
+    case ekHLEFT:
+    case ekHJUSTIFY:
         break;
-    case ekCENTER:
+    case ekHCENTER:
         rx -= w / 2;
         break;
-    case ekRIGHT:
+    case ekHRIGHT:
         rx -= w;
         break;
     default:
@@ -361,13 +361,13 @@ static void i_draw_text_rect(DCtx *ctx, const real32_t x, const real32_t y, cons
 
     switch (valign)
     {
-    case ekTOP:
-    case ekJUSTIFY:
+    case ekVTOP:
+    case ekVJUSTIFY:
         break;
-    case ekCENTER:
+    case ekVCENTER:
         ry -= h / 2;
         break;
-    case ekBOTTOM:
+    case ekVBOTTOM:
         ry -= h;
         break;
     default:
@@ -379,7 +379,7 @@ static void i_draw_text_rect(DCtx *ctx, const real32_t x, const real32_t y, cons
 
 /*---------------------------------------------------------------------------*/
 
-static void i_draw_text(DCtx *ctx, const char_t *text, const real32_t x, const real32_t y, const real32_t w, const real32_t h, const align_t halign, const align_t valign)
+static void i_draw_text(DCtx *ctx, const char_t *text, const real32_t x, const real32_t y, const real32_t w, const real32_t h, const halign_t halign, const valign_t valign)
 {
     draw_text_align(ctx, halign, valign);
 
@@ -404,7 +404,7 @@ static void i_text_single(DCtx *ctx, const real32_t xscale, const real32_t text_
     draw_text_color(ctx, kCOLOR_BLUE);
     draw_line_color(ctx, kCOLOR_RED);
     draw_fill_color(ctx, kCOLOR_RED);
-    draw_text_halign(ctx, (align_t)(text_align + 1));
+    draw_text_halign(ctx, (halign_t)(text_align + 1));
 
     if (text_trim > 0)
     {
@@ -422,45 +422,45 @@ static void i_text_single(DCtx *ctx, const real32_t xscale, const real32_t text_
         draw_text_width(ctx, -1);
     }
 
-    i_draw_text(ctx, text, 25, 25, w, h, ekLEFT, ekTOP);
-    i_draw_text(ctx, text, 300, 25, w, h, ekCENTER, ekTOP);
-    i_draw_text(ctx, text, 575, 25, w, h, ekRIGHT, ekTOP);
-    i_draw_text(ctx, text, 25, 100, w, h, ekLEFT, ekCENTER);
-    i_draw_text(ctx, text, 300, 100, w, h, ekCENTER, ekCENTER);
-    i_draw_text(ctx, text, 575, 100, w, h, ekRIGHT, ekCENTER);
-    i_draw_text(ctx, text, 25, 175, w, h, ekLEFT, ekBOTTOM);
-    i_draw_text(ctx, text, 300, 175, w, h, ekCENTER, ekBOTTOM);
-    i_draw_text(ctx, text, 575, 175, w, h, ekRIGHT, ekBOTTOM);
+    i_draw_text(ctx, text, 25, 25, w, h, ekHLEFT, ekVTOP);
+    i_draw_text(ctx, text, 300, 25, w, h, ekHCENTER, ekVTOP);
+    i_draw_text(ctx, text, 575, 25, w, h, ekHRIGHT, ekVTOP);
+    i_draw_text(ctx, text, 25, 100, w, h, ekHLEFT, ekVCENTER);
+    i_draw_text(ctx, text, 300, 100, w, h, ekHCENTER, ekVCENTER);
+    i_draw_text(ctx, text, 575, 100, w, h, ekHRIGHT, ekVCENTER);
+    i_draw_text(ctx, text, 25, 175, w, h, ekHLEFT, ekVBOTTOM);
+    i_draw_text(ctx, text, 300, 175, w, h, ekHCENTER, ekVBOTTOM);
+    i_draw_text(ctx, text, 575, 175, w, h, ekHRIGHT, ekVBOTTOM);
 
     t2d_movef(&matrix, kT2D_IDENTf, 25, 200);
     t2d_rotatef(&matrix, &matrix, kBMATH_PIf / 8);
     draw_matrixf(ctx, &matrix);
-    i_draw_text(ctx, text, 0, 0, w, h, ekLEFT, ekTOP);
+    i_draw_text(ctx, text, 0, 0, w, h, ekHLEFT, ekVTOP);
 
     t2d_movef(&matrix, kT2D_IDENTf, 300, 250);
     t2d_rotatef(&matrix, &matrix, -kBMATH_PIf / 8);
     draw_matrixf(ctx, &matrix);
-    i_draw_text(ctx, text, 0, 0, w, h, ekCENTER, ekCENTER);
+    i_draw_text(ctx, text, 0, 0, w, h, ekHCENTER, ekVCENTER);
 
     t2d_movef(&matrix, kT2D_IDENTf, 25, 325);
     t2d_scalef(&matrix, &matrix, 3, 1);
     draw_matrixf(ctx, &matrix);
-    i_draw_text(ctx, text, 0, 0, w, h, ekLEFT, ekTOP);
+    i_draw_text(ctx, text, 0, 0, w, h, ekHLEFT, ekVTOP);
 
     t2d_movef(&matrix, kT2D_IDENTf, 575, 200);
     t2d_scalef(&matrix, &matrix, .5f, 1);
     draw_matrixf(ctx, &matrix);
-    i_draw_text(ctx, text, 0, 0, w, h, ekRIGHT, ekTOP);
+    i_draw_text(ctx, text, 0, 0, w, h, ekHRIGHT, ekVTOP);
 
     t2d_movef(&matrix, kT2D_IDENTf, 575, 230);
     t2d_scalef(&matrix, &matrix, .75f, 1);
     draw_matrixf(ctx, &matrix);
-    i_draw_text(ctx, text, 0, 0, w, h, ekRIGHT, ekTOP);
+    i_draw_text(ctx, text, 0, 0, w, h, ekHRIGHT, ekVTOP);
 
     t2d_movef(&matrix, kT2D_IDENTf, 575, 260);
     t2d_scalef(&matrix, &matrix, 1.25f, 1);
     draw_matrixf(ctx, &matrix);
-    i_draw_text(ctx, text, 0, 0, w, h, ekRIGHT, ekTOP);
+    i_draw_text(ctx, text, 0, 0, w, h, ekHRIGHT, ekVTOP);
 
     font_destroy(&bfont);
     font_destroy(&font);
@@ -482,26 +482,26 @@ static void i_text_newline(DCtx *ctx, const real32_t xscale, const uint32_t alig
     draw_line_color(ctx, kCOLOR_RED);
     draw_fill_color(ctx, kCOLOR_RED);
     draw_text_width(ctx, -1);
-    draw_text_halign(ctx, (align_t)(align + 1));
-    i_draw_text(ctx, text, 25, 25, w1, h1, ekLEFT, ekTOP);
-    i_draw_text(ctx, text, 300, 25, w1, h1, ekCENTER, ekTOP);
-    i_draw_text(ctx, text, 575, 25, w1, h1, ekRIGHT, ekTOP);
-    i_draw_text(ctx, text, 25, 175, w1, h1, ekLEFT, ekCENTER);
-    i_draw_text(ctx, text, 300, 175, w1, h1, ekCENTER, ekCENTER);
-    i_draw_text(ctx, text, 575, 175, w1, h1, ekRIGHT, ekCENTER);
-    i_draw_text(ctx, text, 25, 325, w1, h1, ekLEFT, ekBOTTOM);
-    i_draw_text(ctx, text, 300, 325, w1, h1, ekCENTER, ekBOTTOM);
-    i_draw_text(ctx, text, 575, 325, w1, h1, ekRIGHT, ekBOTTOM);
-    i_draw_text(ctx, stext, 25, 350, w2, h2, ekLEFT, ekTOP);
-    i_draw_text(ctx, stext, 300, 350, w2, h2, ekCENTER, ekTOP);
-    i_draw_text(ctx, stext, 575, 350, w2, h2, ekRIGHT, ekTOP);
+    draw_text_halign(ctx, (halign_t)(align + 1));
+    i_draw_text(ctx, text, 25, 25, w1, h1, ekHLEFT, ekVTOP);
+    i_draw_text(ctx, text, 300, 25, w1, h1, ekHCENTER, ekVTOP);
+    i_draw_text(ctx, text, 575, 25, w1, h1, ekHRIGHT, ekVTOP);
+    i_draw_text(ctx, text, 25, 175, w1, h1, ekHLEFT, ekVCENTER);
+    i_draw_text(ctx, text, 300, 175, w1, h1, ekHCENTER, ekVCENTER);
+    i_draw_text(ctx, text, 575, 175, w1, h1, ekHRIGHT, ekVCENTER);
+    i_draw_text(ctx, text, 25, 325, w1, h1, ekHLEFT, ekVBOTTOM);
+    i_draw_text(ctx, text, 300, 325, w1, h1, ekHCENTER, ekVBOTTOM);
+    i_draw_text(ctx, text, 575, 325, w1, h1, ekHRIGHT, ekVBOTTOM);
+    i_draw_text(ctx, stext, 25, 350, w2, h2, ekHLEFT, ekVTOP);
+    i_draw_text(ctx, stext, 300, 350, w2, h2, ekHCENTER, ekVTOP);
+    i_draw_text(ctx, stext, 575, 350, w2, h2, ekHRIGHT, ekVTOP);
     font_destroy(&bfont);
     font_destroy(&font);
 }
 
 /*---------------------------------------------------------------------------*/
 
-static void i_draw_text_block(DCtx *ctx, const char_t *text, const real32_t x, const real32_t y, const real32_t max_width, const real32_t w, const real32_t h, const align_t halign, const align_t valign)
+static void i_draw_text_block(DCtx *ctx, const char_t *text, const real32_t x, const real32_t y, const real32_t max_width, const real32_t w, const real32_t h, const halign_t halign, const valign_t valign)
 {
     real32_t dash[2] = {1, 1};
     i_draw_text(ctx, text, x, y, max_width, h, halign, valign);
@@ -522,12 +522,12 @@ static void i_text_block(DCtx *ctx, const real32_t xscale, const real32_t text_w
     draw_text_color(ctx, kCOLOR_BLUE);
     draw_line_color(ctx, kCOLOR_RED);
     draw_fill_color(ctx, kCOLOR_RED);
-    draw_text_halign(ctx, (align_t)(align + 1));
+    draw_text_halign(ctx, (halign_t)(align + 1));
     draw_text_width(ctx, text_width);
     draw_text_extents(ctx, text, text_width, &w, &h);
-    i_draw_text_block(ctx, text, 25, 25, text_width, w, h, ekLEFT, ekTOP);
-    i_draw_text_block(ctx, text, 400, 25, text_width, w, h, ekCENTER, ekTOP);
-    i_draw_text_block(ctx, text, 500, 200, text_width, w, h, ekRIGHT, ekTOP);
+    i_draw_text_block(ctx, text, 25, 25, text_width, w, h, ekHLEFT, ekVTOP);
+    i_draw_text_block(ctx, text, 400, 25, text_width, w, h, ekHCENTER, ekVTOP);
+    i_draw_text_block(ctx, text, 500, 200, text_width, w, h, ekHRIGHT, ekVTOP);
     font_destroy(&bfont);
     font_destroy(&font);
 }
@@ -574,7 +574,7 @@ static void i_text_art(DCtx *ctx)
 
 /*---------------------------------------------------------------------------*/
 
-static void i_draw_text_raster(DCtx *ctx, const char_t *text, const real32_t x, const real32_t y, const real32_t w, const real32_t h, const align_t halign)
+static void i_draw_text_raster(DCtx *ctx, const char_t *text, const real32_t x, const real32_t y, const real32_t w, const real32_t h, const halign_t halign)
 {
     draw_text_halign(ctx, halign);
     drawctrl_text(ctx, text, (int32_t)x, (int32_t)y, ekCTRL_STATE_NORMAL);
@@ -588,7 +588,7 @@ static void i_text_raster(DCtx *ctx, const real32_t xscale, const real32_t text_
 {
     Font *bfont = font_system(20, 0);
     Font *font = font_with_xscale(bfont, xscale);
-    align_t halign = (align_t)(align + 1);
+    halign_t halign = (halign_t)(align + 1);
 
     draw_font(ctx, font);
     draw_line_color(ctx, kCOLOR_RED);
@@ -652,19 +652,19 @@ static void i_image(DCtx *ctx)
     const Image *image = image_from_resource(pack, IMAGE_PNG);
     T2Df matrix;
 
-    draw_image_align(ctx, ekLEFT, ekTOP);
+    draw_image_align(ctx, ekHLEFT, ekVTOP);
     draw_image(ctx, image, 25, 25);
     t2d_movef(&matrix, kT2D_IDENTf, 300, 200);
     t2d_rotatef(&matrix, &matrix, kBMATH_PIf / 8);
-    draw_image_align(ctx, ekCENTER, ekCENTER);
+    draw_image_align(ctx, ekHCENTER, ekVCENTER);
     draw_matrixf(ctx, &matrix);
     draw_image(ctx, image, 0, 0);
     draw_matrixf(ctx, kT2D_IDENTf);
-    draw_image_align(ctx, ekRIGHT, ekTOP);
+    draw_image_align(ctx, ekHRIGHT, ekVTOP);
     draw_image(ctx, image, 575, 25);
-    draw_image_align(ctx, ekLEFT, ekBOTTOM);
+    draw_image_align(ctx, ekHLEFT, ekVBOTTOM);
     draw_image(ctx, image, 25, 375);
-    draw_image_align(ctx, ekRIGHT, ekBOTTOM);
+    draw_image_align(ctx, ekHRIGHT, ekVBOTTOM);
     draw_image(ctx, image, 575, 375);
 
     draw_fill_color(ctx, kCOLOR_BLUE);
@@ -933,7 +933,7 @@ static Panel *i_panel(App *app)
     layout_hmargin(layout2, 2, 10);
     layout_vmargin(layout1, 0, 5);
     layout_vmargin(layout1, 1, 5);
-    layout_halign(layout1, 0, 1, ekJUSTIFY);
+    layout_halign(layout1, 0, 1, ekHJUSTIFY);
     layout_hexpand(layout2, 3);
     panel_layout(panel, layout1);
     app->slider1 = layout_cell(layout2, 3, 0);

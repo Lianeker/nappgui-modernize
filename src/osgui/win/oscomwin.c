@@ -36,8 +36,8 @@ struct _cdata_t
 {
     LONG x;
     LONG y;
-    align_t halign;
-    align_t valign;
+    halign_t halign;
+    valign_t valign;
     WCHAR title[256];
 };
 
@@ -282,17 +282,17 @@ static UINT_PTR CALLBACK i_color_msg(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
         int screen_height = GetSystemMetrics(SM_CYSCREEN);
         cassert_unref(ret != 0, ret);
 
-        if (cdata->halign != ekLEFT || cdata->valign != ekTOP)
+        if (cdata->halign != ekHLEFT || cdata->valign != ekVTOP)
         {
             switch (cdata->halign)
             {
-            case ekLEFT:
-            case ekJUSTIFY:
+            case ekHLEFT:
+            case ekHJUSTIFY:
                 break;
-            case ekCENTER:
+            case ekHCENTER:
                 cdata->x -= (rect.right - rect.left) / 2;
                 break;
-            case ekRIGHT:
+            case ekHRIGHT:
                 cdata->x -= rect.right - rect.left;
                 break;
             default:
@@ -301,13 +301,13 @@ static UINT_PTR CALLBACK i_color_msg(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
 
             switch (cdata->valign)
             {
-            case ekTOP:
-            case ekJUSTIFY:
+            case ekVTOP:
+            case ekVJUSTIFY:
                 break;
-            case ekCENTER:
+            case ekVCENTER:
                 cdata->y -= (rect.bottom - rect.top) / 2;
                 break;
-            case ekRIGHT:
+            case ekVBOTTOM:
                 cdata->y -= rect.bottom - rect.top;
                 break;
             default:
@@ -333,7 +333,7 @@ static UINT_PTR CALLBACK i_color_msg(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
 
 /*---------------------------------------------------------------------------*/
 
-void oscomwin_color(OSWindow *parent, const char_t *caption, const real32_t x, const real32_t y, const align_t halign, const align_t valign, const color_t current, color_t *colors, const uint32_t n, Listener *OnChange)
+void oscomwin_color(OSWindow *parent, const char_t *caption, const real32_t x, const real32_t y, const halign_t halign, const valign_t valign, const color_t current, color_t *colors, const uint32_t n, Listener *OnChange)
 {
     CHOOSECOLOR col;
     COLORREF cols[CUSTOM_COLOR_SIZE];

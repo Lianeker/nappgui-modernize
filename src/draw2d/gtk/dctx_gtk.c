@@ -146,11 +146,11 @@ real32_t dctx_text_width(const DCtx *ctx)
 
 /*---------------------------------------------------------------------------*/
 
-align_t dctx_text_intalign(const DCtx *ctx)
+halign_t dctx_text_intalign(const DCtx *ctx)
 {
     unref(ctx);
     cassert(FALSE);
-    return ekLEFT;
+    return ekHLEFT;
 }
 
 /*---------------------------------------------------------------------------*/

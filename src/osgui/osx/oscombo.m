@@ -214,7 +214,7 @@ void oscombo_font(OSCombo *combo, const Font *font)
 
 /*---------------------------------------------------------------------------*/
 
-void oscombo_align(OSCombo *combo, const align_t align)
+void oscombo_align(OSCombo *combo, const halign_t align)
 {
     cassert_no_null(combo);
     cassert([cast(combo, NSObject) isKindOfClass:[OSXCombo class]] == YES);

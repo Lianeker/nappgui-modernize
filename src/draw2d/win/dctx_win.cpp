@@ -181,7 +181,7 @@ real32_t dctx_text_width(const DCtx *ctx)
 
 /*---------------------------------------------------------------------------*/
 
-align_t dctx_text_intalign(const DCtx *ctx)
+halign_t dctx_text_intalign(const DCtx *ctx)
 {
     cassert_no_null(ctx);
     return ctx->text_intalign;

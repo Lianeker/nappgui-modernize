@@ -59,8 +59,8 @@ struct _column_t
     uint32_t max_width;
     uint32_t icon_height;
     uint32_t hmargin;
-    align_t align;
-    align_t dalign;
+    halign_t align;
+    halign_t dalign;
     bool_t editable;
     bool_t resizable;
 };
@@ -80,7 +80,7 @@ struct _tdata_t
     Font *head_font;
     ArrSt(Column) *columns;
     ArrSt(uint32_t) *selected;
-    align_t focus_align;
+    valign_t focus_align;
     uint32_t num_rows;
     uint32_t focus_row;
     uint32_t head_height_forced;
@@ -186,7 +186,7 @@ static TData *i_create_data(void)
     data->head_font = font_copy(data->font);
     data->columns = arrst_create(Column);
     data->selected = arrst_create(uint32_t);
-    data->focus_align = ENUM_MAX(align_t);
+    data->focus_align = ENUM_MAX(valign_t);
     data->focus_row = UINT32_MAX;
     data->mouse_row = UINT32_MAX;
     data->mouse_head = UINT32_MAX;
@@ -307,7 +307,7 @@ static void i_draw_cell(const EvTbCell *cell, DCtx *ctx, const Column *col, cons
             /* Text drawing. At least, a few chars to draw */
             if (twidth > i_COLUMN_MIN_DISPLAY)
             {
-                if (cell->align != ekJUSTIFY)
+                if (cell->align != ekHJUSTIFY)
                 {
                     draw_text_width(ctx, (real32_t)twidth);
                     draw_text_trim(ctx, ekELLIPEND);
@@ -754,7 +754,7 @@ static void i_draw_header(DCtx *ctx, const TData *data, const Column *col, const
 
     if (col->width > i_COLUMN_MIN_DISPLAY)
     {
-        if (col->align != ekJUSTIFY)
+        if (col->align != ekHJUSTIFY)
         {
             draw_text_width(ctx, (real32_t)(col->width - i_COLUMN_PADDING));
             draw_text_trim(ctx, ekELLIPEND);
@@ -994,7 +994,7 @@ static void i_document_size(View *view, TData *data)
 
 /*---------------------------------------------------------------------------*/
 
-static void i_scroll_to_row(TData *data, const uint32_t row, const align_t align)
+static void i_scroll_to_row(TData *data, const uint32_t row, const valign_t align)
 {
     uint32_t control_height = 0;
     uint32_t ypos = UINT32_MAX;
@@ -1007,11 +1007,11 @@ static void i_scroll_to_row(TData *data, const uint32_t row, const align_t align
 
     switch (align)
     {
-    case ekTOP:
+    case ekVTOP:
         ypos = row * data->row_height;
         break;
 
-    case ekCENTER:
+    case ekVCENTER:
     {
         uint32_t offset = 0;
         ypos = (row + 1) * data->row_height + i_BOTTOM_PADDING;
@@ -1033,7 +1033,7 @@ static void i_scroll_to_row(TData *data, const uint32_t row, const align_t align
         break;
     }
 
-    case ekBOTTOM:
+    case ekVBOTTOM:
         ypos = (row + 1) * data->row_height + i_BOTTOM_PADDING;
 
         if (data->head_visible == TRUE)
@@ -1045,7 +1045,7 @@ static void i_scroll_to_row(TData *data, const uint32_t row, const align_t align
             ypos = 0;
         break;
 
-    case ekJUSTIFY:
+    case ekVJUSTIFY:
     default:
         cassert_default(align);
     }
@@ -1066,11 +1066,11 @@ static void i_OnSize(TData *data, Event *e)
     data->recompute_height = TRUE;
     i_document_size(view, data);
 
-    if (data->focus_align != ENUM_MAX(align_t))
+    if (data->focus_align != ENUM_MAX(valign_t))
     {
         cassert(data->focus_row < data->num_rows);
         i_scroll_to_row(data, data->focus_row, data->focus_align);
-        data->focus_align = ENUM_MAX(align_t);
+        data->focus_align = ENUM_MAX(valign_t);
     }
 }
 
@@ -2201,8 +2201,8 @@ static Column *i_add_column(TableView *view, uint32_t *col_i)
     column->width = 150;
     column->min_width = 0;
     column->max_width = UINT32_MAX;
-    column->align = ekLEFT;
-    column->dalign = ekLEFT;
+    column->align = ekHLEFT;
+    column->dalign = ekHLEFT;
     column->editable = FALSE;
     column->resizable = TRUE;
     return column;
@@ -2354,7 +2354,7 @@ void tableview_column_limits(TableView *view, const uint32_t column_id, const re
 
 /*---------------------------------------------------------------------------*/
 
-void tableview_column_align(TableView *view, const uint32_t column_id, const align_t align)
+void tableview_column_align(TableView *view, const uint32_t column_id, const halign_t align)
 {
     TData *data = view_get_data(cast(view, View), TData);
     Column *column = NULL;
@@ -2410,7 +2410,7 @@ void tableview_header_title(TableView *view, const uint32_t column_id, const cha
 
 /*---------------------------------------------------------------------------*/
 
-void tableview_header_align(TableView *view, const uint32_t column_id, const align_t align)
+void tableview_header_align(TableView *view, const uint32_t column_id, const halign_t align)
 {
     TData *data = view_get_data(cast(view, View), TData);
     Column *column = NULL;
@@ -2743,7 +2743,7 @@ const ArrSt(uint32_t) *tableview_selected(const TableView *view)
 
 /*---------------------------------------------------------------------------*/
 
-void tableview_focus_row(TableView *view, const uint32_t row, const align_t align)
+void tableview_focus_row(TableView *view, const uint32_t row, const valign_t align)
 {
     TData *data = view_get_data(cast(view, View), TData);
     cassert_no_null(data);
@@ -2754,7 +2754,7 @@ void tableview_focus_row(TableView *view, const uint32_t row, const align_t alig
         if (scrollview_control_height(data->sview) > 0)
         {
             i_scroll_to_row(data, row, align);
-            data->focus_align = ENUM_MAX(align_t);
+            data->focus_align = ENUM_MAX(valign_t);
         }
         else
         {
@@ -2840,7 +2840,7 @@ const char_t *tableview_get_header_title(const TableView *view, const uint32_t c
 
 /*---------------------------------------------------------------------------*/
 
-align_t tableview_get_header_align(const TableView *view, const uint32_t column_id)
+halign_t tableview_get_header_align(const TableView *view, const uint32_t column_id)
 {
     TData *data = view_get_data(cast(view, View), TData);
     const Column *column = NULL;

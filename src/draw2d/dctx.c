@@ -44,9 +44,9 @@ void _dctx_init(DCtx *ctx, const bool_t reset)
     draw_matrixf(ctx, kT2D_IDENTf);
     draw_text_width(ctx, -1);
     draw_text_trim(ctx, ekELLIPMLINE);
-    draw_text_align(ctx, ekLEFT, ekTOP);
-    draw_text_halign(ctx, ekLEFT);
-    draw_image_align(ctx, ekLEFT, ekTOP);
+    draw_text_align(ctx, ekHLEFT, ekVTOP);
+    draw_text_halign(ctx, ekHLEFT);
+    draw_image_align(ctx, ekHLEFT, ekVTOP);
 }
 
 /*---------------------------------------------------------------------------*/

@@ -152,7 +152,7 @@ void combo_text(Combo *combo, const char_t *text)
 
 /*---------------------------------------------------------------------------*/
 
-void combo_align(Combo *combo, const align_t align)
+void combo_align(Combo *combo, const halign_t align)
 {
     cassert_no_null(combo);
     combo->component.context->func_combo_set_align(combo->component.ositem, (enum_t)align);

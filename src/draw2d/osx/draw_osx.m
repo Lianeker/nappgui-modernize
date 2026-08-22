@@ -124,13 +124,13 @@ void _draw_imgimp(DCtx *ctx, const OSImage *image, const uint32_t frame_index, c
         rect.size = [cast(image, NSImage) size];
         switch (ctx->image_halign)
         {
-        case ekLEFT:
-        case ekJUSTIFY:
+        case ekHLEFT:
+        case ekHJUSTIFY:
             break;
-        case ekCENTER:
+        case ekHCENTER:
             rect.origin.x -= rect.size.width / 2;
             break;
-        case ekRIGHT:
+        case ekHRIGHT:
             rect.origin.x -= rect.size.width;
             break;
         default:
@@ -139,13 +139,13 @@ void _draw_imgimp(DCtx *ctx, const OSImage *image, const uint32_t frame_index, c
 
         switch (ctx->image_valign)
         {
-        case ekTOP:
-        case ekJUSTIFY:
+        case ekVTOP:
+        case ekVJUSTIFY:
             break;
-        case ekCENTER:
+        case ekVCENTER:
             rect.origin.y -= rect.size.height / 2;
             break;
-        case ekRIGHT:
+        case ekVBOTTOM:
             rect.origin.y -= rect.size.height;
             break;
         default:
@@ -874,7 +874,7 @@ static NSString *i_begin_text(DCtx *ctx, const char_t *text, const real32_t x, c
     rect->origin.y = (CGFloat)y;
     str = [NSString stringWithUTF8String:cast_const(text, char)];
 
-    if (ctx->text_halign != ekLEFT || ctx->text_valign != ekTOP || ctx->text_intalign != ekLEFT)
+    if (ctx->text_halign != ekHLEFT || ctx->text_valign != ekVTOP || ctx->text_intalign != ekHLEFT)
     {
         /* Single-line trimmed text */
         if (ctx->text_width >= 0 && ctx->ellipsis != ekELLIPMLINE)
@@ -889,13 +889,13 @@ static NSString *i_begin_text(DCtx *ctx, const char_t *text, const real32_t x, c
 
         switch (ctx->text_halign)
         {
-        case ekLEFT:
-        case ekJUSTIFY:
+        case ekHLEFT:
+        case ekHJUSTIFY:
             break;
-        case ekRIGHT:
+        case ekHRIGHT:
             rect->origin.x -= (CGFloat)width;
             break;
-        case ekCENTER:
+        case ekHCENTER:
             rect->origin.x -= (CGFloat)round(.5 * width);
             break;
         default:
@@ -904,13 +904,13 @@ static NSString *i_begin_text(DCtx *ctx, const char_t *text, const real32_t x, c
 
         switch (ctx->text_valign)
         {
-        case ekTOP:
-        case ekJUSTIFY:
+        case ekVTOP:
+        case ekVJUSTIFY:
             break;
-        case ekBOTTOM:
+        case ekVBOTTOM:
             rect->origin.y -= (CGFloat)height;
             break;
-        case ekCENTER:
+        case ekVCENTER:
             rect->origin.y -= (CGFloat)round(.5 * height);
             break;
         default:
@@ -1064,7 +1064,7 @@ void draw_text_trim(DCtx *ctx, const ellipsis_t ellipsis)
 
 /*---------------------------------------------------------------------------*/
 
-void draw_text_align(DCtx *ctx, const align_t halign, const align_t valign)
+void draw_text_align(DCtx *ctx, const halign_t halign, const valign_t valign)
 {
     cassert_no_null(ctx);
     ctx->text_halign = halign;
@@ -1073,18 +1073,18 @@ void draw_text_align(DCtx *ctx, const align_t halign, const align_t valign)
 
 /*---------------------------------------------------------------------------*/
 
-static NSTextAlignment i_text_alignment(const align_t halign)
+static NSTextAlignment i_text_alignment(const halign_t halign)
 {
 #if defined(MAC_OS_X_VERSION_10_12) && MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_12
     switch (halign)
     {
-    case ekLEFT:
+    case ekHLEFT:
         return NSTextAlignmentLeft;
-    case ekCENTER:
+    case ekHCENTER:
         return NSTextAlignmentCenter;
-    case ekJUSTIFY:
+    case ekHJUSTIFY:
         return NSTextAlignmentJustified;
-    case ekRIGHT:
+    case ekHRIGHT:
         return NSTextAlignmentRight;
     default:
         cassert_default(halign);
@@ -1094,13 +1094,13 @@ static NSTextAlignment i_text_alignment(const align_t halign)
 #else
     switch (halign)
     {
-    case ekLEFT:
+    case ekHLEFT:
         return NSLeftTextAlignment;
-    case ekCENTER:
+    case ekHCENTER:
         return NSCenterTextAlignment;
-    case ekJUSTIFY:
+    case ekHJUSTIFY:
         return NSJustifiedTextAlignment;
-    case ekRIGHT:
+    case ekHRIGHT:
         return NSRightTextAlignment;
     default:
         cassert_default(halign);
@@ -1112,7 +1112,7 @@ static NSTextAlignment i_text_alignment(const align_t halign)
 
 /*---------------------------------------------------------------------------*/
 
-void draw_text_halign(DCtx *ctx, const align_t halign)
+void draw_text_halign(DCtx *ctx, const halign_t halign)
 {
     cassert_no_null(ctx);
     cassert_no_null(ctx->text_parag);
@@ -1153,7 +1153,7 @@ void draw_text_extents(DCtx *ctx, const char_t *text, const real32_t refwidth, r
 
 /*---------------------------------------------------------------------------*/
 
-void draw_image_align(DCtx *ctx, const align_t halign, const align_t valign)
+void draw_image_align(DCtx *ctx, const halign_t halign, const valign_t valign)
 {
     cassert_no_null(ctx);
     ctx->image_halign = halign;

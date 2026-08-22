@@ -16,7 +16,7 @@ void _oscontrol_init(NSView *control);
 
 void _oscontrol_origin_in_screen_coordinates(const NSRect *frame, CGFloat *x, CGFloat *y);
 
-NSTextAlignment _oscontrol_text_alignment(const align_t halign);
+NSTextAlignment _oscontrol_text_alignment(const halign_t halign);
 
 void _oscontrol_size_from_font(NSCell *cell, const Font *font);
 
@@ -44,7 +44,7 @@ void _oscontrol_set_text(NSControl *control, const OSTextAttr *attrs, const char
 
 void _oscontrol_set_font(NSControl *control, OSTextAttr *attrs, const Font *font);
 
-void _oscontrol_set_align(NSControl *control, OSTextAttr *attrs, const align_t align);
+void _oscontrol_set_align(NSControl *control, OSTextAttr *attrs, const halign_t align);
 
 void _oscontrol_set_text_color(NSTextField *control, OSTextAttr *attrs, const color_t color);
 

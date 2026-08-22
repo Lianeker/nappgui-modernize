@@ -38,7 +38,7 @@ struct _lbdata_t
     ResId textid;
     String *text;
     uint32_t flags;
-    align_t halign;
+    halign_t halign;
     ellipsis_t ellipsis;
     Font *font;
     Font *over_font;
@@ -106,7 +106,7 @@ static void i_destroy_data(LbData **data)
 
 /*---------------------------------------------------------------------------*/
 
-static LbData *i_create_data(const uint32_t flags, const align_t halign, const ellipsis_t ellipsis)
+static LbData *i_create_data(const uint32_t flags, const halign_t halign, const ellipsis_t ellipsis)
 {
     LbData *data = heap_new0(LbData);
     data->font = _gui_create_default_font();
@@ -279,7 +279,7 @@ static void i_natural(Label *label, const uint32_t di, real32_t *dim0, real32_t 
 
 Label *label_create(void)
 {
-    LbData *data = i_create_data(ekLABEL_SINGLE, ekLEFT, ekELLIPEND);
+    LbData *data = i_create_data(ekLABEL_SINGLE, ekHLEFT, ekELLIPEND);
     View *view = _vctrl_create(ekVIEW_CONTROL, &i_LABEL_TLB, data, LbData);
     return cast(view, Label);
 }
@@ -376,7 +376,7 @@ void label_multiline(Label *label, const bool_t multiline)
 
 /*---------------------------------------------------------------------------*/
 
-void label_align(Label *label, const align_t align)
+void label_align(Label *label, const halign_t align)
 {
     LbData *data = view_get_data(cast(label, View), LbData);
     cassert_no_null(data);

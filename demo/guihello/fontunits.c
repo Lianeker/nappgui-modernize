@@ -128,9 +128,9 @@ static Layout *i_layout(FontUnits *funits)
     layout_view(layout, view1, 0, 3);
     layout_view(layout, view2, 1, 3);
     layout_view(layout, view3, 2, 3);
-    layout_valign(layout, 0, 1, ekTOP);
-    layout_valign(layout, 1, 1, ekTOP);
-    layout_valign(layout, 2, 1, ekTOP);
+    layout_valign(layout, 0, 1, ekVTOP);
+    layout_valign(layout, 1, 1, ekVTOP);
+    layout_valign(layout, 2, 1, ekVTOP);
     return layout;
 }
 

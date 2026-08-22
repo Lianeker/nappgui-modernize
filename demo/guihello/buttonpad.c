@@ -73,10 +73,10 @@ static Layout *i_hpadding_layout(void)
     layout_button(layout, button4, 0, 3);
     layout_button(layout, button5, 0, 4);
     layout_hsize(layout, 0, 300);
-    layout_halign(layout, 0, 0, ekLEFT);
-    layout_halign(layout, 0, 1, ekLEFT);
-    layout_halign(layout, 0, 2, ekLEFT);
-    layout_halign(layout, 0, 3, ekLEFT);
+    layout_halign(layout, 0, 0, ekHLEFT);
+    layout_halign(layout, 0, 1, ekHLEFT);
+    layout_halign(layout, 0, 2, ekHLEFT);
+    layout_halign(layout, 0, 3, ekHLEFT);
     return layout;
 }
 
@@ -123,9 +123,9 @@ static Layout *i_flatpadding_layout(PData *data)
     layout_button(layout, button1, 0, 1);
     layout_button(layout, button2, 1, 1);
     layout_button(layout, button3, 2, 1);
-    layout_halign(layout, 0, 1, ekCENTER);
-    layout_halign(layout, 1, 1, ekCENTER);
-    layout_halign(layout, 2, 1, ekCENTER);
+    layout_halign(layout, 0, 1, ekHCENTER);
+    layout_halign(layout, 1, 1, ekHCENTER);
+    layout_halign(layout, 2, 1, ekHCENTER);
     layout_hmargin(layout, 0, 10);
     layout_hmargin(layout, 1, 10);
     data->button1 = button1;
@@ -217,8 +217,8 @@ Panel *buttonpad(void)
     layout_layout(layout1, layout3, 0, 3);
     layout_layout(layout1, layout4, 0, 5);
     layout_layout(layout1, layout5, 0, 6);
-    layout_halign(layout1, 0, 1, ekLEFT);
-    layout_halign(layout1, 0, 5, ekLEFT);
+    layout_halign(layout1, 0, 1, ekHLEFT);
+    layout_halign(layout1, 0, 5, ekHLEFT);
     layout_vmargin(layout1, 0, 5);
     layout_vmargin(layout1, 1, 5);
     layout_vmargin(layout1, 2, 5);

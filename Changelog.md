@@ -4,6 +4,51 @@
 
 ### Changed
 
+- **`align_t` is split into `halign_t` and `valign_t`, one type per axis.** The
+  single type used the same numbers for both axes (`ekLEFT` == `ekTOP` == 1,
+  `ekRIGHT` == `ekBOTTOM` == 3), so `draw_text_align(ctx, ekTOP, ekLEFT)` with
+  the arguments swapped compiled to exactly the same code as the correct call,
+  produced no diagnostic and drew as if it were right. The two enumerations are
+  now separate types with **disjoint values**, so a value of the wrong axis is
+  no longer a valid value of the other one.
+
+    ```c
+    typedef enum _halign_t { ekHLEFT = 1, ekHCENTER, ekHRIGHT, ekHJUSTIFY } halign_t;
+    typedef enum _valign_t { ekVTOP = 5, ekVCENTER, ekVBOTTOM, ekVJUSTIFY } valign_t;
+    ```
+
+    - The old names `ekLEFT`, `ekTOP`, `ekCENTER`, `ekRIGHT`, `ekBOTTOM` and
+      `ekJUSTIFY` no longer exist, so **every call site stops compiling** until
+      it says which axis it means. That is the point: it forces a look at the
+      code that a silent renumbering would not.
+    - `ekJUSTIFY` was accepted in the vertical parameter of `draw_text_align()`
+      and `draw_image_align()`, where it means nothing, and it is genuinely
+      needed in `layout_valign()`, where it means "expand the cell". So the
+      vertical axis keeps a `ekVJUSTIFY` and both drawing functions keep
+      treating it as `ekVTOP`, exactly as before.
+    - The affected signatures are `draw_text_align()`, `draw_text_halign()`,
+      `draw_image_align()`, `dctx_text_intalign()`, `label_align()`,
+      `edit_align()`, `combo_align()`, `textview_halign()`,
+      `tableview_column_align()`, `tableview_header_align()`,
+      `tableview_get_header_align()`, `tableview_focus_row()`,
+      `layout_halign()`, `layout_valign()`, `cell_get_halign()`,
+      `cell_get_valign()` and `comwin_color()`, plus the `align` field of
+      `EvTbCell`.
+    - `tableview_focus_row()` takes a `valign_t` (it scrolls a row to the top,
+      middle or bottom of the view). `tableview_column_align()` and
+      `tableview_header_align()` take a `halign_t`.
+    - The values are disjoint so that a swapped argument that C accepts through
+      an implicit enum conversion falls into the `default` branch of the
+      backend switch and fires `cassert_default()` in a debug build, instead of
+      quietly meaning the other axis. In C++ the swap is a compile error.
+
+- Three alignment switches in the backends read `ekRIGHT` where they meant
+  `ekBOTTOM`, on the vertical axis. They worked only because both were 3:
+  `draw2d/osx/draw_osx.m` (vertical alignment of `draw_image_align()` on macOS),
+  `osgui/win/oscomwin.c` and `osgui/gtk/oscomwin.c` (vertical placement of the
+  colour dialog of `comwin_color()` on Windows and Linux). They now say
+  `ekVBOTTOM` and would no longer compile into the right thing by accident.
+
 - The `error` parameter of `str_to_i8()`, `str_to_i16()`, `str_to_i32()`,
   `str_to_i64()`, `str_to_u8()`, `str_to_u16()`, `str_to_u32()` and
   `str_to_u64()` now detects invalid formats, not only out-of-range values. The
@@ -118,6 +163,109 @@
       month 2 and has to be checked with `date_is_valid()`.
 
 ### Migration
+
+- **`align_t` no longer exists.** Replace it with `halign_t` or `valign_t`
+  depending on the axis, and rename the values. The mapping is mechanical:
+
+    | Before | Horizontal | Vertical |
+    |---|---|---|
+    | `ekLEFT` | `ekHLEFT` | — |
+    | `ekRIGHT` | `ekHRIGHT` | — |
+    | `ekTOP` | — | `ekVTOP` |
+    | `ekBOTTOM` | — | `ekVBOTTOM` |
+    | `ekCENTER` | `ekHCENTER` | `ekVCENTER` |
+    | `ekJUSTIFY` | `ekHJUSTIFY` | `ekVJUSTIFY` |
+
+  `ekLEFT`/`ekRIGHT` are always horizontal and `ekTOP`/`ekBOTTOM` always
+  vertical, so those four are a plain rename. Only `ekCENTER` and `ekJUSTIFY`
+  need a decision, and the function tells you which one: the first alignment
+  argument is the horizontal one.
+
+- **Two-axis calls.** The compiler now rejects the old spelling outright, which
+  is what forces the swapped calls out into the open:
+
+    ```c
+    /* Before: this compiled, and so did the same call with the two arguments
+       swapped, because ekLEFT == ekTOP and ekRIGHT == ekBOTTOM */
+    draw_text_align(ctx, ekLEFT, ekTOP);
+    draw_image_align(ctx, ekCENTER, ekCENTER);
+    comwin_color(win, "Colour", x, y, ekCENTER, ekCENTER, col, cols, n, l);
+
+    /* After: one type per axis, and the swapped version no longer names
+       anything that exists */
+    draw_text_align(ctx, ekHLEFT, ekVTOP);
+    draw_image_align(ctx, ekHCENTER, ekVCENTER);
+    comwin_color(win, "Colour", x, y, ekHCENTER, ekVCENTER, col, cols, n, l);
+    ```
+
+- **Single-axis calls.** Everything that aligns text inside a control is
+  horizontal:
+
+    ```c
+    /* Before */
+    label_align(label, ekCENTER);
+    edit_align(edit, ekRIGHT);
+    combo_align(combo, ekLEFT);
+    textview_halign(view, ekJUSTIFY);
+    tableview_header_align(table, 5, ekCENTER);
+    draw_text_halign(ctx, ekCENTER);
+
+    /* After */
+    label_align(label, ekHCENTER);
+    edit_align(edit, ekHRIGHT);
+    combo_align(combo, ekHLEFT);
+    textview_halign(view, ekHJUSTIFY);
+    tableview_header_align(table, 5, ekHCENTER);
+    draw_text_halign(ctx, ekHCENTER);
+    ```
+
+  The two exceptions are vertical: `layout_valign()` and
+  `tableview_focus_row()`, which scrolls a row to the top, middle or bottom of
+  the view.
+
+    ```c
+    /* Before */
+    layout_halign(layout, 0, 0, ekJUSTIFY);
+    layout_valign(layout, 0, 0, ekJUSTIFY);
+    tableview_focus_row(table, 12, ekCENTER);
+
+    /* After */
+    layout_halign(layout, 0, 0, ekHJUSTIFY);
+    layout_valign(layout, 0, 0, ekVJUSTIFY);
+    tableview_focus_row(table, 12, ekVCENTER);
+    ```
+
+- **Variables, struct fields and helper functions that carried an `align_t`.**
+  Split them by axis too; a single variable used for both axes was already a
+  bug waiting to happen:
+
+    ```c
+    /* Before */
+    static void i_draw(DCtx *ctx, const align_t halign, const align_t valign)
+    {
+        draw_text_align(ctx, halign, valign);
+    }
+
+    /* After */
+    static void i_draw(DCtx *ctx, const halign_t halign, const valign_t valign)
+    {
+        draw_text_align(ctx, halign, valign);
+    }
+    ```
+
+- **Code that stored an alignment as a number, or built one with arithmetic.**
+  The vertical values are 5 to 8 now, not 1 to 4, so a persisted integer or an
+  expression such as `(align_t)(popup_index + 1)` has to be revisited. Cast to
+  the type of the axis it belongs to (`(halign_t)(popup_index + 1)` still
+  yields `ekHLEFT`..`ekHJUSTIFY`) and re-map anything read back from a file or
+  a settings store.
+
+- **There is no deprecated alias for one release.** It is not technically
+  possible here, and it would work against the change. `align_t` cannot be a
+  `typedef` of both new types at once, and keeping the old value names would
+  keep `ekLEFT` and `ekTOP` numerically equal, which is the defect itself. The
+  break is the migration: the compiler names every call site that has to be
+  looked at.
 
 - **`str_to_iXX()` / `str_to_uXX()` with malformed input.** The result is 0 now,
   not the leading digits. Code that relied on the old truncation has to say so:

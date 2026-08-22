@@ -52,7 +52,7 @@ _gui_api void textview_bgcolor(TextView *view, const color_t color);
 
 _gui_api void textview_pgcolor(TextView *view, const color_t color);
 
-_gui_api void textview_halign(TextView *view, const align_t align);
+_gui_api void textview_halign(TextView *view, const halign_t align);
 
 _gui_api void textview_lspacing(TextView *view, const real32_t scale);
 

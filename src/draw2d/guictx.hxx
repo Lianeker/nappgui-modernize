@@ -690,9 +690,9 @@ typedef const char_t *(*FPtr_gctx_win_file)(void *parent, const char_t *caption,
 #define FUNC_CHECK_GCTX_WIN_FILE(func, type) \
     (void)((const char_t *(*)(type *, const char_t *, const char_t **, const uint32_t, const char_t *, const char_t *, const bool_t))func == func)
 
-typedef void (*FPtr_gctx_win_color)(void *parent, const char_t *caption, const real32_t x, const real32_t y, const align_t halign, const align_t valign, color_t current, color_t *colors, const uint32_t n, Listener *OnChange);
+typedef void (*FPtr_gctx_win_color)(void *parent, const char_t *caption, const real32_t x, const real32_t y, const halign_t halign, const valign_t valign, color_t current, color_t *colors, const uint32_t n, Listener *OnChange);
 #define FUNC_CHECK_GCTX_WIN_COLOR(func, type) \
-    (void)((void (*)(type *, const char_t *, const real32_t, const real32_t, const align_t, const align_t, const color_t, color_t *, const uint32_t, Listener *))func == func)
+    (void)((void (*)(type *, const char_t *, const real32_t, const real32_t, const halign_t, const valign_t, const color_t, color_t *, const uint32_t, Listener *))func == func)
 
 typedef Cursor *(*FPtr_gctx_cursor)(const enum_t, const Image *, const real32_t, const real32_t);
 #define FUNC_CHECK_GCTX_CURSOR(func) \
@@ -1116,7 +1116,7 @@ struct _evtbcell_t
 {
     const char_t *text;
     const Image *icon;
-    align_t align;
+    halign_t align;
 };
 
 struct _evtbnode_t

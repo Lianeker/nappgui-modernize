@@ -106,20 +106,20 @@ void _draw_imgimp(DCtx *ctx, const OSImage *image, const uint32_t frame_index, c
             i_set_real2d_mode(ctx);
     }
 
-    if (ctx->image_halign != ekLEFT || ctx->image_valign != ekTOP)
+    if (ctx->image_halign != ekHLEFT || ctx->image_valign != ekVTOP)
     {
         gdouble w = (gdouble)gdk_pixbuf_get_width(pixbuf);
         gdouble h = (gdouble)gdk_pixbuf_get_height(pixbuf);
 
         switch (ctx->image_halign)
         {
-        case ekLEFT:
-        case ekJUSTIFY:
+        case ekHLEFT:
+        case ekHJUSTIFY:
             break;
-        case ekCENTER:
+        case ekHCENTER:
             nx -= w / 2;
             break;
-        case ekRIGHT:
+        case ekHRIGHT:
             nx -= w;
             break;
         default:
@@ -128,13 +128,13 @@ void _draw_imgimp(DCtx *ctx, const OSImage *image, const uint32_t frame_index, c
 
         switch (ctx->image_valign)
         {
-        case ekTOP:
-        case ekJUSTIFY:
+        case ekVTOP:
+        case ekVJUSTIFY:
             break;
-        case ekCENTER:
+        case ekVCENTER:
             ny -= h / 2;
             break;
-        case ekBOTTOM:
+        case ekVBOTTOM:
             ny -= h;
             break;
         default:
@@ -657,24 +657,24 @@ static bool_t i_begin_text(DCtx *ctx, const char_t *text, const real32_t x, cons
             draw_text = FALSE;
     }
 
-    if (draw_text == TRUE && (ctx->text_halign != ekLEFT || ctx->text_valign != ekTOP))
+    if (draw_text == TRUE && (ctx->text_halign != ekHLEFT || ctx->text_valign != ekVTOP))
     {
         int w, h;
         pango_layout_get_pixel_size(ctx->layout, &w, &h);
         w = (int)((real32_t)w * xscale);
         switch (ctx->text_halign)
         {
-        case ekLEFT:
-        case ekJUSTIFY:
+        case ekHLEFT:
+        case ekHJUSTIFY:
             break;
 
-        case ekCENTER:
+        case ekHCENTER:
             nx = (double)((int)x - (w / 2));
             if (trimmed == TRUE && ctx->text_width > w)
                 nx -= (double)((ctx->text_width - (real32_t)w) / 2);
             break;
 
-        case ekRIGHT:
+        case ekHRIGHT:
             nx = (double)((int)x - w);
             if (trimmed == TRUE && ctx->text_width > w)
                 nx -= (double)(ctx->text_width - (real32_t)w);
@@ -686,13 +686,13 @@ static bool_t i_begin_text(DCtx *ctx, const char_t *text, const real32_t x, cons
 
         switch (ctx->text_valign)
         {
-        case ekTOP:
-        case ekJUSTIFY:
+        case ekVTOP:
+        case ekVJUSTIFY:
             break;
-        case ekBOTTOM:
+        case ekVBOTTOM:
             ny = (double)((int)y - h);
             break;
-        case ekCENTER:
+        case ekVCENTER:
             ny = (double)((int)y - (h / 2));
             break;
         default:
@@ -802,7 +802,7 @@ void draw_text_trim(DCtx *ctx, const ellipsis_t ellipsis)
 
 /*---------------------------------------------------------------------------*/
 
-void draw_text_align(DCtx *ctx, const align_t halign, const align_t valign)
+void draw_text_align(DCtx *ctx, const halign_t halign, const valign_t valign)
 {
     cassert_no_null(ctx);
     ctx->text_halign = halign;
@@ -811,16 +811,16 @@ void draw_text_align(DCtx *ctx, const align_t halign, const align_t valign)
 
 /*---------------------------------------------------------------------------*/
 
-static PangoAlignment i_align(const align_t align)
+static PangoAlignment i_align(const halign_t align)
 {
     switch (align)
     {
-    case ekLEFT:
-    case ekJUSTIFY:
+    case ekHLEFT:
+    case ekHJUSTIFY:
         return PANGO_ALIGN_LEFT;
-    case ekCENTER:
+    case ekHCENTER:
         return PANGO_ALIGN_CENTER;
-    case ekRIGHT:
+    case ekHRIGHT:
         return PANGO_ALIGN_RIGHT;
     default:
         cassert_default(align);
@@ -831,7 +831,7 @@ static PangoAlignment i_align(const align_t align)
 
 /*---------------------------------------------------------------------------*/
 
-void draw_text_halign(DCtx *ctx, const align_t halign)
+void draw_text_halign(DCtx *ctx, const halign_t halign)
 {
     cassert_no_null(ctx);
     ctx->text_intalign = i_align(halign);
@@ -852,7 +852,7 @@ void draw_text_extents(DCtx *ctx, const char_t *text, const real32_t refwidth, r
 
 /*---------------------------------------------------------------------------*/
 
-void draw_image_align(DCtx *ctx, const align_t halign, const align_t valign)
+void draw_image_align(DCtx *ctx, const halign_t halign, const valign_t valign)
 {
     cassert_no_null(ctx);
     ctx->image_halign = halign;

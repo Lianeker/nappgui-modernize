@@ -47,7 +47,7 @@ const char_t *comwin_save_file(Window *parent, const char_t *caption, const char
 
 /*---------------------------------------------------------------------------*/
 
-void comwin_color(Window *parent, const char_t *caption, const real32_t x, const real32_t y, const align_t halign, const align_t valign, const color_t current, color_t *colors, const uint32_t n, Listener *OnChange)
+void comwin_color(Window *parent, const char_t *caption, const real32_t x, const real32_t y, const halign_t halign, const valign_t valign, const color_t current, color_t *colors, const uint32_t n, Listener *OnChange)
 {
     const GuiCtx *context = guictx_get_current();
     void *ositem = parent ? _window_ositem(parent) : NULL;

@@ -296,8 +296,8 @@ OSTextField *_ostextfield_from_edit(NSView *control, const bool_t single_line)
     [field->impl setBezeled:YES];
     [field->impl setDrawsBackground:YES];
     [field->impl setStringValue:@""];
-    [field->impl setAlignment:_oscontrol_text_alignment(ekLEFT)];
-    _oscontrol_set_align(field->impl, &field->attrs, ekLEFT);
+    [field->impl setAlignment:_oscontrol_text_alignment(ekHLEFT)];
+    _oscontrol_set_align(field->impl, &field->attrs, ekHLEFT);
     _oscontrol_set_font(field->impl, &field->attrs, field->attrs.font);
     [[field->impl cell] setScrollable:(BOOL)field->single_line];
 #if defined(MAC_OS_X_VERSION_10_5) && MAC_OS_X_VERSION_MAX_ALLOWED > MAC_OS_X_VERSION_10_5
@@ -481,7 +481,7 @@ void _ostextfield_font(OSTextField *field, const Font *font)
 
 /*---------------------------------------------------------------------------*/
 
-void _ostextfield_align(OSTextField *field, const align_t align)
+void _ostextfield_align(OSTextField *field, const halign_t align)
 {
     NSTextField *impl = i_impl(field);
     cassert_no_null(field);

@@ -82,15 +82,30 @@ typedef enum _drawop_t
     ekFILLSK
 } drawop_t;
 
-typedef enum _align_t
+/*
+ * Alignment is split by axis. Horizontal and vertical values do not share
+ * numbers on purpose: the previous single alignment type had LEFT == TOP == 1
+ * and RIGHT == BOTTOM == 3, so swapping the two arguments of a call such as
+ * draw_text_align(ctx, halign, valign) generated identical code and drew the
+ * wrong thing with no diagnostic at all. With disjoint ranges a value of the
+ * wrong axis reaches the 'default' branch of every switch and fires
+ * cassert_default() in debug builds instead of quietly meaning something else.
+ */
+typedef enum _halign_t
 {
-    ekLEFT = 1,
-    ekTOP = 1,
-    ekCENTER = 2,
-    ekRIGHT = 3,
-    ekBOTTOM = 3,
-    ekJUSTIFY = 4
-} align_t;
+    ekHLEFT = 1,
+    ekHCENTER = 2,
+    ekHRIGHT = 3,
+    ekHJUSTIFY = 4
+} halign_t;
+
+typedef enum _valign_t
+{
+    ekVTOP = 5,
+    ekVCENTER = 6,
+    ekVBOTTOM = 7,
+    ekVJUSTIFY = 8
+} valign_t;
 
 typedef enum _ellipsis_t
 {

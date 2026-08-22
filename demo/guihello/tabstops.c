@@ -133,11 +133,11 @@ static void i_OnTableData(i_Data *data, Event *e)
         switch (pos->col)
         {
         case 0:
-            cell->align = ekLEFT;
+            cell->align = ekHLEFT;
             bstd_sprintf(data->temp_string, sizeof(data->temp_string), "Data (0, %d)", pos->row);
             break;
         case 1:
-            cell->align = ekLEFT;
+            cell->align = ekHLEFT;
             bstd_sprintf(data->temp_string, sizeof(data->temp_string), "Data (1, %d)", pos->row);
             break;
         default:
@@ -223,8 +223,8 @@ static Layout *i_layout(i_Data *data, const uint32_t i)
     layout_vmargin(layout, 0, 10);
     layout_layout(layout, layout1, 0, 0);
     layout_layout(layout, layout2, 0, 1);
-    layout_halign(layout, 0, 0, ekLEFT);
-    layout_halign(layout, 0, 1, ekLEFT);
+    layout_halign(layout, 0, 0, ekHLEFT);
+    layout_halign(layout, 0, 1, ekHLEFT);
     data->button[i] = button;
     data->popup[i] = popup;
     data->text[i] = text;

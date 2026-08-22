@@ -52,7 +52,7 @@
     real32_t fsize;
     uint32_t fstyle;
     uint32_t funits;
-    align_t palign;
+    halign_t palign;
     real32_t pspacing;
     real32_t pafter;
     real32_t pbefore;
@@ -354,7 +354,7 @@ OSText *ostext_create(const uint32_t flags)
     view->fsize = REAL32_MAX;
     view->fstyle = UINT32_MAX;
     view->funits = UINT32_MAX;
-    view->palign = ENUM_MAX(align_t);
+    view->palign = ENUM_MAX(halign_t);
     view->pspacing = REAL32_MAX;
     view->pafter = REAL32_MAX;
     view->pbefore = REAL32_MAX;
@@ -597,7 +597,7 @@ static void i_change_paragraph(OSXTextView *lview)
     cassert_no_null(lview);
 
     /* Unitialized paragraph attribs */
-    if (lview->palign == ENUM_MAX(align_t))
+    if (lview->palign == ENUM_MAX(halign_t))
         return;
 
     if (lview->pspacing >= REAL32_MAX + 1e3f)
@@ -740,9 +740,9 @@ void ostext_property(OSText *view, const gui_text_t param, const void *value)
         break;
 
     case ekGUI_TEXT_PARALIGN:
-        if (lview->palign != *cast(value, align_t))
+        if (lview->palign != *cast(value, halign_t))
         {
-            lview->palign = *cast(value, align_t);
+            lview->palign = *cast(value, halign_t);
             i_change_paragraph(lview);
         }
         break;

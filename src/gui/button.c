@@ -248,7 +248,7 @@ static void i_OnClick(Button *button, Event *event)
 
 /*---------------------------------------------------------------------------*/
 
-static Button *i_create(const uint32_t flags, const align_t halign)
+static Button *i_create(const uint32_t flags, const halign_t halign)
 {
     const GuiCtx *context = guictx_get_current();
     Button *button = obj_new0(Button);
@@ -277,42 +277,42 @@ static Button *i_create(const uint32_t flags, const align_t halign)
 
 Button *button_push(void)
 {
-    return i_create(ekBUTTON_PUSH, ekCENTER);
+    return i_create(ekBUTTON_PUSH, ekHCENTER);
 }
 
 /*---------------------------------------------------------------------------*/
 
 Button *button_check(void)
 {
-    return i_create(ekBUTTON_CHECK2, ekLEFT);
+    return i_create(ekBUTTON_CHECK2, ekHLEFT);
 }
 
 /*---------------------------------------------------------------------------*/
 
 Button *button_check3(void)
 {
-    return i_create(ekBUTTON_CHECK3, ekLEFT);
+    return i_create(ekBUTTON_CHECK3, ekHLEFT);
 }
 
 /*---------------------------------------------------------------------------*/
 
 Button *button_radio(void)
 {
-    return i_create(ekBUTTON_RADIO, ekLEFT);
+    return i_create(ekBUTTON_RADIO, ekHLEFT);
 }
 
 /*---------------------------------------------------------------------------*/
 
 Button *button_flat(void)
 {
-    return i_create(ekBUTTON_FLAT, ekLEFT);
+    return i_create(ekBUTTON_FLAT, ekHLEFT);
 }
 
 /*---------------------------------------------------------------------------*/
 
 Button *button_flatgle(void)
 {
-    return i_create(ekBUTTON_FLATGLE, ekCENTER);
+    return i_create(ekBUTTON_FLATGLE, ekHCENTER);
 }
 
 /*---------------------------------------------------------------------------*/

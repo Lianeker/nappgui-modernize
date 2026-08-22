@@ -142,9 +142,9 @@ _gui_api void layout_vexpand3(Layout *layout, const uint32_t row1, const uint32_
 
 _gui_api void layout_vexpandn(Layout *layout, const uint32_t n, const uint32_t *index, const real32_t *exp);
 
-_gui_api void layout_halign(Layout *layout, const uint32_t col, const uint32_t row, const align_t align);
+_gui_api void layout_halign(Layout *layout, const uint32_t col, const uint32_t row, const halign_t align);
 
-_gui_api void layout_valign(Layout *layout, const uint32_t col, const uint32_t row, const align_t align);
+_gui_api void layout_valign(Layout *layout, const uint32_t col, const uint32_t row, const valign_t align);
 
 _gui_api void layout_show_col(Layout *layout, const uint32_t col, const bool_t visible);
 

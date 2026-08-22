@@ -35,7 +35,7 @@ _osgui_api void oscombo_tooltip(OSCombo *combo, const char_t *text);
 
 _osgui_api void oscombo_font(OSCombo *combo, const Font *font);
 
-_osgui_api void oscombo_align(OSCombo *combo, const align_t align);
+_osgui_api void oscombo_align(OSCombo *combo, const halign_t align);
 
 _osgui_api void oscombo_passmode(OSCombo *combo, const bool_t passmode);
 

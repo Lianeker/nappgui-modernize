@@ -62,11 +62,11 @@ struct _dctx_t
     uint32_t dash_count;
     real32_t text_width;
     ellipsis_t ellipsis;
-    align_t text_halign;
-    align_t text_valign;
-    align_t text_intalign;
-    align_t image_halign;
-    align_t image_valign;
+    halign_t text_halign;
+    valign_t text_valign;
+    halign_t text_intalign;
+    halign_t image_halign;
+    valign_t image_valign;
     NSMutableParagraphStyle *text_parag;
     NSMutableDictionary *text_dict;
     bool_t cartesian_system;

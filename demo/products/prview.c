@@ -25,7 +25,7 @@ static Layout *i_toolbar(Ctrl *ctrl)
     button_text(button4, TWIN_ADD);
     button_text(button5, TWIN_DEL);
     button_text(button6, TWIN_SETTINGS_PANEL);
-    combo_align(combo, ekLEFT);
+    combo_align(combo, ekHLEFT);
     combo_passmode(combo, FALSE);
     combo_autoselect(combo, FALSE);
     combo_editable(combo, TRUE);
@@ -114,8 +114,8 @@ static Layout *i_n_img(Ctrl *ctrl)
     Layout *layout = layout_create(1, 2);
     Label *label = label_create();
     ImageView *view = imageview_create();
-    label_align(label, ekCENTER);
-    layout_halign(layout, 0, 0, ekJUSTIFY);
+    label_align(label, ekHCENTER);
+    layout_halign(layout, 0, 0, ekHJUSTIFY);
     layout_label(layout, label, 0, 0);
     layout_imageview(layout, view, 0, 1);
     layout_vexpand(layout, 1);
@@ -134,7 +134,7 @@ static Layout *i_price(void)
     UpDown *updown = updown_create();
     edit_phtext(edit, TWIN_TYPE_PRICE);
     edit_font(edit, font);
-    edit_align(edit, ekRIGHT);
+    edit_align(edit, ekHRIGHT);
     edit_color(edit, kTXTRED);
     edit_bgcolor_focus(edit, kEDITBG);
     edit_phcolor(edit, kHOLDER);
@@ -166,7 +166,7 @@ static Layout *i_product(Ctrl *ctrl)
     layout_layout(layout, layout2, 1, 0);
     layout_label(layout, label1, 1, 1);
     layout_layout(layout, layout3, 1, 2);
-    layout_halign(layout, 1, 1, ekRIGHT);
+    layout_halign(layout, 1, 1, ekHRIGHT);
     layout_hsize(layout, 1, 200);
     layout_vsize(layout, 0, 200);
     layout_hmargin(layout, 0, 10);
@@ -261,8 +261,8 @@ static Layout *i_logout(Ctrl *ctrl)
     Label *label1 = label_create();
     View *cview = view_create();
     Button *button = button_push();
-    label_align(label0, ekCENTER);
-    label_align(label1, ekCENTER);
+    label_align(label0, ekHCENTER);
+    label_align(label1, ekHCENTER);
     button_text(button, TWIN_LOGOUT);
     view_size(cview, s2df(160, 160));
     layout_imageview(layout, view, 0, 0);
@@ -270,9 +270,9 @@ static Layout *i_logout(Ctrl *ctrl)
     layout_label(layout, label1, 0, 2);
     layout_view(layout, cview, 0, 3);
     layout_button(layout, button, 0, 5);
-    layout_halign(layout, 0, 1, ekJUSTIFY);
-    layout_halign(layout, 0, 2, ekJUSTIFY);
-    layout_halign(layout, 0, 3, ekCENTER);
+    layout_halign(layout, 0, 1, ekHJUSTIFY);
+    layout_halign(layout, 0, 2, ekHJUSTIFY);
+    layout_halign(layout, 0, 3, ekHCENTER);
     layout_vmargin(layout, 0, 5);
     layout_vmargin(layout, 2, 5);
     layout_vexpand(layout, 4);
@@ -306,7 +306,7 @@ static Layout *i_status_bar(Ctrl *ctrl)
     imageview_size(view, s2df(16, 16));
     layout_imageview(layout, view, 0, 0);
     layout_label(layout, label, 1, 0);
-    layout_halign(layout, 1, 0, ekJUSTIFY);
+    layout_halign(layout, 1, 0, ekHJUSTIFY);
     layout_hexpand(layout, 1);
     layout_hmargin(layout, 0, 5);
     layout_margin(layout, 5);

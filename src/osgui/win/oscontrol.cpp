@@ -393,16 +393,16 @@ void _oscontrol_draw_focus(HWND hwnd, const INT left_offset, const INT right_off
 
 /*---------------------------------------------------------------------------*/
 
-DWORD _oscontrol_ss_halign(const align_t halign)
+DWORD _oscontrol_ss_halign(const halign_t halign)
 {
     switch (halign)
     {
-    case ekLEFT:
+    case ekHLEFT:
         return SS_LEFT;
-    case ekCENTER:
-    case ekJUSTIFY:
+    case ekHCENTER:
+    case ekHJUSTIFY:
         return SS_CENTER;
-    case ekRIGHT:
+    case ekHRIGHT:
         return SS_RIGHT;
     default:
         cassert_default(halign);
@@ -413,16 +413,16 @@ DWORD _oscontrol_ss_halign(const align_t halign)
 
 /*---------------------------------------------------------------------------*/
 
-DWORD _oscontrol_es_halign(const align_t halign)
+DWORD _oscontrol_es_halign(const halign_t halign)
 {
     switch (halign)
     {
-    case ekLEFT:
+    case ekHLEFT:
         return ES_LEFT;
-    case ekCENTER:
-    case ekJUSTIFY:
+    case ekHCENTER:
+    case ekHJUSTIFY:
         return ES_CENTER;
-    case ekRIGHT:
+    case ekHRIGHT:
         return ES_RIGHT;
     default:
         cassert_default(halign);

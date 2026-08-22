@@ -101,7 +101,7 @@ struct _colitem_t
     ctrl_op_t op;
     uint32_t index;
     const char_t *text;
-    align_t align;
+    halign_t align;
     real32_t width;
 };
 
