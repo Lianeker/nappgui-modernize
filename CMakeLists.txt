@@ -21,6 +21,7 @@ set(NAPPGUI_ROOT_PATH ${CMAKE_CURRENT_SOURCE_DIR})
 set(NAPPGUI_SHARED False CACHE BOOL "Build NAppGUI shared libraries.")
 set(NAPPGUI_DEMO True CACHE BOOL "Build NAppGUI demo examples.")
 set(NAPPGUI_WEB True CACHE BOOL "Build NAppGUI WebView support.")
+set(NAPPGUI_TESTS False CACHE BOOL "Build NAppGUI unit tests.")
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 set(INSTALL_PERM "OWNER_READ;OWNER_WRITE;OWNER_EXECUTE;GROUP_READ;GROUP_EXECUTE;WORLD_READ;WORLD_EXECUTE")
 
@@ -58,6 +59,10 @@ nap_generate_tools()
 
 # Generate targets
 include(${NAPPGUI_ROOT_PATH}/prj/NAppTarget.cmake)
+if (NAPPGUI_TESTS)
+    enable_testing()
+endif()
+
 include(${NAPPGUI_ROOT_PATH}/CMakeTargets.cmake)
 
 foreach (target ${ALL_TARGETS})
