@@ -14,6 +14,34 @@
 #include <Windows.h>
 #include <sewer/warn.hxx>
 
+/* Los controles comunes version 6 (estilos visuales) requieren que el ejecutable
+   declare la dependencia en su manifiesto. Sin ella, InitCommonControlsEx()
+   devuelve FALSE y la aplicacion arranca con los controles anteriores a XP.
+
+   Se emite desde aqui, y no solo desde el sistema de build, para que tambien la
+   reciba quien consume el SDK con find_package() o con otro build system.
+   Ver NAP-018. */
+#if defined(_MSC_VER)
+#if defined(_M_IX86)
+#define NAPPGUI_MANIFEST_ARCH "x86"
+#elif defined(_M_AMD64)
+#define NAPPGUI_MANIFEST_ARCH "amd64"
+#elif defined(_M_ARM64)
+#define NAPPGUI_MANIFEST_ARCH "arm64"
+#elif defined(_M_ARM)
+#define NAPPGUI_MANIFEST_ARCH "arm"
+#else
+#error Arquitectura desconocida para el manifiesto de Common Controls
+#endif
+
+#pragma comment(linker, "\"/manifestdependency:type='Win32' " \
+                        "name='Microsoft.Windows.Common-Controls' " \
+                        "version='6.0.0.0' " \
+                        "processorArchitecture='" NAPPGUI_MANIFEST_ARCH "' " \
+                        "publicKeyToken='6595b64144ccf1df' " \
+                        "language='*'\"")
+#endif
+
 #define osmain(func_create, func_destroy, options, type) \
     int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) \
     { \

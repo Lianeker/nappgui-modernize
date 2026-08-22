@@ -19,6 +19,7 @@
 #include <core/arrst.h>
 #include <core/core.h>
 #include <core/heap.h>
+#include <osbs/log.h>
 #include <sewer/cassert.h>
 #include <sewer/unicode.h>
 
@@ -518,6 +519,15 @@ void _osgui_start_imp(void)
         commctrl.dwSize = sizeof(INITCOMMONCONTROLSEX);
         commctrl.dwICC = ICC_STANDARD_CLASSES | ICC_BAR_CLASSES | ICC_LISTVIEW_CLASSES | ICC_TAB_CLASSES | ICC_PROGRESS_CLASS;
         ok = InitCommonControlsEx(&commctrl);
+
+        /* Si esto falla, el ejecutable no declara la dependencia de
+           Common-Controls 6 en su manifiesto. La aplicacion arranca igualmente,
+           pero con los controles anteriores a Windows XP y sin estilos
+           visuales. En Release el cassert desaparece, asi que dejamos rastro en
+           el log: el sintoma (una interfaz fea) no apunta a la causa. */
+        if (ok != TRUE)
+            log_printf("InitCommonControlsEx failed: the executable has no Common-Controls 6 manifest dependency. See osmain_win.h");
+
         cassert_unref(ok == TRUE, ok);
     }
 
