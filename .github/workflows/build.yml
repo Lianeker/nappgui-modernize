@@ -12,6 +12,13 @@ jobs:
   build:
     name: ${{ matrix.name }}
     runs-on: ${{ matrix.os }}
+    env:
+      # El generador es opcional: con `generator: ''` no se pasa `-G` y CMake
+      # elige el generador por defecto de la maquina. Es lo que necesita la
+      # linea de Visual Studio, porque la version instalada en el runner cambia
+      # con el tiempo (windows-latest ya no trae VS 2022) y fijar "Visual Studio
+      # 17 2022" a mano rompe el trabajo en cuanto GitHub actualiza la imagen.
+      CMAKE_GEN_ARG: ${{ matrix.generator && format('-G "{0}"', matrix.generator) || '' }}
     strategy:
       # Que un trabajo falle no debe ocultar el resultado de los demas: lo
       # interesante suele ser justo saber en cuantas plataformas falla.
@@ -23,9 +30,12 @@ jobs:
             generator: Ninja
             arch: x64
 
+          # Sin generador explicito: CMake escoge la version de Visual Studio
+          # que haya instalada en la imagen del runner. Ver el comentario de
+          # CMAKE_GEN_ARG mas arriba.
           - name: windows-x64-msbuild
             os: windows-latest
-            generator: Visual Studio 17 2022
+            generator: ''
             arch: x64
             multiconfig: true
 
@@ -44,8 +54,11 @@ jobs:
             generator: Ninja
             arch: arm64
 
+          # macos-13 (el ultimo runner Intel de la serie macos-NN) esta
+          # retirado: los trabajos que lo piden se quedan en cola para siempre.
+          # macos-15-intel es el runner x86_64 que lo sustituye.
           - name: macos-x64
-            os: macos-13
+            os: macos-15-intel
             generator: Ninja
             arch: x64
 
@@ -80,7 +93,7 @@ jobs:
       # NAP-002; cuando se cierre, quitar esta linea.
       - name: Configure
         run: >
-          cmake -S . -B build -G "${{ matrix.generator }}"
+          cmake -S . -B build ${{ env.CMAKE_GEN_ARG }}
           -DCMAKE_BUILD_TYPE=Debug
           -DNAPPGUI_DEMO=YES
           -DNAPPGUI_TESTS=YES
@@ -102,7 +115,7 @@ jobs:
       # NAP-002 y deben poder borrarse cuando esa tarea se cierre.
       - name: Consumidor externo
         run: >
-          cmake -S test/consumer -B build-consumer -G "${{ matrix.generator }}"
+          cmake -S test/consumer -B build-consumer ${{ env.CMAKE_GEN_ARG }}
           -DCMAKE_BUILD_TYPE=Debug
           -Dnappgui_DIR=${{ github.workspace }}/install/cmake
 
