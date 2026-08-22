@@ -45,6 +45,15 @@
                         "language='*'\"")
 #endif
 
+/* Los dos ceros que se pasan como argc/argv a osmain_imp() NO significan que
+   la aplicacion no reciba argumentos: en Windows los obtiene el backend con
+   CommandLineToArgvW() dentro de _osapp_init_imp() (osapp_win.c), que ignora
+   estos dos parametros. osapp_argc() y osapp_argv() funcionan igual que en
+   Linux y macOS, acentos incluidos.
+
+   Es una trampa latente: si alguien "arregla" _osapp_init_imp() para usar los
+   parametros recibidos, Windows se queda sin argumentos en silencio.
+   Comprobado en tools/consumer-smoke/main.c. Ver NAP-007. */
 #define osmain(func_create, func_destroy, options, type) \
     int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) \
     { \
