@@ -8,6 +8,12 @@
 # uso de los targets nappgui::* y llegan solos. Si algún día vuelve a hacer
 # falta un parche en este fichero, es que el paquete exportado ha vuelto a
 # mentir (NAP-002).
+#
+# Se enlaza contra `nappgui::osapp` **a secas**, no contra ${NAPPGUI_LIBRARIES}.
+# Esa es la prueba de que el grafo de dependencias entre las librerías del SDK
+# viaja dentro del paquete: osapp arrastra osgui y gui, esas arrastran draw2d, y
+# así hasta sewer, y es CMake quien calcula el orden de enlace. Si alguna vez
+# hay que volver a listarlas todas, el grafo se ha perdido (NAP-033).
 cmake_minimum_required(VERSION 3.20)
 project(ConsumerSmoke C)
 
@@ -21,5 +27,5 @@ add_executable(MacroHazards macro_hazards.c)
 add_executable(Col2dPrecision col2d_precision.c)
 
 foreach(tgt ConsumerSmoke MacroHazards Col2dPrecision)
-    target_link_libraries(${tgt} PRIVATE ${NAPPGUI_LIBRARIES})
+    target_link_libraries(${tgt} PRIVATE nappgui::osapp)
 endforeach()

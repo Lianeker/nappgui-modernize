@@ -83,6 +83,20 @@
       through the empty field and a `,` as decimal separator, and neither is a
       number for `str_to_r64()`.
 
+### Build system
+
+- The imported `nappgui::*` libraries now declare how they depend on each other,
+  so linking a subset works. `target_link_libraries(app PRIVATE nappgui::osapp)`
+  pulls in `osgui`, `gui`, `draw2d`, `geom2d`, `core`, `osbs` and `sewer` on its
+  own, and CMake computes the link order from the graph. Before, the order lived
+  only in the `NAPPGUI_LIBRARIES` string and every consumer had to copy the nine
+  names in the right order.
+    - `NAPPGUI_LIBRARIES` is unchanged and keeps working: it is still the
+      documented way to link everything at once.
+    - `nappgui::encode`, `nappgui::inet` and `nappgui::ogl3d` are not reachable
+      from `nappgui::osapp`, because nothing in the GUI stack depends on them.
+      Link them explicitly when you use them.
+
 ### Migration
 
 - **`str_to_iXX()` / `str_to_uXX()` with malformed input.** The result is 0 now,

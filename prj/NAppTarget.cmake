@@ -1163,6 +1163,25 @@ function(nap_library libName dependList buildShared nrcMode)
         set(napReqScope INTERFACE)
     endif()
 
+    #
+    # El grafo entre las propias librerias, declarado (NAP-033)
+    #
+    # 'dependList' servia solo para el orden de compilacion (add_dependencies en
+    # nap_target). El orden de enlace vivia en una cadena de texto,
+    # NAPPGUI_LIBRARIES, que el consumidor estaba obligado a copiar entera y en
+    # el orden correcto. Declarado el grafo, 'nappgui::osapp' a secas arrastra
+    # el resto y es CMake quien calcula el orden.
+    #
+    # Una estatica no enlaza nada, solo propaga: INTERFACE. Una dinamica si
+    # enlaza, y de eso ya se encarga nap_link_with_libraries() con PUBLIC.
+    #
+    # Los nombres van sin prefijo a proposito: en el arbol los targets se llaman
+    # 'core', 'sewer'..., y es install(EXPORT ... NAMESPACE nappgui::) quien los
+    # reescribe a 'nappgui::core' al generar el paquete.
+    if (dependList AND NOT buildShared)
+        target_link_libraries(${libName} INTERFACE ${dependList})
+    endif()
+
     # Requisitos de uso de esta libreria: solo para las del propio SDK, que son
     # las que se compilan cuando NAppGUI no viene de un paquete. Ver NAP-002.
     if (NOT NAPPGUI_IS_PACKAGE)
