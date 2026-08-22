@@ -45,7 +45,7 @@ _geom2d_api bool_t col2d_box_pointd(const Box2Dd *box, const V2Dd *pnt, Col2Dd *
 
 _geom2d_api bool_t col2d_box_segmentf(const Box2Df *box, const Seg2Df *seg, Col2Df *col);
 
-_geom2d_api bool_t col2d_box_segmentd(const Box2Dd *box, const Seg2Dd *seg, Col2Df *col);
+_geom2d_api bool_t col2d_box_segmentd(const Box2Dd *box, const Seg2Dd *seg, Col2Dd *col);
 
 _geom2d_api bool_t col2d_box_circlef(const Box2Df *box, const Cir2Df *cir, Col2Df *col);
 
@@ -85,11 +85,11 @@ _geom2d_api bool_t col2d_tri_segmentd(const Tri2Dd *tri, const Seg2Dd *seg, Col2
 
 _geom2d_api bool_t col2d_tri_circlef(const Tri2Df *tri, const Cir2Df *cir, Col2Df *col);
 
-_geom2d_api bool_t col2d_tri_circled(const Tri2Dd *tri, const Cir2Df *cir, Col2Df *col);
+_geom2d_api bool_t col2d_tri_circled(const Tri2Dd *tri, const Cir2Dd *cir, Col2Dd *col);
 
 _geom2d_api bool_t col2d_tri_boxf(const Tri2Df *tri, const Box2Df *box, Col2Df *col);
 
-_geom2d_api bool_t col2d_tri_boxd(const Tri2Dd *tri, const Box2Df *box, Col2Df *col);
+_geom2d_api bool_t col2d_tri_boxd(const Tri2Dd *tri, const Box2Dd *box, Col2Dd *col);
 
 _geom2d_api bool_t col2d_tri_obbf(const Tri2Df *tri, const OBB2Df *obb, Col2Df *col);
 

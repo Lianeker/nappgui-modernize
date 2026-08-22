@@ -549,7 +549,7 @@ bool_t col2d_box_segmentf(const Box2Df *box, const Seg2Df *seg, Col2Df *col)
 
 /*---------------------------------------------------------------------------*/
 
-bool_t col2d_box_segmentd(const Box2Dd *box, const Seg2Dd *seg, Col2Df *col)
+bool_t col2d_box_segmentd(const Box2Dd *box, const Seg2Dd *seg, Col2Dd *col)
 {
     return i_box_segment< real64_t >((const Box2D< real64_t > *)box, (const Seg2D< real64_t > *)seg, (Col2D< real64_t > *)col);
 }
@@ -1060,7 +1060,7 @@ bool_t col2d_tri_circlef(const Tri2Df *tri, const Cir2Df *cir, Col2Df *col)
 
 /*---------------------------------------------------------------------------*/
 
-bool_t col2d_tri_circled(const Tri2Dd *tri, const Cir2Df *cir, Col2Df *col)
+bool_t col2d_tri_circled(const Tri2Dd *tri, const Cir2Dd *cir, Col2Dd *col)
 {
     return i_tri_circle< real64_t >((const Tri2D< real64_t > *)tri, (const Cir2D< real64_t > *)cir, (Col2D< real64_t > *)col);
 }
@@ -1087,7 +1087,7 @@ bool_t col2d_tri_boxf(const Tri2Df *tri, const Box2Df *box, Col2Df *col)
 
 /*---------------------------------------------------------------------------*/
 
-bool_t col2d_tri_boxd(const Tri2Dd *tri, const Box2Df *box, Col2Df *col)
+bool_t col2d_tri_boxd(const Tri2Dd *tri, const Box2Dd *box, Col2Dd *col)
 {
     return i_tri_box< real64_t >((const Tri2D< real64_t > *)tri, (const Box2D< real64_t > *)box, (Col2D< real64_t > *)col);
 }
