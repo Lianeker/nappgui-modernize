@@ -467,6 +467,68 @@ static void i_dbind_str(void)
 
 /*---------------------------------------------------------------------------*/
 
+/* 'dbind_set_value_str' sobre un real: la misma puerta de entrada que el caso
+   entero de arriba, pero descartaba el error de 'str_to_r64', asi que "hola"
+   escribia un 0 y respondia ekBINDSET_OK. Dos campos del mismo struct, uno
+   entero y otro real, respondian distinto al mismo texto. Ver NAP-030. */
+static void i_dbind_str_real(void)
+{
+    const DBind *bind = dbind_from_typename("real32_t", NULL);
+    const DBind *bind64 = dbind_from_typename("real64_t", NULL);
+    real32_t v = 0;
+    real64_t v64 = 0;
+
+    if (ntest_true(bind != NULL, "el tipo real32_t esta registrado en dbind") == FALSE)
+        return;
+
+    /* Un numero correcto entra, con y sin decimales. */
+    v = -1;
+    ntest_true(dbind_set_value_str(bind, cast(&v, byte_t), "1.5") != ekBINDSET_NOT_ALLOWED, "dbind acepta \"1.5\" en un real");
+    ntest_equ_r32(v, 1.5, "dbind convierte \"1.5\" en 1.5");
+
+    v = -1;
+    ntest_true(dbind_set_value_str(bind, cast(&v, byte_t), "-3.5") != ekBINDSET_NOT_ALLOWED, "dbind acepta \"-3.5\" en un real");
+    ntest_equ_r32(v, -3.5, "dbind convierte \"-3.5\" en -3.5");
+
+    v = -1;
+    ntest_true(dbind_set_value_str(bind, cast(&v, byte_t), "42") != ekBINDSET_NOT_ALLOWED, "dbind acepta \"42\" en un real");
+    ntest_equ_r32(v, 42, "dbind convierte \"42\" en 42");
+
+    /* El texto que no es un numero se rechaza y no toca el destino. */
+    v = -1;
+    ntest_true(dbind_set_value_str(bind, cast(&v, byte_t), "hola") == ekBINDSET_NOT_ALLOWED, "dbind rechaza \"hola\" en un real");
+    ntest_equ_r32(v, -1, "dbind no toca el destino al rechazar \"hola\"");
+
+    v = -1;
+    ntest_true(dbind_set_value_str(bind, cast(&v, byte_t), "1.5abc") == ekBINDSET_NOT_ALLOWED, "dbind rechaza \"1.5abc\" en un real");
+    ntest_equ_r32(v, -1, "dbind no toca el destino al rechazar \"1.5abc\"");
+
+    /* La cadena vacia tampoco es un 0 (NAP-023), igual que en el entero. */
+    v = -1;
+    ntest_true(dbind_set_value_str(bind, cast(&v, byte_t), "") == ekBINDSET_NOT_ALLOWED, "dbind rechaza la cadena vacia en un real");
+    ntest_equ_r32(v, -1, "dbind no toca el destino al rechazar la cadena vacia");
+
+    /* La coma decimal que deja pasar el filtro del Edit no es un numero: antes
+       escribia la parte entera en silencio. Ver NAP-031. */
+    v = -1;
+    ntest_true(dbind_set_value_str(bind, cast(&v, byte_t), "1,5") == ekBINDSET_NOT_ALLOWED, "dbind rechaza \"1,5\" en un real");
+    ntest_equ_r32(v, -1, "dbind no toca el destino al rechazar \"1,5\"");
+
+    /* El mismo criterio en real64_t. */
+    if (ntest_true(bind64 != NULL, "el tipo real64_t esta registrado en dbind"))
+    {
+        v64 = -1;
+        ntest_true(dbind_set_value_str(bind64, cast(&v64, byte_t), "1.5") != ekBINDSET_NOT_ALLOWED, "dbind acepta \"1.5\" en un real de 64 bits");
+        ntest_true(v64 == 1.5, "dbind convierte \"1.5\" en 1.5 en un real de 64 bits");
+
+        v64 = -1;
+        ntest_true(dbind_set_value_str(bind64, cast(&v64, byte_t), "hola") == ekBINDSET_NOT_ALLOWED, "dbind rechaza \"hola\" en un real de 64 bits");
+        ntest_true(v64 == -1, "dbind no toca el destino de 64 bits al rechazar \"hola\"");
+    }
+}
+
+/*---------------------------------------------------------------------------*/
+
 static void i_stream(void)
 {
     Stream *stm = stm_memory(256);
@@ -565,6 +627,7 @@ uint32_t ntest_core(void)
     i_arrpt();
     i_strings();
     i_dbind_str();
+    i_dbind_str_real();
     i_stream();
     i_buffer();
     return ntest_end();

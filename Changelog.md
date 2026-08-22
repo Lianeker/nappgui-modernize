@@ -71,6 +71,18 @@
       value.
     - `"0x1f"` is still read as 31. Plain decimals are unaffected.
 
+- `dbind_set_value_str()` and `dbind_st_set_value_str()` return
+  `ekBINDSET_NOT_ALLOWED` when the text is not a number and the member is a
+  real, instead of writing a 0 and answering `ekBINDSET_OK`. The error of
+  `str_to_r64()` was discarded, so `"hola"` on a `real32_t` member was stored as
+  0 and the caller had no way to notice. The integer members already did this.
+    - Affects a JSON string on a real field (`json_read()`), which used to store
+      the 0 and now leaves the field at its default value.
+    - Affects a bound `Edit`, which reverts to the stored value instead of
+      writing a 0. Its text filter only lets a number through, but it also lets
+      through the empty field and a `,` as decimal separator, and neither is a
+      number for `str_to_r64()`.
+
 ### Migration
 
 - **`str_to_iXX()` / `str_to_uXX()` with malformed input.** The result is 0 now,
@@ -115,6 +127,21 @@
     if (err == TRUE)
         v = 0;
     ```
+
+- **A real member of `dbind` fed with text that is not a number.** It was a
+  silent 0 and it is `ekBINDSET_NOT_ALLOWED` now, with the member untouched:
+
+    ```c
+    /* Before: "hola" wrote 0 and answered ekBINDSET_OK */
+    dbind_set_value_str(bind, data, text);
+
+    /* After: check the answer, exactly like an integer member */
+    if (dbind_set_value_str(bind, data, text) == ekBINDSET_NOT_ALLOWED)
+        /* the text was not a number, the member keeps its value */;
+    ```
+
+  A JSON document that stored a real inside a string (`"1.5"`) still loads. One
+  that stored something else in it used to load as 0 and now reports the error.
 
 - **`str_to_r32()` / `str_to_r64()` with trailing garbage on MSVC <= 1700.**
   There is no `strtof` there and the garbage went unnoticed, so `"42abc"` was

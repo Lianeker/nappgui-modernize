@@ -4966,9 +4966,21 @@ static bindset_t i_set_value_str(const DBind *bind, byte_t *data, const char_t *
 
     case ekDTYPE_REAL:
     {
-        real64_t cvalue = str_to_r64(value, NULL);
+        /*
+         * The error of the conversion was discarded here, so any text that is
+         * not a number wrote a 0 and answered 'ekBINDSET_OK': two members of
+         * the same struct, one integer and one real, answered differently to
+         * the same garbage. Same criterion as 'ekDTYPE_INT' above now.
+         */
+        bool_t error = FALSE;
+        real64_t cvalue = str_to_r64(value, &error);
+
+        if (error == TRUE)
+            return ekBINDSET_NOT_ALLOWED;
+
         if (member != NULL)
             cvalue = i_member_clamp_real(member, cvalue);
+
         return i_update_real(data, bind->size, cvalue);
     }
 
