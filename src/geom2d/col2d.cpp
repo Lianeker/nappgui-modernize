@@ -22,6 +22,34 @@
 
 /*---------------------------------------------------------------------------*/
 
+/*
+ * Contrato del parametro de salida 'col' (Col2D). Ver NAP-019.
+ *
+ * La firma de las 56 funciones col2d_* promete punto de contacto (p), normal
+ * (n) y profundidad (d), pero no todas saben calcularlo. Se reparten en tres
+ * grupos; la tabla funcion a funcion esta en docs/col2d-contacto.md.
+ *
+ *   - Contacto completo: rellenan p, n y d. Solo las de circulo contra punto
+ *     y circulo contra circulo.
+ *   - Contacto parcial: rellenan algunos campos y dejan el resto como
+ *     estuvieran. Cada plantilla lo dice en su comentario.
+ *   - Sin contacto: las que resuelven por el teorema del eje separador (SAT)
+ *     solo saben decir *si* hay solapamiento, no *donde*. Descartan 'col'.
+ *
+ * Las del tercer grupo comprueban ahora con cassert que el llamante haya
+ * pasado NULL. Antes aceptaban el puntero en silencio y devolvian TRUE sin
+ * escribir un solo byte, asi que el llamante leia memoria sin inicializar
+ * creyendo que tenia un contacto. El unref(col) sigue siendo necesario: en
+ * Release cassert se compila a nada y el parametro quedaria sin usar.
+ *
+ * Aviso sobre 'd': todavia no significa lo mismo en todas partes. Las que
+ * pasan por i_line_point escriben la distancia *al cuadrado*, i_box_point
+ * escribe una distancia al borde y las de circulo una profundidad de
+ * penetracion. Unificarlo cambia comportamiento observable: ver NAP-025.
+ */
+
+/*---------------------------------------------------------------------------*/
+
 template < typename real >
 static SATPoly< real > *i_create(const uint32_t num_vertices, const uint32_t num_axis)
 {
@@ -137,6 +165,9 @@ static bool_t i_point_point(const V2D< real > *pnt1, const V2D< real > *pnt2, co
     real dX, dY;
     cassert_no_null(pnt1);
     cassert_no_null(pnt2);
+    /* Sin contacto: dos puntos dentro de una tolerancia no definen normal ni
+       profundidad. */
+    cassert_msg(col == NULL, "col2d_point_point no calcula el contacto: pasa NULL en 'col'");
     unref(col);
     dX = pnt2->x - pnt1->x;
     dY = pnt2->y - pnt1->y;
@@ -190,6 +221,9 @@ static bool_t i_line_point(const V2D< real > *p0, const V2D< real > *p1, const V
             sqdist = V2D< real >::dot(&ac, &ac) - e * e / f;
     }
 
+    /* Contacto parcial: solo 'd', y ademas es la distancia *al cuadrado* del
+       punto al segmento, no una profundidad de penetracion. Se escribe tambien
+       cuando no hay colision. p y n quedan sin tocar. Ver NAP-025. */
     if (col != NULL)
         col->d = sqdist;
 
@@ -247,6 +281,9 @@ static bool_t i_line_line(const V2D< real > *a1, const V2D< real > *a2, const V2
     if (u < 0 || u > 1)
         return FALSE;
 
+    /* Contacto parcial: solo 'p', el punto donde se cruzan. Dos segmentos que
+       se cortan no tienen profundidad de penetracion ni normal univoca, asi
+       que n y d quedan sin tocar. */
     if (col != NULL)
     {
         col->p.x = a1->x + t * b.x;
@@ -293,11 +330,16 @@ static bool_t i_circle_point(const Cir2D< real > *cir, const V2D< real > *p, Col
     dot = dX * dX + dY * dY;
     if (dot <= cir->r * cir->r)
     {
+        /* Contacto completo: p, n y d. */
         if (col != NULL)
         {
-            col->n = V2D< real >::unit(&cir->c, p, NULL);
+            real dist = 0;
+            col->n = V2D< real >::unit(&cir->c, p, &dist);
             col->p.x = cir->c.x + col->n.x * cir->r;
             col->p.y = cir->c.y + col->n.y * cir->r;
+            /* Cuanto se ha metido el punto por debajo del borde. Si el punto
+               es el centro, dist vale 0 y la penetracion es el radio entero. */
+            col->d = cir->r - dist;
         }
 
         return TRUE;
@@ -357,11 +399,16 @@ static bool_t i_circle_circle(const Cir2D< real > *cir1, const Cir2D< real > *ci
     rt *= rt;
     if (V2D< real >::sqdist(&cir1->c, &cir2->c) < rt)
     {
+        /* Contacto completo: p, n y d. */
         if (col != NULL)
         {
-            col->n = V2D< real >::unit(&cir1->c, &cir2->c, NULL);
+            real dist = 0;
+            col->n = V2D< real >::unit(&cir1->c, &cir2->c, &dist);
             col->p.x = cir1->c.x + col->n.x * cir1->r;
             col->p.y = cir1->c.y + col->n.y * cir1->r;
+            /* Lo que se solapan los radios. unit() ya ha calculado la
+               distancia entre centros, asi que no hay una segunda raiz. */
+            col->d = (cir1->r + cir2->r) - dist;
         }
 
         return TRUE;
@@ -466,6 +513,10 @@ static bool_t i_box_point(const Box2D< real > *b, const V2D< real > *p, Col2D< r
         if (d < mind)
             mind = d;
 
+        /* Contacto parcial: solo 'd'; p y n quedan sin tocar. Ojo: se escribe
+           el ultimo 'd' calculado (la distancia al borde max.y), no 'mind',
+           que se calcula y se tira. Corregirlo cambia valores que ya devuelve
+           la API: ver NAP-024. */
         cassert(d >= 0);
         col->d = d;
         return inside;
@@ -501,6 +552,8 @@ static bool_t i_box_segment(const Box2D< real > *box, const Seg2D< real > *seg, 
 
     cassert_no_null(box);
     cassert_no_null(seg);
+    /* Sin contacto: se resuelve por SAT, que solo dice si hay solapamiento. */
+    cassert_msg(col == NULL, "col2d_box_segment no calcula el contacto: pasa NULL en 'col'");
     unref(col);
 
     box_axis[0].x = 1;
@@ -563,6 +616,10 @@ static bool_t i_box_circle(const Box2D< real > *box, const Cir2D< real > *cir, C
 
     cassert_no_null(box);
     cassert_no_null(cir);
+    /* Sin contacto: delega en i_circle_point con NULL, asi que el contacto que
+       ese calcularia (sobre el punto de la caja mas cercano, no sobre la caja)
+       se descarta a proposito. */
+    cassert_msg(col == NULL, "col2d_box_circle no calcula el contacto: pasa NULL en 'col'");
     unref(col);
 
     pt = cir->c;
@@ -601,6 +658,8 @@ static bool_t i_box_box(const Box2D< real > *b0, const Box2D< real > *b1, Col2D<
 {
     cassert_no_null(b0);
     cassert_no_null(b1);
+    /* Sin contacto: solo se comprueba el solapamiento de intervalos. */
+    cassert_msg(col == NULL, "col2d_box_box no calcula el contacto: pasa NULL en 'col'");
     unref(col);
 
     if (b0->min.x > b1->max.x)
@@ -680,6 +739,9 @@ static bool_t i_sat_segment(const V2D< real > *sat_axis, const real *sat_min, co
     real seg_max;
 
     cassert_no_null(seg);
+    /* Sin contacto: SAT da el eje de minima penetracion, no el punto de
+       contacto. Llega desde obb_segment, tri_segment y poly_segment. */
+    cassert_msg(col == NULL, "col2d_*_segment por SAT no calcula el contacto: pasa NULL en 'col'");
     unref(col);
 
     if (i_sat_overlaps< real >(sat_axis, sat_min, sat_max, sat_num_axis, (const V2D< real > *)seg, 2) == FALSE)
@@ -777,6 +839,9 @@ static bool_t i_sat_box(const V2D< real > *sat_axis, const real *sat_min, const 
     real box_max[2];
 
     cassert_no_null(box);
+    /* Sin contacto: SAT da el eje de minima penetracion, no el punto de
+       contacto. Llega desde obb_box, tri_box y poly_box. */
+    cassert_msg(col == NULL, "col2d_*_box por SAT no calcula el contacto: pasa NULL en 'col'");
     unref(col);
     box_vertex[0] = box->min;
     box_vertex[1].x = box->max.x;
@@ -868,6 +933,8 @@ static bool_t i_sat_sat(const SATPoly< real > *sat1, const SATPoly< real > *sat2
 {
     cassert_no_null(sat1);
     cassert_no_null(sat2);
+    /* Sin contacto: llega desde obb_obb, poly_obb y poly_poly. */
+    cassert_msg(col == NULL, "col2d por SAT no calcula el contacto: pasa NULL en 'col'");
     unref(col);
 
     if (i_sat_overlaps< real >(sat1->axis, sat1->min, sat1->max, sat1->num_axis, sat2->vertex, sat2->num_vertices) == FALSE)
@@ -885,6 +952,8 @@ template < typename real >
 static bool_t i_sat1_sat(const V2D< real > *sat1_axis, const real *sat1_min, const real *sat1_max, const uint32_t sat1_num_axis, const V2D< real > *sat1_vertex, const uint32_t sat1_num_vertices, const SATPoly< real > *sat2, Col2D< real > *col)
 {
     cassert_no_null(sat2);
+    /* Sin contacto: llega desde tri_obb y poly_tri. */
+    cassert_msg(col == NULL, "col2d por SAT no calcula el contacto: pasa NULL en 'col'");
     unref(col);
 
     if (i_sat_overlaps< real >(sat1_axis, sat1_min, sat1_max, sat1_num_axis, sat2->vertex, sat2->num_vertices) == FALSE)
@@ -904,6 +973,8 @@ static bool_t i_sat2_sat(
     const V2D< real > *sat2_axis, const real *sat2_min, const real *sat2_max, const uint32_t sat2_num_axis, const V2D< real > *sat2_vertex, const uint32_t sat2_num_vertices,
     Col2D< real > *col)
 {
+    /* Sin contacto: llega desde tri_tri. */
+    cassert_msg(col == NULL, "col2d_tri_tri no calcula el contacto: pasa NULL en 'col'");
     unref(col);
 
     if (i_sat_overlaps< real >(sat1_axis, sat1_min, sat1_max, sat1_num_axis, sat2_vertex, sat2_num_vertices) == FALSE)
@@ -960,6 +1031,9 @@ static bool_t i_tri_point(const Tri2D< real > *tri, const V2D< real > *pnt, Col2
 
     cassert_no_null(tri);
     cassert_no_null(pnt);
+    /* Sin contacto: solo se comprueba el signo del area de los tres subtriangulos.
+       i_tri_circle llama aqui con NULL a proposito, para no disparar el aviso. */
+    cassert_msg(col == NULL, "col2d_tri_point no calcula el contacto: pasa NULL en 'col'");
     unref(col);
     sign = i_sign< real >(pnt, &tri->p0, &tri->p1);
 
@@ -1048,7 +1122,13 @@ static bool_t i_tri_circle(const Tri2D< real > *tri, const Cir2D< real > *cir, C
     if (i_line_point< real >(&tri->p2, &tri->p0, &cir->c, cir->r, col) == TRUE)
         return TRUE;
 
-    return i_tri_point< real >(tri, &cir->c, col);
+    /* Contacto parcial e incoherente: si el circulo toca una arista, las
+       llamadas de arriba dejan en 'd' la distancia *al cuadrado* del centro a
+       esa arista; si el centro cae dentro del triangulo sin tocar aristas, no
+       se escribe nada. Se pasa NULL porque i_tri_point no calcula contacto.
+       Darle a 'd' un significado unico exige decidir la profundidad de un
+       circulo dentro de un poligono: ver NAP-025. */
+    return i_tri_point< real >(tri, &cir->c, NULL);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1160,6 +1240,9 @@ static bool_t i_point_in_poly(const V2D< real > *v, const uint32_t n, const V2D<
     bool_t c = FALSE;
 
     cassert_no_null(v);
+    /* Sin contacto: es un conteo de cruces, no calcula geometria de contacto.
+       i_poly_circle llama aqui con NULL a proposito, para no disparar el aviso. */
+    cassert_msg(col == NULL, "col2d_poly_point no calcula el contacto: pasa NULL en 'col'");
     unref(col);
 
     for (i = 0, j = n - 1; i < n; j = i++)
@@ -1253,7 +1336,10 @@ static bool_t i_poly_circle(const Pol2D< real > *poly, const Cir2D< real > *cir,
             return TRUE;
     }
 
-    return i_point_in_poly< real >(v, n, &cir->c, col);
+    /* Contacto parcial e incoherente, igual que i_tri_circle: 'd' queda con la
+       distancia al cuadrado a la arista tocada, o sin escribir si el centro
+       cae dentro del poligono. Ver NAP-025. */
+    return i_point_in_poly< real >(v, n, &cir->c, NULL);
 }
 
 /*---------------------------------------------------------------------------*/

@@ -203,25 +203,72 @@ static void i_colisiones(void)
         ntest_true(col2d_circle_circlef(&c1, &c2, NULL), "circulos que se solapan");
         ntest_false(col2d_circle_circlef(&c1, &c3, NULL), "circulos separados");
 
-        /* Con punto de contacto: la profundidad debe ser 10 - 8 = 2. */
+        /* Con punto de contacto: la profundidad debe ser 10 - 8 = 2.
+           NAP-019 completo la 'd', que antes no se escribia nunca. */
         {
             Col2Df col;
             bmem_set_zero((byte_t *)&col, sizeof32(Col2Df));
             if (ntest_true(col2d_circle_circlef(&c1, &c2, &col), "colision con contacto"))
             {
-                /* La normal y el punto de contacto si se rellenan. */
                 ntest_equ_r32(col.n.x, 1.f, "la normal del contacto apunta de c1 a c2");
                 ntest_equ_r32(col.p.x, 5.f, "el punto de contacto esta en el borde de c1");
-
-                /* La profundidad deberia ser 10 - 8 = 2, pero i_circle_circle
-                   (geom2d/col2d.cpp:351) escribe n y p y nunca toca d, asi que
-                   el llamante recibe lo que hubiera en memoria. Ver NAP-019. */
-                if (col.d == 0.f)
-                    ntest_pending("col2d_circle_circlef deberia rellenar la profundidad d", "NAP-019");
-                else
-                    ntest_equ_r32(col.d, 2.f, "profundidad de penetracion entre circulos");
+                ntest_equ_r32(col.d, 2.f, "profundidad de penetracion entre circulos");
             }
         }
+
+        /* Circulos concentricos: la penetracion es la suma de los radios. */
+        {
+            Col2Df col;
+            Cir2Df c4;
+            c4.c = v2df(0, 0);
+            c4.r = 3;
+            bmem_set_zero((byte_t *)&col, sizeof32(Col2Df));
+            if (ntest_true(col2d_circle_circlef(&c1, &c4, &col), "circulos concentricos colisionan"))
+                ntest_equ_r32(col.d, 8.f, "circulos concentricos: la penetracion es r1 + r2");
+        }
+
+        /* Sin colision el Col2D no se toca. */
+        {
+            Col2Df col;
+            bmem_set_zero((byte_t *)&col, sizeof32(Col2Df));
+            ntest_false(col2d_circle_circlef(&c1, &c3, &col), "circulos separados, con Col2D");
+            ntest_equ_r32(col.d, 0.f, "sin colision, col2d_circle_circlef no toca el Col2D");
+        }
+
+        /* La variante d rellena la profundidad igual que la f. */
+        {
+            Col2Dd col;
+            Cir2Dd d1, d2;
+            d1.c = v2dd(0, 0);
+            d1.r = 5;
+            d2.c = v2dd(8, 0);
+            d2.r = 5;
+            bmem_set_zero((byte_t *)&col, sizeof32(Col2Dd));
+            if (ntest_true(col2d_circle_circled(&d1, &d2, &col), "colision con contacto en doble precision"))
+                ntest_equ_r32(col.d, 2.f, "col2d_circle_circled tambien rellena la profundidad");
+        }
+    }
+
+    /* Circulo contra punto: NAP-019 completo tambien aqui la profundidad. */
+    {
+        Col2Df col;
+        Cir2Df cir;
+        V2Df dentro = v2df(2, 0);
+        V2Df fuera = v2df(20, 0);
+        cir.c = v2df(0, 0);
+        cir.r = 5;
+
+        bmem_set_zero((byte_t *)&col, sizeof32(Col2Df));
+        if (ntest_true(col2d_circle_pointf(&cir, &dentro, &col), "punto dentro del circulo"))
+        {
+            ntest_equ_r32(col.n.x, 1.f, "la normal apunta del centro al punto");
+            ntest_equ_r32(col.p.x, 5.f, "el punto de contacto esta en el borde del circulo");
+            ntest_equ_r32(col.d, 3.f, "profundidad: radio 5 menos distancia 2");
+        }
+
+        bmem_set_zero((byte_t *)&col, sizeof32(Col2Df));
+        ntest_false(col2d_circle_pointf(&cir, &fuera, &col), "punto fuera del circulo");
+        ntest_equ_r32(col.d, 0.f, "sin colision, col2d_circle_pointf no toca el Col2D");
     }
 
     /* Punto dentro y fuera de una caja. */
@@ -250,7 +297,9 @@ static void i_colisiones(void)
     }
 
     /* Triangulo contra caja: solapado y separado.
-       Nota: estas funciones van por SAT y no rellenan el Col2D. Ver NAP-019. */
+       Nota: estas funciones van por SAT y no rellenan el Col2D, asi que desde
+       NAP-019 exigen NULL y avisan con cassert si les pasas un puntero.
+       La tabla completa esta en docs/col2d-contacto.md. */
     {
         Tri2Df tri = tri2df(0, 0, 10, 0, 5, 10);
         Box2Df dentro, fuera;
