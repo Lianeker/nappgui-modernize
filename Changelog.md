@@ -109,6 +109,21 @@
       path that `find_package(OpenGL)` returns, which points inside the SDK of
       the Xcode that built the package.
 
+- **`find_package(nappgui)` no longer writes unprefixed variables into the
+  calling project.** The build options of the package (`VERSION`, `COMPILER`,
+  `CMAKE`, `GENERATOR`, `BUILD_TYPE`, `BUILD_ARCH`, `HOST_ARCH`, `PACKAGE_ID`,
+  `WEB_SUPPORT`, `BUILD_SHARED`, `COMPILER_VERSION`, and `DEPLOYMENT_TARGET_OSX`
+  and friends on macOS) are published as `NAPPGUI_VERSION`,
+  `NAPPGUI_COMPILER`, `NAPPGUI_CMAKE` and so on. See the migration note below.
+    - They are plain directory variables now, not `CACHE INTERNAL` entries.
+      `CACHE INTERNAL` implies `FORCE`, so the package was overwriting whatever
+      the consumer had under those names and leaving it in its `CMakeCache.txt`.
+    - `CMAKE_CONFIGURATION_TYPES` is also a plain variable now. Forcing it into
+      the cache told a single-config generator that it was multi-config.
+    - `nappgui-config.cmake` no longer computes `OSX_SYSROOT` and `COCOA_LIB`.
+      Nothing has read them since the imported targets started declaring
+      `-framework Cocoa`, and building them ran `xcrun` on every configure.
+
 ### Migration
 
 - **`str_to_iXX()` / `str_to_uXX()` with malformed input.** The result is 0 now,
@@ -174,6 +189,31 @@
   42. It is 0 with an error now, like on every other compiler. Cut the string at
   the first character that is not part of the number if the old reading is what
   you want.
+
+- **Build options read after `find_package(nappgui)`.** Add the `NAPPGUI_`
+  prefix to the name:
+
+    ```cmake
+    find_package(nappgui REQUIRED)
+
+    # Before: the package defined VERSION, COMPILER, WEB_SUPPORT... unprefixed
+    message(STATUS "NAppGUI ${VERSION} built with ${COMPILER}")
+
+    # After
+    message(STATUS "NAppGUI ${NAPPGUI_VERSION} built with ${NAPPGUI_COMPILER}")
+    ```
+
+  The old names are gone rather than deprecated on purpose: keeping `VERSION`
+  alive for one release means keeping the very collision the change is about.
+  `NAPPGUI_MSVC_RUNTIME` already had the prefix and does not change.
+
+  This is a fix, not only a rename. `VERSION` is the keyword of
+  `project(... VERSION ...)` and of `set_target_properties(... VERSION ...)`,
+  and the package was setting it with `CACHE INTERNAL`, that is, with `FORCE`.
+  A project that had its own `VERSION` got it silently replaced by the version
+  of NAppGUI. If your project was reading one of these names and it was **not**
+  meant to come from NAppGUI, it was already broken and this change is what
+  makes it visible.
 
 ## v1.6.2 - July 02, 2026 (r6905)
 

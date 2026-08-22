@@ -922,7 +922,7 @@ function(nap_library_requires libName scope)
     #
     # osgui: WebView
     #
-    if (${libName} STREQUAL "osgui" AND WEB_SUPPORT)
+    if (${libName} STREQUAL "osgui" AND NAPPGUI_WEB_SUPPORT)
         if (WIN32)
             # El loader se instala en 'lib/<arch>' y se compila desde
             # 'src/osgui/win/depend/<arch>'. $<INSTALL_PREFIX> es lo que
@@ -1092,7 +1092,7 @@ function(nap_target targetName targetType dependList nrcMode)
 
     # WebView support
     if (${targetName} STREQUAL "osgui")
-        if (WEB_SUPPORT)
+        if (NAPPGUI_WEB_SUPPORT)
             if (WIN32)
                 target_compile_definitions("osgui" PUBLIC "-DNAPPGUI_WEB_SUPPORT")
                 # Install Win32 WebView binaries
