@@ -39,6 +39,9 @@ nap_build_opt_init()
 nap_config_compiler()
 nap_check_webview_support()
 
+# Las claves van sin prefijo a proposito: es read_options(), en
+# prj/nappgui-config.cmake, quien las publica como NAPPGUI_<clave> en el
+# proyecto del consumidor. Ver NAP-035.
 nap_build_opt("VERSION" "${NAPPGUI_MAJOR}.${NAPPGUI_MINOR}.${NAPPGUI_PATCH}.${NAPPGUI_BUILD}")
 nap_build_opt("GENERATOR" "${CMAKE_GENERATOR}")
 nap_build_opt("BUILD_SHARED" "${NAPPGUI_SHARED}")
@@ -48,9 +51,9 @@ nap_build_opt("COMPILER_VERSION" "${CMAKE_CXX_COMPILER_VERSION}")
 # El CRT con el que se compila viaja en el paquete: sin declararlo, el
 # consumidor solo se entera del desajuste por un LNK4098. Ver NAP-002.
 if (MSVC)
-    nap_build_opt("NAPPGUI_MSVC_RUNTIME" "${CMAKE_RUNTIME_LIBRARY}")
+    nap_build_opt("MSVC_RUNTIME" "${CMAKE_RUNTIME_LIBRARY}")
 endif()
-nap_build_opt("WEB_SUPPORT" "${WEB_SUPPORT}")
+nap_build_opt("WEB_SUPPORT" "${NAPPGUI_WEB_SUPPORT}")
 nap_build_opt("BUILD_TYPE" "${CMAKE_BUILD_TYPE}")
 nap_build_opt("BUILD_ARCH" "${CMAKE_ARCHITECTURE}")
 nap_build_opt("HOST_ARCH" "${CMAKE_HOST_ARCHITECTURE}")

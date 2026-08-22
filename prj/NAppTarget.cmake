@@ -303,6 +303,98 @@ function(nap_add_public_header targetName file extLower publicHeaders)
 endfunction()
 
 #------------------------------------------------------------------------------
+# Argumentos opcionales con palabra clave de nap_library(), nap_command_app() y
+# nap_desktop_app().
+#
+#   EXPORT / NO_EXPORT                este target forma parte, o no, del SDK
+#                                     que se instala y se exporta (NAP-022)
+#   PRIVATE_HEADERS <ALL|fichero...>  cabeceras que se compilan pero no se
+#                                     instalan (NAP-011)
+#
+# 'defaultExport' es lo que vale sin decir nada: TRUE en las librerias, FALSE en
+# las aplicaciones. La idea es que la decision sea explicita en la funcion que
+# crea el target y no una lista de casos particulares por ruta.
+#------------------------------------------------------------------------------
+function(nap_target_options targetName defaultExport _export _privateHeaders)
+
+    set(napExport ${defaultExport})
+    set(napPrivateHeaders "")
+    set(napKeyword "")
+
+    foreach(napArg ${ARGN})
+        if (napArg STREQUAL "EXPORT")
+            set(napExport TRUE)
+            set(napKeyword "")
+        elseif (napArg STREQUAL "NO_EXPORT")
+            set(napExport FALSE)
+            set(napKeyword "")
+        elseif (napArg STREQUAL "PRIVATE_HEADERS")
+            set(napKeyword "PRIVATE_HEADERS")
+        elseif (napKeyword STREQUAL "PRIVATE_HEADERS")
+            list(APPEND napPrivateHeaders ${napArg})
+        else()
+            message(FATAL_ERROR "- ${targetName}: argumento desconocido '${napArg}'")
+        endif()
+    endforeach()
+
+    set(${_export} ${napExport} PARENT_SCOPE)
+    set(${_privateHeaders} "${napPrivateHeaders}" PARENT_SCOPE)
+
+endfunction()
+
+#------------------------------------------------------------------------------
+# Cabeceras que se compilan pero no se instalan (NAP-011)
+#
+# nap_target() marca como PUBLIC_HEADER todo fichero de cabecera que hay en la
+# raiz del modulo, y install(TARGETS ... PUBLIC_HEADER ...) lo publica en
+# 'inc/<modulo>'. Cada cabecera instalada es una promesa de estabilidad:
+# publicar el backend nativo convierte cualquier refactor interno en un cambio
+# de API.
+#
+# docs/api-policy.md fija que es publico; el argumento PRIVATE_HEADERS de
+# nap_library() es como se aplica, y esta funcion quien lo resuelve. El filtro
+# tiene que ocurrir aqui, antes de install(TARGETS ...): esa orden se queda con
+# la lista de cabeceras tal como esta en el momento de llamarla, asi que
+# vaciar la propiedad despues no sirve de nada.
+#
+#   PRIVATE_HEADERS ALL          el modulo entero es interno
+#   PRIVATE_HEADERS "guictx.h"   solo esas cabeceras
+#
+function(nap_filter_public_headers publicHeaders privateHeaders _ret)
+
+    if (NOT privateHeaders)
+        set(${_ret} "${publicHeaders}" PARENT_SCOPE)
+        return()
+    endif()
+
+    if ("${privateHeaders}" STREQUAL "ALL")
+        set(${_ret} "" PARENT_SCOPE)
+        return()
+    endif()
+
+    set(napResult "${publicHeaders}")
+    foreach(napPrivate ${privateHeaders})
+        set(napFound FALSE)
+        foreach(napHeader ${publicHeaders})
+            get_filename_component(napName ${napHeader} NAME)
+            if (napName STREQUAL napPrivate)
+                list(REMOVE_ITEM napResult ${napHeader})
+                set(napFound TRUE)
+            endif()
+        endforeach()
+
+        # Si la cabecera se renombra o desaparece, mejor enterarse en el
+        # configure que descubrir meses despues que se volvio a instalar.
+        if (NOT napFound)
+            message(FATAL_ERROR "PRIVATE_HEADERS: '${napPrivate}' no es una cabecera de este target")
+        endif()
+    endforeach()
+
+    set(${_ret} "${napResult}" PARENT_SCOPE)
+
+endfunction()
+
+#------------------------------------------------------------------------------
 
 function(nap_source_files targetName dir group publicHeaders)
 
@@ -474,7 +566,7 @@ endfunction()
 
 #------------------------------------------------------------------------------
 
-function(nap_install_resource_packs targetName targetType sourceDir nrcMode)
+function(nap_install_resource_packs targetName targetType sourceDir nrcMode doInstall)
     set (resourcePath ${sourceDir}/res)
 
     # Apple Bundle always have a resource dir
@@ -495,7 +587,9 @@ function(nap_install_resource_packs targetName targetType sourceDir nrcMode)
 
         if (EXISTS ${resourcePath}/logo48.ico)
             add_custom_command(TARGET ${targetName} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy ${resourcePath}/logo48.ico $<TARGET_FILE_DIR:${targetName}>/${targetName}.ico)
-            install(FILES $<TARGET_FILE_DIR:${targetName}>/${targetName}.ico DESTINATION "bin")
+            if (doInstall)
+                install(FILES $<TARGET_FILE_DIR:${targetName}>/${targetName}.ico DESTINATION "bin")
+            endif()
         else()
             message(WARNING "logo48.ico doesn't exists in '${resourcePath}'")
         endif()
@@ -530,7 +624,9 @@ function(nap_install_resource_packs targetName targetType sourceDir nrcMode)
         # Copy all resource packs
         foreach(resSubDir ${resPackDirs})
             add_custom_command(TARGET ${targetName} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy ${destResDir}/${resSubDir}.res $<TARGET_FILE_DIR:${targetName}>/${resRelative})
-            install(FILES ${destResDir}/${resSubDir}.res DESTINATION "bin/res")
+            if (doInstall)
+                install(FILES ${destResDir}/${resSubDir}.res DESTINATION "bin/res")
+            endif()
             endforeach()
 
     endif()
@@ -696,6 +792,19 @@ function(nap_link_opengl_depends targetName)
 
         endif()
 
+    elseif (${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
+        # En macOS ${OPENGL_LIBRARY} es la ruta absoluta del framework dentro
+        # del sysroot del Xcode con el que se compilo el SDK, y meterla en el
+        # paquete exportado lo ataria a esa instalacion. '-framework OpenGL' no.
+        # Es el mismo motivo por el que NAP-002 dejo de usar ${COCOA_LIB}.
+        # find_package se sigue llamando para fallar pronto y con un mensaje
+        # claro si OpenGL no esta.
+        #
+        # ogl3d/osx/ogl3dimp.m usa NSOpenGLContext, que es de AppKit, asi que
+        # tambien necesita Cocoa y el runtime de Objective-C.
+        find_package(OpenGL REQUIRED)
+        target_link_libraries(${targetName} ${napScope} "-framework OpenGL" "-framework Cocoa" "objc")
+
     else()
         find_package(OpenGL REQUIRED)
         target_link_libraries(${targetName} ${napScope} ${OPENGL_LIBRARY})
@@ -710,13 +819,14 @@ function(nap_link_opengl targetName)
 
     nap_link_scope(napScope ${ARGN})
 
+    # OpenGL ya no se anade aqui: es un requisito de uso de la propia libreria
+    # 'ogl3d' (nap_library_requires), asi que llega igual por el arbol y por el
+    # paquete exportado. Ver NAP-034.
     if(NAPPGUI_IS_PACKAGE)
         target_link_libraries(${targetName} ${napScope} nappgui::ogl3d)
     else()
         target_link_libraries(${targetName} ${napScope} ogl3d)
     endif()
-
-    nap_link_opengl_depends(${targetName} ${napScope})
 
     if(NOT NAPPGUI_IS_PACKAGE)
         get_target_property(TARGET_TYPE ogl3d TYPE)
@@ -893,9 +1003,22 @@ function(nap_library_requires libName scope)
     endif()
 
     #
+    # ogl3d: OpenGL (NAP-034)
+    #
+    # Se declara sin condiciones, igual que 'inet' declara libCURL/wininet. La
+    # busqueda no anade ningun requisito nuevo para construir el SDK: 'ogl3d' se
+    # compila siempre y su 'glew.h' ya incluye <GL/glu.h> (o <OpenGL/glu.h> en
+    # macOS), asi que sin las cabeceras de OpenGL el SDK no compilaba tampoco
+    # antes. Lo unico que cambia es que ahora tambien se busca la libreria.
+    #
+    if (${libName} STREQUAL "ogl3d")
+        nap_link_opengl_depends(${libName} ${scope})
+    endif()
+
+    #
     # osgui: WebView
     #
-    if (${libName} STREQUAL "osgui" AND WEB_SUPPORT)
+    if (${libName} STREQUAL "osgui" AND NAPPGUI_WEB_SUPPORT)
         if (WIN32)
             # El loader se instala en 'lib/<arch>' y se compila desde
             # 'src/osgui/win/depend/<arch>'. $<INSTALL_PREFIX> es lo que
@@ -920,7 +1043,7 @@ endfunction()
 
 #------------------------------------------------------------------------------
 
-function(nap_target targetName targetType dependList nrcMode)
+function(nap_target targetName targetType dependList nrcMode privateHeaders targetExport)
 
     # Get source files
     set(${targetName}_SRCFILES "" CACHE INTERNAL "")
@@ -930,6 +1053,10 @@ function(nap_target targetName targetType dependList nrcMode)
     set(srcFiles ${${targetName}_SRCFILES})
     set(srcSubDirs ${${targetName}_SRCSUBDIRS})
     set(publicHeaders ${${targetName}_PUBLICHEADERS})
+
+    # Las cabeceras internas se compilan como el resto, pero no se instalan.
+    # Ver nap_filter_public_headers() y NAP-011.
+    nap_filter_public_headers("${publicHeaders}" "${privateHeaders}" publicHeaders)
 
     # Get resources
     set(${targetName}_SRCPATH "${CMAKE_CURRENT_SOURCE_DIR}" CACHE INTERNAL "")
@@ -1010,20 +1137,39 @@ function(nap_target targetName targetType dependList nrcMode)
         set_property(TARGET ${targetName} APPEND PROPERTY RUNTIME_OUTPUT_DIRECTORY_${configUpper} "${CMAKE_BINARY_DIR}/${config}/bin")
     endforeach()
 
-    # Los targets bajo test/ son andamiaje de desarrollo: no forman parte del
-    # SDK, asi que ni se instalan ni entran en el conjunto exportado. Sin esto,
-    # find_package(nappgui) importaria nappgui::nappgui_test. Ver NAP-010.
-    # (Las demos si se exportan hoy; eso es NAP-022.)
-    set(napSkipInstall FALSE)
-    string(FIND "${targetPath}" "test/" napTestPos)
-    if (napTestPos EQUAL 0)
-        set(napSkipInstall TRUE)
+    # ¿Se instala este target, y entra en el conjunto exportado? (NAP-022)
+    #
+    # El conjunto exportado es un contrato: quien esta en el, el proyecto se
+    # compromete a mantenerlo. Antes entraban los 32 targets del arbol, asi que
+    # find_package(nappgui) importaba nappgui::Bricks y un consumidor podia
+    # escribir target_link_libraries(app nappgui::GuiHello) y funcionaba.
+    #
+    # La decision la toma cada funcion que crea targets, y llega hasta aqui en
+    # 'targetExport': nap_library() si, nap_command_app() y nap_desktop_app()
+    # no, con EXPORT / NO_EXPORT para los pocos casos al reves. Sustituye al
+    # 'string(FIND "${targetPath}" "test/")' de NAP-010, que era el mismo
+    # criterio escrito como caso particular.
+    #
+    # En el proyecto de un consumidor (NAPPGUI_IS_PACKAGE) no hay SDK que
+    # publicar: sus targets se instalan como siempre, para que su
+    # 'cmake --install' siga sirviendo, pero no entran en ningun conjunto
+    # exportado (que ademas seria el de NAppGUI, no el suyo).
+    if (NAPPGUI_IS_PACKAGE)
+        set(napInstall TRUE)
+        set(napExportArgs "")
+    else()
+        set(napInstall ${targetExport})
+        if (targetExport)
+            set(napExportArgs EXPORT nappgui-targets)
+        else()
+            set(napExportArgs "")
+        endif()
     endif()
 
     # Install binaries and headers
     get_filename_component(targetPathSingle ${targetPath} NAME)
-    if (NOT napSkipInstall)
-        install(TARGETS ${targetName} EXPORT nappgui-targets
+    if (napInstall)
+        install(TARGETS ${targetName} ${napExportArgs}
                     LIBRARY DESTINATION "bin" PERMISSIONS ${INSTALL_PERM}
                     RUNTIME DESTINATION "bin" PERMISSIONS ${INSTALL_PERM}
                     ARCHIVE DESTINATION "lib" PERMISSIONS ${INSTALL_PERM}
@@ -1042,7 +1188,11 @@ function(nap_target targetName targetType dependList nrcMode)
     # install(FILES "$<TARGET_LINKER_FILE_DIR:${targetName}>/${targetName}.exp" CONFIGURATIONS "${config}" DESTINATION "lib/${config}" PERMISSIONS ${INSTALL_PERM} OPTIONAL)
 
     # Install resource packs
-    nap_install_resource_packs(${targetName} ${targetType} ${CMAKE_CURRENT_SOURCE_DIR} ${nrcMode})
+    #
+    # Los .res empaquetados y el icono de Linux se copian siempre junto al
+    # ejecutable, para poder ejecutarlo desde el arbol de build; instalarlos
+    # solo tiene sentido si el ejecutable tambien se instala.
+    nap_install_resource_packs(${targetName} ${targetType} ${CMAKE_CURRENT_SOURCE_DIR} ${nrcMode} ${napInstall})
 
     # Target Definitions
     foreach(config ${CMAKE_CONFIGURATION_TYPES})
@@ -1065,7 +1215,7 @@ function(nap_target targetName targetType dependList nrcMode)
 
     # WebView support
     if (${targetName} STREQUAL "osgui")
-        if (WEB_SUPPORT)
+        if (NAPPGUI_WEB_SUPPORT)
             if (WIN32)
                 target_compile_definitions("osgui" PUBLIC "-DNAPPGUI_WEB_SUPPORT")
                 # Install Win32 WebView binaries
@@ -1147,20 +1297,43 @@ endfunction()
 
 function(nap_library libName dependList buildShared nrcMode)
 
+    # Una libreria es, por omision, parte del SDK que se publica. Ver
+    # nap_target_options() y NAP-022.
+    nap_target_options(${libName} TRUE napExport napPrivateHeaders ${ARGN})
+
     if (buildShared)
-        nap_target(${libName} DYNAMIC_LIB "${dependList}" ${nrcMode})
+        nap_target(${libName} DYNAMIC_LIB "${dependList}" ${nrcMode} "${napPrivateHeaders}" ${napExport})
         nap_link_with_libraries(${libName} DYNAMIC_LIB "${dependList}")
         nap_target_rpath(${libName} NO "")
         set(napReqScope PUBLIC)
 
     else()
-        nap_target(${libName} STATIC_LIB "${dependList}" ${nrcMode})
+        nap_target(${libName} STATIC_LIB "${dependList}" ${nrcMode} "${napPrivateHeaders}" ${napExport})
 
         # # In Linux, static libs must link with other libs
         # if (${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
         #     nap_link_with_libraries(${libName} STATIC_LIB "${dependList}")
         # endif()
         set(napReqScope INTERFACE)
+    endif()
+
+    #
+    # El grafo entre las propias librerias, declarado (NAP-033)
+    #
+    # 'dependList' servia solo para el orden de compilacion (add_dependencies en
+    # nap_target). El orden de enlace vivia en una cadena de texto,
+    # NAPPGUI_LIBRARIES, que el consumidor estaba obligado a copiar entera y en
+    # el orden correcto. Declarado el grafo, 'nappgui::osapp' a secas arrastra
+    # el resto y es CMake quien calcula el orden.
+    #
+    # Una estatica no enlaza nada, solo propaga: INTERFACE. Una dinamica si
+    # enlaza, y de eso ya se encarga nap_link_with_libraries() con PUBLIC.
+    #
+    # Los nombres van sin prefijo a proposito: en el arbol los targets se llaman
+    # 'core', 'sewer'..., y es install(EXPORT ... NAMESPACE nappgui::) quien los
+    # reescribe a 'nappgui::core' al generar el paquete.
+    if (dependList AND NOT buildShared)
+        target_link_libraries(${libName} INTERFACE ${dependList})
     endif()
 
     # Requisitos de uso de esta libreria: solo para las del propio SDK, que son
@@ -1177,6 +1350,11 @@ endfunction()
 
 function(nap_command_app appName dependList nrcMode)
 
+    # Una aplicacion no forma parte, por omision, del SDK que se publica: no se
+    # instala ni entra en el conjunto exportado. 'nrc' lo pide con EXPORT. Ver
+    # nap_target_options() y NAP-022.
+    nap_target_options(${appName} FALSE napExport napPrivateHeaders ${ARGN})
+
     # This is for demos and apps that are compiled with the SDK.
     # For apps that use NAppGUI with find_package(), NAppGUI is linked in nap_link_with_libraries().
     if (NOT NAPPGUI_IS_PACKAGE)
@@ -1188,7 +1366,7 @@ function(nap_command_app appName dependList nrcMode)
     endif()
 
     if (WIN32)
-        nap_target("${appName}" WIN_CONSOLE "${dependList}" ${nrcMode})
+        nap_target("${appName}" WIN_CONSOLE "${dependList}" ${nrcMode} "${napPrivateHeaders}" ${napExport})
 
         if (${CMAKE_CXX_COMPILER_ID} STREQUAL MSVC)
             foreach(config ${CMAKE_CONFIGURATION_TYPES})
@@ -1198,10 +1376,10 @@ function(nap_command_app appName dependList nrcMode)
         endif()
 
     elseif (${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
-        nap_target("${appName}" APPLE_CONSOLE "${dependList}" ${nrcMode})
+        nap_target("${appName}" APPLE_CONSOLE "${dependList}" ${nrcMode} "${napPrivateHeaders}" ${napExport})
 
     elseif (${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
-        nap_target("${appName}" LINUX_CONSOLE "${dependList}" ${nrcMode})
+        nap_target("${appName}" LINUX_CONSOLE "${dependList}" ${nrcMode} "${napPrivateHeaders}" ${napExport})
 
     else()
         message(FATAL_ERROR "No se puede construir la aplicacion '${appName}': sistema no soportado (${CMAKE_SYSTEM_NAME}). NAppGUI soporta Windows, Darwin y Linux.")
@@ -1217,6 +1395,11 @@ endfunction()
 
 function(nap_desktop_app appName dependList nrcMode)
 
+    # Una aplicacion no forma parte, por omision, del SDK que se publica: no se
+    # instala ni entra en el conjunto exportado. Ver nap_target_options() y
+    # NAP-022.
+    nap_target_options(${appName} FALSE napExport napPrivateHeaders ${ARGN})
+
     # This is for demos and apps that are compiled with the SDK.
     # For apps that use NAppGUI with find_package(), NAppGUI is linked in nap_link_with_libraries().
     if (NOT NAPPGUI_IS_PACKAGE)
@@ -1228,7 +1411,7 @@ function(nap_desktop_app appName dependList nrcMode)
     endif()
 
     if (WIN32)
-        nap_target(${appName} WIN_DESKTOP "${dependList}" ${nrcMode})
+        nap_target(${appName} WIN_DESKTOP "${dependList}" ${nrcMode} "${napPrivateHeaders}" ${napExport})
         if (${CMAKE_CXX_COMPILER_ID} STREQUAL MSVC)
             foreach(config ${CMAKE_CONFIGURATION_TYPES})
                 string(TOUPPER ${config} configUpper)
@@ -1238,7 +1421,7 @@ function(nap_desktop_app appName dependList nrcMode)
         set(macOSBundle NO)
 
     elseif (${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
-        nap_target(${appName} APPLE_BUNDLE "${dependList}" ${nrcMode})
+        nap_target(${appName} APPLE_BUNDLE "${dependList}" ${nrcMode} "${napPrivateHeaders}" ${napExport})
 
         # Info.plist configure
         # Proyect provides its own Info.plist?
@@ -1256,7 +1439,7 @@ function(nap_desktop_app appName dependList nrcMode)
         set(macOSBundle YES)
 
     elseif (${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
-        nap_target("${appName}" LINUX_DESKTOP "${dependList}" ${nrcMode})
+        nap_target("${appName}" LINUX_DESKTOP "${dependList}" ${nrcMode} "${napPrivateHeaders}" ${napExport})
         set(macOSBundle NO)
 
     else()

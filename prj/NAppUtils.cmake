@@ -67,7 +67,7 @@ endfunction()
 function(nap_check_webview_support)
     # Web support disabled by user
     if (NOT NAPPGUI_WEB)
-        set(WEB_SUPPORT "NO" CACHE INTERNAL "")
+        set(NAPPGUI_WEB_SUPPORT "NO" CACHE INTERNAL "")
         return()
     endif()
 
@@ -75,31 +75,31 @@ function(nap_check_webview_support)
         if (${CMAKE_CXX_COMPILER_ID} STREQUAL MSVC)
             # Visual Studio 2013 and lower doesn't support the WebView2 compilation
             if (${CMAKE_CXX_COMPILER_VERSION} VERSION_LESS "19.0.0")
-                set(WEB_SUPPORT "NO" CACHE INTERNAL "")
+                set(NAPPGUI_WEB_SUPPORT "NO" CACHE INTERNAL "")
                 return()
             endif()
 
         else()
             # At the moment, WebView is disabled for MinGW
-            set(WEB_SUPPORT "NO" CACHE INTERNAL "")
+            set(NAPPGUI_WEB_SUPPORT "NO" CACHE INTERNAL "")
             return()
         endif()
 
     elseif (${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
         # Only available from 10.10 Yosemite
         if (NOT CMAKE_OSX_DEPLOYMENT_TARGET VERSION_GREATER 10.9.9999)
-            set(WEB_SUPPORT "NO" CACHE INTERNAL "")
+            set(NAPPGUI_WEB_SUPPORT "NO" CACHE INTERNAL "")
             return()
         endif()
 
     elseif (${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
         nap_find_webview_linux(WEBVIEW_FOUND WEBVIEW_HEADERS WEBVIEW_LIBS)
         if (NOT WEBVIEW_FOUND)
-            set(WEB_SUPPORT "NO" CACHE INTERNAL "")
+            set(NAPPGUI_WEB_SUPPORT "NO" CACHE INTERNAL "")
             return()
         endif()
 
     endif()
 
-    set(WEB_SUPPORT "YES" CACHE INTERNAL "")
+    set(NAPPGUI_WEB_SUPPORT "YES" CACHE INTERNAL "")
 endfunction()

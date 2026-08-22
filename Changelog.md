@@ -162,6 +162,85 @@
       checked against the calendar, so `"31/02/2020"` is still read as day 31 of
       month 2 and has to be checked with `date_is_valid()`.
 
+### Build system
+
+- The imported `nappgui::*` libraries now declare how they depend on each other,
+  so linking a subset works. `target_link_libraries(app PRIVATE nappgui::osapp)`
+  pulls in `osgui`, `gui`, `draw2d`, `geom2d`, `core`, `osbs` and `sewer` on its
+  own, and CMake computes the link order from the graph. Before, the order lived
+  only in the `NAPPGUI_LIBRARIES` string and every consumer had to copy the nine
+  names in the right order.
+    - `NAPPGUI_LIBRARIES` is unchanged and keeps working: it is still the
+      documented way to link everything at once.
+    - `nappgui::encode`, `nappgui::inet` and `nappgui::ogl3d` are not reachable
+      from `nappgui::osapp`, because nothing in the GUI stack depends on them.
+      Link them explicitly when you use them.
+
+- `nappgui::ogl3d` now declares OpenGL as a usage requirement, so
+  `target_link_libraries(app PRIVATE nappgui::ogl3d)` links `opengl32`,
+  `libGL` + EGL or `-framework OpenGL` on its own. Before, the only way to get
+  them was `nap_link_opengl()`, a macro of the NAppGUI build system that the
+  package neither exports nor documents. `nap_link_opengl()` keeps working and
+  is still the way to link OpenGL from a project built with the SDK macros.
+    - `ogl3d` stays out of `NAPPGUI_LIBRARIES` on purpose. It is optional, and
+      putting it there would make every consumer link OpenGL.
+    - On macOS the package declares `-framework OpenGL` instead of the absolute
+      path that `find_package(OpenGL)` returns, which points inside the SDK of
+      the Xcode that built the package.
+
+- **The exported set is the SDK now, not the whole build tree.**
+  `find_package(nappgui)` imported 32 targets, of which only 11 were libraries:
+  the 20 demos were in there too, so the project was promising, by accident,
+  that `nappgui::Bricks` would keep existing and keep its name, and a consumer
+  could write `target_link_libraries(app nappgui::GuiHello)` and it worked. The
+  20 demo executables were installed into `install/bin` as well.
+    - `nappgui-targets.cmake` now has the 11 libraries and `nrc`, and
+      `install/bin` has `nrc` only.
+    - **`nrc` stays exported on purpose.** It is the one executable that is
+      part of the SDK: a consumer needs it to compile resource packs. The
+      `NAPPGUI_NRC` path variable keeps working and is what the build system
+      itself uses; the imported `nappgui::nrc` target is for a consumer that
+      wants to run the tool from its own `add_custom_command()`.
+    - The demo helper library `casino` is out too, so `inc/casino/` is gone.
+    - The decision is now an argument of the function that creates the target:
+      `nap_library()` exports, `nap_command_app()` and `nap_desktop_app()` do
+      not, and `EXPORT` / `NO_EXPORT` flips it. A project built with the SDK
+      macros through `find_package()` installs its own targets exactly as
+      before.
+
+- **The install no longer publishes the internal headers.** `install/inc/`
+  used to carry the whole native backend, and every installed header is a
+  promise of stability: publishing the backend turns any internal refactor into
+  an API change. What is public is now written down in `docs/api-policy.md` and
+  applied by the build itself, with the new `PRIVATE_HEADERS` argument of
+  `nap_library()`.
+    - `inc/osgui/` is gone, all 24 headers (`osgui.h`, `oswindow.h`,
+      `osbutton.h`, `osguictx.h`...). It is the layer that talks to Win32,
+      Cocoa and GTK3. `nappgui::osgui` is still exported and still linked,
+      because `nappgui::osapp` needs it; what is no longer published is its
+      interface.
+    - `inc/draw2d/guictx.h` is gone. It is the registration interface of the
+      backend vtable (`guictx_append_*_manager`), used only by the `.c` files
+      of `gui` and `osapp` inside the SDK.
+    - `inc/draw2d/guictx.hxx` **is still installed**, because `gui/gui.hxx`
+      includes it and that is on the include path of `<nappgui.h>`. Being
+      installed does not make it public: see `docs/api-policy.md`.
+
+- **`find_package(nappgui)` no longer writes unprefixed variables into the
+  calling project.** The build options of the package (`VERSION`, `COMPILER`,
+  `CMAKE`, `GENERATOR`, `BUILD_TYPE`, `BUILD_ARCH`, `HOST_ARCH`, `PACKAGE_ID`,
+  `WEB_SUPPORT`, `BUILD_SHARED`, `COMPILER_VERSION`, and `DEPLOYMENT_TARGET_OSX`
+  and friends on macOS) are published as `NAPPGUI_VERSION`,
+  `NAPPGUI_COMPILER`, `NAPPGUI_CMAKE` and so on. See the migration note below.
+    - They are plain directory variables now, not `CACHE INTERNAL` entries.
+      `CACHE INTERNAL` implies `FORCE`, so the package was overwriting whatever
+      the consumer had under those names and leaving it in its `CMakeCache.txt`.
+    - `CMAKE_CONFIGURATION_TYPES` is also a plain variable now. Forcing it into
+      the cache told a single-config generator that it was multi-config.
+    - `nappgui-config.cmake` no longer computes `OSX_SYSROOT` and `COCOA_LIB`.
+      Nothing has read them since the imported targets started declaring
+      `-framework Cocoa`, and building them ran `xcrun` on every configure.
+
 ### Migration
 
 - **`align_t` no longer exists.** Replace it with `halign_t` or `valign_t`
@@ -354,6 +433,57 @@
 
   A pattern that does not carry the three fields never gave a date either: it
   used to fill the missing year with 2000. Add the year to the pattern.
+- **Depending on the demos being installed or exported.** `nappgui::Bricks`,
+  `nappgui::GuiHello`, `nappgui::casino` and the rest no longer exist after
+  `find_package(nappgui)`, and `install/bin` no longer carries the demo
+  executables. Build the demos from the source tree with `-DNAPPGUI_DEMO=YES`,
+  which is unchanged; they are examples to read and run, not a deliverable of
+  the SDK. `nappgui::nrc` is unaffected.
+
+- **`#include <osgui/...>` or `<draw2d/guictx.h>` from an installed SDK.** Those
+  headers are not installed any more. There is no replacement, and that is the
+  point: they are the native backend, they are not documented on nappgui.com
+  and they were never meant to be part of the API.
+
+    ```c
+    /* Before: reached into the backend from application code */
+    #include <osgui/oswindow.h>
+    oswindow_title(oswindow, "Hello");
+
+    /* After: the same thing through the public gui layer */
+    #include <gui/window.h>
+    window_title(window, "Hello");
+    ```
+
+  If you were writing a backend of your own, keep building against the source
+  tree: the in-tree path is unchanged and everything still compiles the same.
+  What is gone is the promise that these headers keep their shape between
+  releases, which is what installing them was implying.
+
+- **Build options read after `find_package(nappgui)`.** Add the `NAPPGUI_`
+  prefix to the name:
+
+    ```cmake
+    find_package(nappgui REQUIRED)
+
+    # Before: the package defined VERSION, COMPILER, WEB_SUPPORT... unprefixed
+    message(STATUS "NAppGUI ${VERSION} built with ${COMPILER}")
+
+    # After
+    message(STATUS "NAppGUI ${NAPPGUI_VERSION} built with ${NAPPGUI_COMPILER}")
+    ```
+
+  The old names are gone rather than deprecated on purpose: keeping `VERSION`
+  alive for one release means keeping the very collision the change is about.
+  `NAPPGUI_MSVC_RUNTIME` already had the prefix and does not change.
+
+  This is a fix, not only a rename. `VERSION` is the keyword of
+  `project(... VERSION ...)` and of `set_target_properties(... VERSION ...)`,
+  and the package was setting it with `CACHE INTERNAL`, that is, with `FORCE`.
+  A project that had its own `VERSION` got it silently replaced by the version
+  of NAppGUI. If your project was reading one of these names and it was **not**
+  meant to come from NAppGUI, it was already broken and this change is what
+  makes it visible.
 
 ## v1.6.2 - July 02, 2026 (r6905)
 
