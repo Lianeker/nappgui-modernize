@@ -13,7 +13,7 @@
 #ifndef __CORE_STRINGS_H__
 #define __CORE_STRINGS_H__
 
-#include "core.hxx"
+#include "coredecl.hxx"
 
 __EXTERN_C
 

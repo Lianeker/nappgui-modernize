@@ -10,7 +10,7 @@
 
 /* Message files parser */
 
-#include <core/core.hxx>
+#include <core/coredecl.hxx>
 
 __EXTERN_C
 

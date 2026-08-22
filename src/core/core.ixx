@@ -13,7 +13,7 @@
 #ifndef __CORE_IXX__
 #define __CORE_IXX__
 
-#include "core.hxx"
+#include "coredecl.hxx"
 
 typedef struct _nfa_t NFA;
 typedef struct _evassert_t EvAssert;

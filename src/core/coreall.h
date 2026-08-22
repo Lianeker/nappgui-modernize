@@ -14,6 +14,7 @@
 #define __CORE_COREALL_H__
 
 #include "core.h"
+#include "coredecl.hxx"
 #include "arrpt.h"
 #include "arrst.h"
 #include "bhash.h"

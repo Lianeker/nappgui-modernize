@@ -10,14 +10,10 @@
 
 /* Array data structure */
 
-/* El include va deliberadamente FUERA del guard: core.hxx incluye este
-   fichero y despues expande DeclSt/DeclPt, que llaman a estas funciones.
-   Si la unidad de traduccion entra por aqui y el guard bloquease esa
-   re-inclusion, core.hxx veria declaraciones implicitas. Ver NAP-006. */
-#include "core.hxx"
-
 #ifndef __CORE_ARRAY_H__
 #define __CORE_ARRAY_H__
+
+#include "core.hxx"
 
 __EXTERN_C
 
