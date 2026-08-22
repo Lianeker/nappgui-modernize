@@ -674,7 +674,7 @@ function(nap_link_inet_depends targetName)
         if (${CURL_FOUND})
             target_link_libraries(${targetName} ${CURL_LIBRARY})
         else()
-            message(ERROR "- libCURL is required. Try 'sudo apt-get install libcurl4-openssl-dev'")
+            message(FATAL_ERROR "NAppGUI necesita libCURL para el modulo 'inet'. En Debian/Ubuntu: sudo apt-get install libcurl4-openssl-dev")
         endif()
 
     endif()
@@ -839,7 +839,7 @@ function(nap_link_with_libraries targetName targetType firstLevelDepends)
             if (Threads_FOUND)
                 target_link_libraries(${targetName} ${CMAKE_THREAD_LIBS_INIT})
             else()
-                message(ERROR "- PThread library not found")
+                message(FATAL_ERROR "NAppGUI necesita pthreads para el modulo 'osbs'. En Debian/Ubuntu: sudo apt-get install build-essential")
             endif()
 
             target_link_libraries(${targetName} ${CMAKE_DL_LIBS})
@@ -1136,7 +1136,7 @@ function(nap_command_app appName dependList nrcMode)
         nap_target("${appName}" LINUX_CONSOLE "${dependList}" ${nrcMode})
 
     else()
-        message(ERROR "- ${appName} Unknown system")
+        message(FATAL_ERROR "No se puede construir la aplicacion '${appName}': sistema no soportado (${CMAKE_SYSTEM_NAME}). NAppGUI soporta Windows, Darwin y Linux.")
 
     endif()
 
