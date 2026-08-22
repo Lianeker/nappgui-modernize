@@ -159,6 +159,34 @@ static void i_json(void)
         stm_close(&malo);
     }
 
+    /* Una cadena JSON sobre un campo entero tiene que ser un numero. La
+       conversion se reintentaba en base 16 sin mirar el prefijo, asi que "abc"
+       entraba como 2748 sin avisar. Un campo que no convierte se queda en su
+       valor por defecto (json.c no aborta el objeto entero). Ver NAP-026. */
+    {
+        const char_t *js = "{\"x\":\"abc\",\"y\":7,\"nombre\":\"n\"}";
+        Stream *stm = stm_from_block(cast_const(js, byte_t), str_len_c(js));
+        Punto *r = json_read(stm, NULL, Punto);
+        if (ntest_true(r != NULL, "json_read sigue con el resto del objeto"))
+        {
+            ntest_equ_i32(r->x, 0, "json_read no acepta la cadena \"abc\" como hexadecimal");
+            ntest_equ_i32(r->y, 7, "json_read conserva el resto de campos");
+        }
+        json_destopt(&r, Punto);
+        stm_close(&stm);
+    }
+
+    /* Con el prefijo explicito si es un numero. */
+    {
+        const char_t *js = "{\"x\":\"0x1f\",\"y\":0,\"nombre\":\"n\"}";
+        Stream *stm = stm_from_block(cast_const(js, byte_t), str_len_c(js));
+        Punto *r = json_read(stm, NULL, Punto);
+        if (ntest_true(r != NULL, "json_read acepta la cadena \"0x1f\" en un campo entero"))
+            ntest_equ_i32(r->x, 31, "json_read convierte \"0x1f\" en 31");
+        json_destopt(&r, Punto);
+        stm_close(&stm);
+    }
+
     dbind_unreg(Punto);
 }
 

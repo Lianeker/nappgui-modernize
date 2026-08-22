@@ -28,6 +28,47 @@
       that were silently accepted before.
     - `str_to_r32()` and `str_to_r64()` are not affected by this change.
 
+- `dbind` no longer reads any string as hexadecimal when it is not a valid
+  decimal. `dbind_set_value_str()` and `dbind_st_set_value_str()` retried the
+  conversion in base 16 for every string that failed in base 10, and since the
+  change above that retry became reachable for any non-decimal text, so `"abc"`
+  was accepted as 2748, `"12e"` as 302 and `"42abc"` as 273084. The retry is now
+  limited to strings with an explicit `0x`/`0X` prefix.
+    - Affects a JSON string on an integer field (`json_read()`), which used to
+      store the hexadecimal reading and now leaves the field at its default
+      value.
+    - `"0x1f"` is still read as 31. Plain decimals are unaffected.
+
+### Migration
+
+- **`str_to_iXX()` / `str_to_uXX()` with malformed input.** The result is 0 now,
+  not the leading digits. Code that relied on the old truncation has to say so:
+
+    ```c
+    /* Before: worked by accident, 'error' was never TRUE. "42abc" -> 42 */
+    int32_t v = str_to_i32(text, 10, NULL);
+
+    /* After: check the error and decide. "42abc" -> 0 and err == TRUE */
+    bool_t err = FALSE;
+    int32_t v = str_to_i32(text, 10, &err);
+    if (err == TRUE)
+        v = default_value;
+    ```
+
+  To keep reading a leading number followed by other text, cut the string at the
+  first character that is not a digit before converting.
+
+- **Unsigned versions with a `-` sign.** `str_to_u64("-5", 10, NULL)` returned
+  18446744073709551611 and now returns 0. If the wrap-around was intentional,
+  read the value with `str_to_i64()` and cast it.
+
+- **Base 0.** It is an error now. Pass 16 explicitly; base 16 accepts the `0x`
+  prefix, so no other change is needed.
+
+- **Hexadecimal in `dbind` / JSON.** A string field that must be read as a
+  number in an integer member needs a decimal (`"31"`) or an explicit
+  hexadecimal (`"0x1f"`). `"1f"` is no longer a number.
+
 ## v1.6.2 - July 02, 2026 (r6905)
 
 ### Added

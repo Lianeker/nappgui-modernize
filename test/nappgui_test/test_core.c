@@ -15,6 +15,7 @@
 #include <core/stream.h>
 #include <core/buffer.h>
 #include <core/heap.h>
+#include <core/dbindh.h>
 #include <sewer/bmem.h>
 
 /*---------------------------------------------------------------------------*/
@@ -248,11 +249,55 @@ static void i_strings(void)
         ntest_true(str_to_u64("18446744073709551615", 10, &err) == UINT64_MAX, "str_to_u64 con el maximo de 64 bits");
         ntest_false(err, "str_to_u64 no marca error con el maximo de 64 bits");
 
+        /* Saturacion por abajo: un digito mas que INT64_MIN. */
+        err = FALSE;
+        ntest_true(str_to_i64("-9223372036854775809", 10, &err) == INT64_MIN, "str_to_i64 satura a INT64_MIN al desbordar por abajo");
+        ntest_true(err, "str_to_i64 marca error al desbordar por abajo");
+
+        /* El prefijo "0x" solo vale en base 16 y solo con un digito detras. */
+        err = TRUE;
+        ntest_equ_u32(str_to_u32("0x1f", 16, &err), 31, "str_to_u32 acepta el prefijo 0x en base 16");
+        ntest_false(err, "str_to_u32 no marca error con el prefijo 0x en base 16");
+
+        err = TRUE;
+        ntest_equ_i32(str_to_i32("-0X10", 16, &err), -16, "str_to_i32 acepta el prefijo 0X con signo");
+        ntest_false(err, "str_to_i32 no marca error con el prefijo 0X con signo");
+
+        err = FALSE;
+        ntest_equ_u32(str_to_u32("0x1f", 10, &err), 0, "str_to_u32 rechaza el prefijo 0x en base 10");
+        ntest_true(err, "str_to_u32 marca error con el prefijo 0x fuera de la base 16");
+
+        err = FALSE;
+        ntest_equ_u32(str_to_u32("0x", 16, &err), 0, "str_to_u32 rechaza el prefijo 0x sin digitos detras");
+        ntest_true(err, "str_to_u32 marca error con el prefijo 0x sin digitos detras");
+
+        /* Bases fuera de 2..36: error, no una conversion silenciosa. */
+        err = FALSE;
+        ntest_equ_u32(str_to_u32("42", 0, &err), 0, "str_to_u32 rechaza la base 0");
+        ntest_true(err, "str_to_u32 marca error con la base 0");
+
+        err = FALSE;
+        ntest_equ_u32(str_to_u32("42", 1, &err), 0, "str_to_u32 rechaza la base 1");
+        ntest_true(err, "str_to_u32 marca error con la base 1");
+
+        err = FALSE;
+        ntest_equ_u32(str_to_u32("42", 37, &err), 0, "str_to_u32 rechaza una base mayor que 36");
+        ntest_true(err, "str_to_u32 marca error con una base mayor que 36");
+
         /* str_to_r32/r64 no siguen el mismo criterio: rechazan la basura detras
            pero aceptan la cadena vacia como 0 sin avisar. Ver NAP-023. */
         err = FALSE;
         str_to_r32("no soy un numero", &err);
         ntest_true(err, "str_to_r32 marca error con basura");
+
+        /* Y rechazan tambien los espacios de detras, al reves que str_to_iXX. */
+        err = FALSE;
+        str_to_r32(" 42 ", &err);
+        ntest_true(err, "str_to_r32 marca error con un espacio detras del numero");
+
+        err = TRUE;
+        ntest_equ_i32(str_to_i32(" 42 ", 10, &err), 42, "str_to_i32 si acepta el espacio detras del numero");
+        ntest_false(err, "str_to_i32 no marca error con un espacio detras del numero");
 
         err = FALSE;
         str_to_r32("", &err);
@@ -281,6 +326,76 @@ static void i_strings(void)
         String *nulo = NULL;
         str_destopt(&nulo);
         ntest_true(nulo == NULL, "str_destopt tolera NULL");
+    }
+}
+
+/*---------------------------------------------------------------------------*/
+
+/* Deja el destino en un valor centinela y aplica la cadena. Devuelve el
+   resultado del enlace; el centinela permite comprobar que un rechazo no
+   escribe nada. */
+static bindset_t i_bind_set(const DBind *bind, int32_t *dest, const char_t *str)
+{
+    *dest = -1;
+    return dbind_set_value_str(bind, cast(dest, byte_t), str);
+}
+
+/*---------------------------------------------------------------------------*/
+
+/* 'dbind_set_value_str' sobre un entero: es por donde entra el texto de un
+   Edit enlazado (gui/editimp.c -> gui/layout.c -> gui/gbind.c) y el de una
+   cadena JSON sobre un campo entero (encode/json.c). Reintentaba la conversion
+   en base 16 con cualquier cadena, asi que "abc" valia como 2748. Ver NAP-026. */
+static void i_dbind_str(void)
+{
+    const DBind *bind = dbind_from_typename("int32_t", NULL);
+    int32_t v = 0;
+
+    if (ntest_true(bind != NULL, "el tipo int32_t esta registrado en dbind") == FALSE)
+        return;
+
+    /* Un decimal correcto entra. */
+    ntest_true(i_bind_set(bind, &v, "42") != ekBINDSET_NOT_ALLOWED, "dbind acepta \"42\" en un entero");
+    ntest_equ_i32(v, 42, "dbind convierte \"42\" en 42");
+
+    /* Un hexadecimal explicito tambien: no hay forma de confundirlo. */
+    ntest_true(i_bind_set(bind, &v, "0x1f") != ekBINDSET_NOT_ALLOWED, "dbind acepta \"0x1f\" en un entero");
+    ntest_equ_i32(v, 31, "dbind convierte \"0x1f\" en 31");
+
+    /* Sin el prefijo, las letras a-f no convierten la cadena en un numero. */
+    ntest_true(i_bind_set(bind, &v, "abc") == ekBINDSET_NOT_ALLOWED, "dbind rechaza \"abc\" en un entero");
+    ntest_equ_i32(v, -1, "dbind no toca el destino al rechazar \"abc\"");
+
+    ntest_true(i_bind_set(bind, &v, "1f") == ekBINDSET_NOT_ALLOWED, "dbind rechaza \"1f\" en un entero");
+    ntest_equ_i32(v, -1, "dbind no toca el destino al rechazar \"1f\"");
+
+    ntest_true(i_bind_set(bind, &v, "12e") == ekBINDSET_NOT_ALLOWED, "dbind rechaza \"12e\" en un entero");
+    ntest_equ_i32(v, -1, "dbind no toca el destino al rechazar \"12e\"");
+
+    ntest_true(i_bind_set(bind, &v, "42abc") == ekBINDSET_NOT_ALLOWED, "dbind rechaza \"42abc\" en un entero");
+    ntest_equ_i32(v, -1, "dbind no toca el destino al rechazar \"42abc\"");
+
+    /* Y lo que ya se rechazaba antes se sigue rechazando. */
+    ntest_true(i_bind_set(bind, &v, "hola") == ekBINDSET_NOT_ALLOWED, "dbind rechaza \"hola\" en un entero");
+    ntest_equ_i32(v, -1, "dbind no toca el destino al rechazar \"hola\"");
+
+    ntest_true(i_bind_set(bind, &v, "") == ekBINDSET_NOT_ALLOWED, "dbind rechaza la cadena vacia en un entero");
+    ntest_equ_i32(v, -1, "dbind no toca el destino al rechazar la cadena vacia");
+
+    /* El mismo criterio en un tipo sin signo. */
+    {
+        const DBind *ubind = dbind_from_typename("uint32_t", NULL);
+        uint32_t u = 0;
+        if (ntest_true(ubind != NULL, "el tipo uint32_t esta registrado en dbind"))
+        {
+            u = 7;
+            ntest_true(dbind_set_value_str(ubind, cast(&u, byte_t), "abc") == ekBINDSET_NOT_ALLOWED, "dbind rechaza \"abc\" en un entero sin signo");
+            ntest_equ_u32(u, 7, "dbind no toca el destino sin signo al rechazar \"abc\"");
+
+            u = 7;
+            ntest_true(dbind_set_value_str(ubind, cast(&u, byte_t), "0xff") != ekBINDSET_NOT_ALLOWED, "dbind acepta \"0xff\" en un entero sin signo");
+            ntest_equ_u32(u, 255, "dbind convierte \"0xff\" en 255");
+        }
     }
 }
 
@@ -383,6 +498,7 @@ uint32_t ntest_core(void)
     i_arrst();
     i_arrpt();
     i_strings();
+    i_dbind_str();
     i_stream();
     i_buffer();
     return ntest_end();
