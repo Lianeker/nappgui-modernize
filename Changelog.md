@@ -109,6 +109,26 @@
       path that `find_package(OpenGL)` returns, which points inside the SDK of
       the Xcode that built the package.
 
+- **The exported set is the SDK now, not the whole build tree.**
+  `find_package(nappgui)` imported 32 targets, of which only 11 were libraries:
+  the 20 demos were in there too, so the project was promising, by accident,
+  that `nappgui::Bricks` would keep existing and keep its name, and a consumer
+  could write `target_link_libraries(app nappgui::GuiHello)` and it worked. The
+  20 demo executables were installed into `install/bin` as well.
+    - `nappgui-targets.cmake` now has the 11 libraries and `nrc`, and
+      `install/bin` has `nrc` only.
+    - **`nrc` stays exported on purpose.** It is the one executable that is
+      part of the SDK: a consumer needs it to compile resource packs. The
+      `NAPPGUI_NRC` path variable keeps working and is what the build system
+      itself uses; the imported `nappgui::nrc` target is for a consumer that
+      wants to run the tool from its own `add_custom_command()`.
+    - The demo helper library `casino` is out too, so `inc/casino/` is gone.
+    - The decision is now an argument of the function that creates the target:
+      `nap_library()` exports, `nap_command_app()` and `nap_desktop_app()` do
+      not, and `EXPORT` / `NO_EXPORT` flips it. A project built with the SDK
+      macros through `find_package()` installs its own targets exactly as
+      before.
+
 - **The install no longer publishes the internal headers.** `install/inc/`
   used to carry the whole native backend, and every installed header is a
   promise of stability: publishing the backend turns any internal refactor into
@@ -207,6 +227,13 @@
   42. It is 0 with an error now, like on every other compiler. Cut the string at
   the first character that is not part of the number if the old reading is what
   you want.
+
+- **Depending on the demos being installed or exported.** `nappgui::Bricks`,
+  `nappgui::GuiHello`, `nappgui::casino` and the rest no longer exist after
+  `find_package(nappgui)`, and `install/bin` no longer carries the demo
+  executables. Build the demos from the source tree with `-DNAPPGUI_DEMO=YES`,
+  which is unchanged; they are examples to read and run, not a deliverable of
+  the SDK. `nappgui::nrc` is unaffected.
 
 - **`#include <osgui/...>` or `<draw2d/guictx.h>` from an installed SDK.** Those
   headers are not installed any more. There is no replacement, and that is the
