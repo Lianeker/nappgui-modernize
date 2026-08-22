@@ -14,7 +14,7 @@
 #include "draw2d.hxx"
 
 #define pixbuf_get1(data, x, y, width) \
-    (uint32_t)((data[((y) * (width) + (x)) / 8] >> (byte_t)(((y) * (width) + (x)) % 8)) & 1)
+    (uint32_t)(((data)[((y) * (width) + (x)) / 8] >> (byte_t)(((y) * (width) + (x)) % 8)) & 1)
 
 __EXTERN_C
 

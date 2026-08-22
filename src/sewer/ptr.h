@@ -49,8 +49,11 @@ __END_C
      cast(ptr_dget_no_null_imp(dcast(dptr, void)), type))
 
 #define ptr_assign(dest, src) \
-    if ((dest) != NULL) \
-    (*dest) = (src)
+    do \
+    { \
+        if ((dest) != NULL) \
+            *(dest) = (src); \
+    } while (0)
 
 #define ptr_destopt(func_destroy, dptr, type) \
     ((void)(dcast(dptr, type) == (dptr)), \

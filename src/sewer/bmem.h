@@ -66,16 +66,18 @@ __END_C
     bmem_aligned_realloc((mem), (size), (new_size), sizeof32(void *))
 
 #define bmem_set_u32(dest, n, value) \
+    do \
     { \
         uint32_t ___value = (value); \
         bmem_set4(cast(dest, byte_t), (uint32_t)(sizeof32(uint32_t) * (n)), cast_const(&___value, byte_t)); \
-    }
+    } while (0)
 
 #define bmem_set_r32(dest, n, value) \
+    do \
     { \
         real32_t ___value = (value); \
         bmem_set4(cast(dest, byte_t), (uint32_t)(sizeof32(real32_t) * (n)), cast_const(&___value, byte_t)); \
-    }
+    } while (0)
 
 #define bmem_zero(dest, type) \
     ((void)(cast(dest, type) == (dest)), \

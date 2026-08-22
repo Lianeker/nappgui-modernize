@@ -152,6 +152,7 @@ __END_C
      dbind_write_imp(stm, cast_const(obj, void), cast_const(#type, char_t)))
 
 #define dbind_default(type, mtype, mname, value) \
+    do \
     { \
         const mtype ___value = (const mtype)value; \
         CHECK_STRUCT_MEMBER_TYPE(type, mname, mtype); \
@@ -159,9 +160,10 @@ __END_C
             cast_const(#type, char_t), \
             cast_const(#mname, char_t), \
             cast(&___value, byte_t)); \
-    }
+    } while (0)
 
 #define dbind_range(type, mtype, mname, min, max) \
+    do \
     { \
         mtype ___min = min; \
         mtype ___max = max; \
@@ -171,9 +173,10 @@ __END_C
             cast_const(#mname, char_t), \
             cast(&___min, byte_t), \
             cast(&___max, byte_t)); \
-    }
+    } while (0)
 
 #define dbind_precision(type, mtype, mname, prec) \
+    do \
     { \
         mtype ___prec = prec; \
         CHECK_STRUCT_MEMBER_TYPE(type, mname, mtype); \
@@ -181,9 +184,10 @@ __END_C
             cast_const(#type, char_t), \
             cast_const(#mname, char_t), \
             cast(&___prec, byte_t)); \
-    }
+    } while (0)
 
 #define dbind_increment(type, mtype, mname, incr) \
+    do \
     { \
         mtype ___incr = incr; \
         CHECK_STRUCT_MEMBER_TYPE(type, mname, mtype); \
@@ -191,7 +195,7 @@ __END_C
             cast_const(#type, char_t), \
             cast_const(#mname, char_t), \
             cast(&___incr, byte_t)); \
-    }
+    } while (0)
 
 #define dbind_suffix(type, mtype, mname, suffix) \
     ( \
