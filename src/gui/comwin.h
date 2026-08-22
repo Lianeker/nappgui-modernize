@@ -11,6 +11,9 @@
 
 /* Common windows */
 
+#ifndef __GUI_COMWIN_H__
+#define __GUI_COMWIN_H__
+
 #include "gui.hxx"
 
 __EXTERN_C
@@ -24,3 +27,5 @@ _gui_api const char_t *comwin_save_file(Window *parent, const char_t *caption, c
 _gui_api void comwin_color(Window *parent, const char_t *caption, const real32_t x, const real32_t y, const align_t halign, const align_t valign, const color_t current, color_t *colors, const uint32_t n, Listener *OnChange);
 
 __END_C
+
+#endif /* __GUI_COMWIN_H__ */

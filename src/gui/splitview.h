@@ -11,6 +11,9 @@
 
 /* Split view */
 
+#ifndef __GUI_SPLITVIEW_H__
+#define __GUI_SPLITVIEW_H__
+
 #include "gui.hxx"
 
 __EXTERN_C
@@ -44,3 +47,5 @@ _gui_api void splitview_minsize0(SplitView *split, const real32_t size);
 _gui_api void splitview_minsize1(SplitView *split, const real32_t size);
 
 __END_C
+
+#endif /* __GUI_SPLITVIEW_H__ */

@@ -11,6 +11,9 @@
 
 /* Button */
 
+#ifndef __GUI_BUTTON_H__
+#define __GUI_BUTTON_H__
+
 #include "gui.hxx"
 
 __EXTERN_C
@@ -68,3 +71,5 @@ _gui_api uint32_t button_get_tag(const Button *button);
 _gui_api real32_t button_get_height(const Button *button);
 
 __END_C
+
+#endif /* __GUI_BUTTON_H__ */

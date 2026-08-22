@@ -11,6 +11,9 @@
 
 /* Safety pointer manipulation */
 
+#ifndef __SEWER_PTR_H__
+#define __SEWER_PTR_H__
+
 #include "sewer.hxx"
 
 __EXTERN_C
@@ -64,3 +67,5 @@ __END_C
     ((void)(cast(ptr, type) == (ptr)), \
      FUNC_CHECK_COPY(func_copy, type), \
      cast(ptr_copyopt_imp(dcast(ptr, void), (FPtr_copy)func_copy), type))
+
+#endif /* __SEWER_PTR_H__ */

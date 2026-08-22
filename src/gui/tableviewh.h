@@ -10,6 +10,9 @@
 
 /* Undocumented (hidden) API about TableView */
 
+#ifndef __GUI_TABLEVIEWH_H__
+#define __GUI_TABLEVIEWH_H__
+
 #include "gui.hxx"
 
 __EXTERN_C
@@ -27,3 +30,5 @@ _gui_api const char_t *tableview_get_header_title(const TableView *view, const u
 _gui_api align_t tableview_get_header_align(const TableView *view, const uint32_t column_id);
 
 __END_C
+
+#endif /* __GUI_TABLEVIEWH_H__ */

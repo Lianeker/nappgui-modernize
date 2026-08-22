@@ -11,6 +11,9 @@
 
 /* Math funcions */
 
+#ifndef __SEWER_BMATH_H__
+#define __SEWER_BMATH_H__
+
 #include "sewer.hxx"
 
 __EXTERN_C
@@ -149,3 +152,5 @@ _sewer_api extern const real32_t kBMATH_INFINITYf;
 _sewer_api extern const real64_t kBMATH_INFINITYd;
 
 __END_C
+
+#endif /* __SEWER_BMATH_H__ */

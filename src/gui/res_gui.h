@@ -10,6 +10,9 @@
 
 /* Gui library resources */
 
+#ifndef __GUI_RES_GUI_H__
+#define __GUI_RES_GUI_H__
+
 #include <core/core.hxx>
 
 __EXTERN_C
@@ -38,3 +41,5 @@ extern ResId LOGO_DARK_PNG;
 ResPack *res_gui_respack(const char_t *locale);
 
 __END_C
+
+#endif /* __GUI_RES_GUI_H__ */

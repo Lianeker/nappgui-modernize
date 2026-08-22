@@ -10,6 +10,9 @@
 
 /* Hash code from memory block */
 
+#ifndef __CORE_BHASH_H__
+#define __CORE_BHASH_H__
+
 #include "core.hxx"
 
 __EXTERN_C
@@ -29,3 +32,5 @@ __END_C
 #define bhash_append_enum(hash, value, type) \
     ((void)((enum type)value == value), \
      bhash_append_uint32(hash, (uint32_t)value))
+
+#endif /* __CORE_BHASH_H__ */

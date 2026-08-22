@@ -10,6 +10,9 @@
 
 /* Operating System native web view */
 
+#ifndef __OSGUI_OSWEB_H__
+#define __OSGUI_OSWEB_H__
+
 #include "osgui.hxx"
 
 __EXTERN_C
@@ -43,3 +46,5 @@ _osgui_api void osweb_origin(const OSWeb *view, real32_t *x, real32_t *y);
 _osgui_api void osweb_frame(OSWeb *view, const real32_t x, const real32_t y, const real32_t width, const real32_t height);
 
 __END_C
+
+#endif /* __OSGUI_OSWEB_H__ */

@@ -11,6 +11,9 @@
 
 /* Color palette */
 
+#ifndef __DRAW2D_PALETTE_H__
+#define __DRAW2D_PALETTE_H__
+
 #include "draw2d.hxx"
 
 __EXTERN_C
@@ -42,3 +45,5 @@ _draw2d_api color_t *palette_colors(Palette *palette);
 _draw2d_api const color_t *palette_ccolors(const Palette *palette);
 
 __END_C
+
+#endif /* __DRAW2D_PALETTE_H__ */

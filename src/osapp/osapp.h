@@ -11,6 +11,9 @@
 
 /* Application runloop */
 
+#ifndef __OSAPP_OSAPP_H__
+#define __OSAPP_OSAPP_H__
+
 #include "osapp.hxx"
 
 __EXTERN_C
@@ -35,3 +38,5 @@ __END_C
      FUNC_CHECK_TASK_UPDATE(func_update, type), \
      FUNC_CHECK_TASK_END(func_end, type), \
      osapp_task_imp(cast(data, void), updtime, (FPtr_task_main)func_main, (FPtr_task_update)func_update, (FPtr_task_end)func_end))
+
+#endif /* __OSAPP_OSAPP_H__ */

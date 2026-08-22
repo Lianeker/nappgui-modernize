@@ -11,6 +11,9 @@
 
 /* Combo box */
 
+#ifndef __GUI_COMBO_H__
+#define __GUI_COMBO_H__
+
 #include "gui.hxx"
 
 __EXTERN_C
@@ -84,3 +87,5 @@ _gui_api const char_t *combo_get_text(const Combo *combo, const uint32_t index);
 _gui_api const Image *combo_get_image(const Combo *combo, const uint32_t index);
 
 __END_C
+
+#endif /* __GUI_COMBO_H__ */

@@ -11,6 +11,9 @@
 
 /* Pointer sets */
 
+#ifndef __CORE_SETPT_H__
+#define __CORE_SETPT_H__
+
 #define setpt_create(func_compare, type, ktype) \
     (FUNC_CHECK_COMPARE_KEY(func_compare, type, ktype), \
      setpt_##type##_create((FPtr_compare)func_compare, (uint16_t)sizeof(type *), cast_const(#ktype, char_t)))
@@ -116,3 +119,5 @@
     unref(elem##_total); \
     } \
     }
+
+#endif /* __CORE_SETPT_H__ */

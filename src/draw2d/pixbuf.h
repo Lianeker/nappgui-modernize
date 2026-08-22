@@ -11,6 +11,9 @@
 
 /* Pixel buffers */
 
+#ifndef __DRAW2D_PIXBUF_H__
+#define __DRAW2D_PIXBUF_H__
+
 #include "draw2d.hxx"
 
 #define pixbuf_get1(data, x, y, width) \
@@ -49,3 +52,5 @@ _draw2d_api uint32_t pixbuf_get(const Pixbuf *pixbuf, const uint32_t x, const ui
 _draw2d_api void pixbuf_set(Pixbuf *pixbuf, const uint32_t x, const uint32_t y, const uint32_t value);
 
 __END_C
+
+#endif /* __DRAW2D_PIXBUF_H__ */

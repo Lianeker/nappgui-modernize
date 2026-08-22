@@ -11,6 +11,9 @@
 
 /* Drawing commands */
 
+#ifndef __DRAW2D_DRAW_H__
+#define __DRAW2D_DRAW_H__
+
 #include "draw2d.hxx"
 
 __EXTERN_C
@@ -78,3 +81,5 @@ _draw2d_api void draw_image_frame(DCtx *ctx, const Image *image, const uint32_t 
 _draw2d_api void draw_image_align(DCtx *ctx, const align_t halign, const align_t valign);
 
 __END_C
+
+#endif /* __DRAW2D_DRAW_H__ */

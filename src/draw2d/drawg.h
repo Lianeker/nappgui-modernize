@@ -11,6 +11,9 @@
 
 /* Drawing 2D Geometry entities */
 
+#ifndef __DRAW2D_DRAWG_H__
+#define __DRAW2D_DRAWG_H__
+
 #include "draw2d.hxx"
 
 __EXTERN_C
@@ -48,3 +51,5 @@ _draw2d_api void draw_pol2df(DCtx *ctx, const drawop_t op, const Pol2Df *pol);
 _draw2d_api void draw_pol2dd(DCtx *ctx, const drawop_t op, const Pol2Dd *pol);
 
 __END_C
+
+#endif /* __DRAW2D_DRAWG_H__ */

@@ -11,6 +11,9 @@
 
 /* C library funcions */
 
+#ifndef __SEWER_BLIB_H__
+#define __SEWER_BLIB_H__
+
 #include "sewer.hxx"
 
 __EXTERN_C
@@ -60,3 +63,5 @@ _sewer_api void blib_exit(int code);
 _sewer_api void blib_debug_break(void);
 
 __END_C
+
+#endif /* __SEWER_BLIB_H__ */

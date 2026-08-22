@@ -11,6 +11,9 @@
 
 /* Operating System Basic Services */
 
+#ifndef __OSBS_OSBS_H__
+#define __OSBS_OSBS_H__
+
 #include "osbs.hxx"
 
 __EXTERN_C
@@ -30,3 +33,5 @@ _osbs_api endian_t osbs_endian(void);
 _osbs_api void osbs_memory_mt(Mutex *mutex);
 
 __END_C
+
+#endif /* __OSBS_OSBS_H__ */

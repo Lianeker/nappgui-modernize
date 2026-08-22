@@ -10,6 +10,9 @@
 
 /* Operating System native popup button */
 
+#ifndef __OSGUI_OSPOPUP_H__
+#define __OSGUI_OSPOPUP_H__
+
 #include "osgui.hxx"
 
 __EXTERN_C
@@ -49,3 +52,5 @@ _osgui_api void ospopup_origin(const OSPopUp *popup, real32_t *x, real32_t *y);
 _osgui_api void ospopup_frame(OSPopUp *popup, const real32_t x, const real32_t y, const real32_t width, const real32_t height);
 
 __END_C
+
+#endif /* __OSGUI_OSPOPUP_H__ */

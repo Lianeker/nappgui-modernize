@@ -10,6 +10,9 @@
 
 /* Operating System native panel */
 
+#ifndef __OSGUI_OSPANEL_H__
+#define __OSGUI_OSPANEL_H__
+
 #include "osgui.hxx"
 
 __EXTERN_C
@@ -43,3 +46,5 @@ _osgui_api void ospanel_origin(const OSPanel *panel, real32_t *x, real32_t *y);
 _osgui_api void ospanel_frame(OSPanel *panel, const real32_t x, const real32_t y, const real32_t width, const real32_t height);
 
 __END_C
+
+#endif /* __OSGUI_OSPANEL_H__ */

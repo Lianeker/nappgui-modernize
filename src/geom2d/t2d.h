@@ -11,6 +11,9 @@
 
 /* 2D affine transformations */
 
+#ifndef __GEOM2D_T2D_H__
+#define __GEOM2D_T2D_H__
+
 #include "geom2d.hxx"
 
 __EXTERN_C
@@ -59,3 +62,5 @@ _geom2d_api extern const T2Df *kT2D_IDENTf;
 _geom2d_api extern const T2Dd *kT2D_IDENTd;
 
 __END_C
+
+#endif /* __GEOM2D_T2D_H__ */

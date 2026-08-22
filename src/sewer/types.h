@@ -10,6 +10,9 @@
 
 /* Basic types utils */
 
+#ifndef __SEWER_TYPES_H__
+#define __SEWER_TYPES_H__
+
 #include "sewer.hxx"
 
 /* Ojo: evalua x e y dos veces. Prefiere max_u32 / bmath_maxf. */
@@ -37,3 +40,5 @@ _sewer_api real32_t abs_r32(const real32_t v);
 _sewer_api uint8_t to_u8(const uint32_t v);
 
 __END_C
+
+#endif /* __SEWER_TYPES_H__ */

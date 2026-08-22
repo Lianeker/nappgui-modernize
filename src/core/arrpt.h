@@ -11,6 +11,9 @@
 
 /* Pointers arrays */
 
+#ifndef __CORE_ARRPT_H__
+#define __CORE_ARRPT_H__
+
 #define arrpt_create(type) \
     arrpt_##type##_create((uint16_t)sizeof(type *))
 
@@ -160,3 +163,5 @@
 #define arrpt_end() \
     } \
     }
+
+#endif /* __CORE_ARRPT_H__ */

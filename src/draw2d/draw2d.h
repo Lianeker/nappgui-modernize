@@ -11,6 +11,9 @@
 
 /* Operating system 2D drawing support */
 
+#ifndef __DRAW2D_DRAW2D_H__
+#define __DRAW2D_DRAW2D_H__
+
 #include "draw2d.hxx"
 
 __EXTERN_C
@@ -22,3 +25,5 @@ _draw2d_api void draw2d_finish(void);
 _draw2d_api void draw2d_preferred_monospace(const char_t *family);
 
 __END_C
+
+#endif /* __DRAW2D_DRAW2D_H__ */

@@ -11,6 +11,9 @@
 
 /* Basic threading services */
 
+#ifndef __OSBS_BTHREAD_H__
+#define __OSBS_BTHREAD_H__
+
 #include "osbs.hxx"
 
 __EXTERN_C
@@ -36,3 +39,5 @@ __END_C
         (void)(cast(data, type) == data), \
         FUNC_CHECK_THREAD_MAIN(thmain, type), \
         bthread_create_imp((FPtr_thread_main)thmain, cast(data, void)))
+
+#endif /* __OSBS_BTHREAD_H__ */

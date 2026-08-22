@@ -10,6 +10,9 @@
 
 /* Operating System native button */
 
+#ifndef __OSGUI_OSBUTTON_H__
+#define __OSGUI_OSBUTTON_H__
+
 #include "osgui.hxx"
 
 __EXTERN_C
@@ -57,3 +60,5 @@ _osgui_api void osbutton_origin(const OSButton *button, real32_t *x, real32_t *y
 _osgui_api void osbutton_frame(OSButton *button, const real32_t x, const real32_t y, const real32_t width, const real32_t height);
 
 __END_C
+
+#endif /* __OSGUI_OSBUTTON_H__ */

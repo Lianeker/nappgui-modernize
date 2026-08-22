@@ -11,6 +11,9 @@
 
 /* Sockets base API */
 
+#ifndef __OSBS_BSOCKET_H__
+#define __OSBS_BSOCKET_H__
+
 #include "osbs.hxx"
 
 __EXTERN_C
@@ -58,3 +61,5 @@ _osbs_api void bsocket_ntoh4(byte_t *dest, const byte_t *src);
 _osbs_api void bsocket_ntoh8(byte_t *dest, const byte_t *src);
 
 __END_C
+
+#endif /* __OSBS_BSOCKET_H__ */

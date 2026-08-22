@@ -11,6 +11,9 @@
 
 /* Basic standard functions */
 
+#ifndef __SEWER_BSTD_H__
+#define __SEWER_BSTD_H__
+
 #include "sewer.hxx"
 
 __EXTERN_C
@@ -34,3 +37,5 @@ _sewer_api bool_t bstd_write(const byte_t *data, const uint32_t size, uint32_t *
 _sewer_api bool_t bstd_ewrite(const byte_t *data, const uint32_t size, uint32_t *wsize);
 
 __END_C
+
+#endif /* __SEWER_BSTD_H__ */

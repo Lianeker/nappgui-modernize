@@ -10,6 +10,9 @@
 
 /* UTF8 strings */
 
+#ifndef __CORE_STRINGS_H__
+#define __CORE_STRINGS_H__
+
 #include "core.hxx"
 
 __EXTERN_C
@@ -151,3 +154,5 @@ _core_api real32_t str_to_r32(const char_t *str, bool_t *error);
 _core_api real64_t str_to_r64(const char_t *str, bool_t *error);
 
 __END_C
+
+#endif /* __CORE_STRINGS_H__ */

@@ -11,6 +11,9 @@
 
 /* Dynamic library loading */
 
+#ifndef __OSBS_DLIB_H__
+#define __OSBS_DLIB_H__
+
 #include "osbs.hxx"
 
 __EXTERN_C
@@ -30,3 +33,5 @@ __END_C
 
 #define dlib_var(dlib, varname, type) \
     cast_const(dlib_var_imp(dlib, varname), type)
+
+#endif /* __OSBS_DLIB_H__ */

@@ -10,6 +10,9 @@
 
 /* Sewer library all-in-one headers include */
 
+#ifndef __SEWER_SEWERALL_H__
+#define __SEWER_SEWERALL_H__
+
 #include "sewer.h"
 #include "blib.h"
 #include "bmath.h"
@@ -19,3 +22,5 @@
 #include "ptr.h"
 #include "types.h"
 #include "unicode.h"
+
+#endif /* __SEWER_SEWERALL_H__ */

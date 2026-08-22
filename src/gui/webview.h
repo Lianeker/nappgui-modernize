@@ -11,6 +11,9 @@
 
 /* Web view */
 
+#ifndef __GUI_WEBVIEW_H__
+#define __GUI_WEBVIEW_H__
+
 #include "gui.hxx"
 
 __EXTERN_C
@@ -28,3 +31,5 @@ _gui_api void webview_back(WebView *view);
 _gui_api void webview_forward(WebView *view);
 
 __END_C
+
+#endif /* __GUI_WEBVIEW_H__ */

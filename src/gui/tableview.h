@@ -11,6 +11,9 @@
 
 /* TableView */
 
+#ifndef __GUI_TABLEVIEW_H__
+#define __GUI_TABLEVIEW_H__
+
 #include "gui.hxx"
 
 __EXTERN_C
@@ -92,3 +95,5 @@ _gui_api uint32_t tableview_get_focus_row(const TableView *view);
 _gui_api void tableview_scroll_visible(TableView *view, const bool_t horizontal, const bool_t vertical);
 
 __END_C
+
+#endif /* __GUI_TABLEVIEW_H__ */

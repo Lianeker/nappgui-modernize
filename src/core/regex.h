@@ -11,6 +11,9 @@
 
 /* Regular expresions */
 
+#ifndef __CORE_REGEX_H__
+#define __CORE_REGEX_H__
+
 #include "core.hxx"
 
 __EXTERN_C
@@ -22,3 +25,5 @@ _core_api void regex_destroy(RegEx **regex);
 _core_api bool_t regex_match(const RegEx *regex, const char_t *str);
 
 __END_C
+
+#endif /* __CORE_REGEX_H__ */

@@ -10,6 +10,9 @@
 
 /* Undocumented (hidden) API about files and directories */
 
+#ifndef __CORE_HFILEH_H__
+#define __CORE_HFILEH_H__
+
 #include "coreh.hxx"
 
 __EXTERN_C
@@ -17,3 +20,5 @@ __EXTERN_C
 _core_api String *hfile_exename(void);
 
 __END_C
+
+#endif /* __CORE_HFILEH_H__ */

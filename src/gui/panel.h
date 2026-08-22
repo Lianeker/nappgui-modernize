@@ -11,6 +11,9 @@
 
 /* Panel */
 
+#ifndef __GUI_PANEL_H__
+#define __GUI_PANEL_H__
+
 #include "gui.hxx"
 
 __EXTERN_C
@@ -49,3 +52,5 @@ __END_C
 
 #define panel_get_data(panel, type) \
     cast(panel_get_data_imp(panel), type)
+
+#endif /* __GUI_PANEL_H__ */

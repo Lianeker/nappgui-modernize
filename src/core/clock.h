@@ -11,6 +11,9 @@
 
 /* Clock (Frame counter) */
 
+#ifndef __CORE_CLOCK_H__
+#define __CORE_CLOCK_H__
+
 #include "core.hxx"
 
 __EXTERN_C
@@ -26,3 +29,5 @@ _core_api void clock_reset(Clock *clk);
 _core_api real64_t clock_elapsed(const Clock *clk);
 
 __END_C
+
+#endif /* __CORE_CLOCK_H__ */

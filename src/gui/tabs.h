@@ -11,6 +11,9 @@
 
 /* Tab control */
 
+#ifndef __GUI_TABS_H__
+#define __GUI_TABS_H__
+
 #include "gui.hxx"
 
 __EXTERN_C
@@ -44,3 +47,5 @@ _gui_api const char_t *tabs_get_text(const Tabs *tabs, const uint32_t index);
 _gui_api const Image *tabs_get_image(const Tabs *tabs, const uint32_t index);
 
 __END_C
+
+#endif /* __GUI_TABS_H__ */

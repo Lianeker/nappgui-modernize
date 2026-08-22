@@ -11,6 +11,9 @@
 
 /* 2d polygon */
 
+#ifndef __GEOM2D_POL2D_H__
+#define __GEOM2D_POL2D_H__
+
 #include "geom2d.hxx"
 
 __EXTERN_C
@@ -76,3 +79,5 @@ _geom2d_api ArrPt(Pol2Df) *pol2d_convex_partitionf(const Pol2Df *pol);
 _geom2d_api ArrPt(Pol2Dd) *pol2d_convex_partitiond(const Pol2Dd *pol);
 
 __END_C
+
+#endif /* __GEOM2D_POL2D_H__ */

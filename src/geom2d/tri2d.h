@@ -11,6 +11,9 @@
 
 /* 2D triangles */
 
+#ifndef __GEOM2D_TRI2D_H__
+#define __GEOM2D_TRI2D_H__
+
 #include "geom2d.hxx"
 
 __EXTERN_C
@@ -40,3 +43,5 @@ _geom2d_api V2Df tri2d_centroidf(const Tri2Df *tri);
 _geom2d_api V2Dd tri2d_centroidd(const Tri2Dd *tri);
 
 __END_C
+
+#endif /* __GEOM2D_TRI2D_H__ */

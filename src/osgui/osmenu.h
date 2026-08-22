@@ -10,6 +10,9 @@
 
 /* Operating System native menu */
 
+#ifndef __OSGUI_OSMENU_H__
+#define __OSGUI_OSMENU_H__
+
 #include "osgui.hxx"
 
 __EXTERN_C
@@ -29,3 +32,5 @@ _osgui_api void osmenu_hide(OSMenu *menu);
 _osgui_api bool_t osmenu_is_menubar(const OSMenu *menu);
 
 __END_C
+
+#endif /* __OSGUI_OSMENU_H__ */

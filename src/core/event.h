@@ -11,6 +11,9 @@
 
 /* Events */
 
+#ifndef __CORE_EVENT_H__
+#define __CORE_EVENT_H__
+
 #include "core.hxx"
 
 __EXTERN_C
@@ -86,3 +89,5 @@ __END_C
 
 #define event_result(event, type) \
     cast(event_result_imp((event), cast_const(#type, char_t)), type)
+
+#endif /* __CORE_EVENT_H__ */

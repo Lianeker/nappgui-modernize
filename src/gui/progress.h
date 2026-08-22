@@ -11,6 +11,9 @@
 
 /* Progress bars */
 
+#ifndef __GUI_PROGRESS_H__
+#define __GUI_PROGRESS_H__
+
 #include "gui.hxx"
 
 __EXTERN_C
@@ -24,3 +27,5 @@ _gui_api void progress_undefined(Progress *progress, const bool_t running);
 _gui_api void progress_value(Progress *progress, const real32_t value);
 
 __END_C
+
+#endif /* __GUI_PROGRESS_H__ */

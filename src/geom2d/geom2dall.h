@@ -10,6 +10,9 @@
 
 /* Geom2D library all-in-one headers include */
 
+#ifndef __GEOM2D_GEOM2DALL_H__
+#define __GEOM2D_GEOM2DALL_H__
+
 #include "box2d.h"
 #include "cir2d.h"
 #include "col2d.h"
@@ -22,3 +25,5 @@
 #include "tri2d.h"
 #include "v2d.h"
 #include <core/coreall.h>
+
+#endif /* __GEOM2D_GEOM2DALL_H__ */

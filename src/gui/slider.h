@@ -11,6 +11,9 @@
 
 /* Slider */
 
+#ifndef __GUI_SLIDER_H__
+#define __GUI_SLIDER_H__
+
 #include "gui.hxx"
 
 __EXTERN_C
@@ -32,3 +35,5 @@ _gui_api void slider_value(Slider *slider, const real32_t value);
 _gui_api real32_t slider_get_value(const Slider *slider);
 
 __END_C
+
+#endif /* __GUI_SLIDER_H__ */

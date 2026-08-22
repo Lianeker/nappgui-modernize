@@ -11,6 +11,9 @@
 
 /* High-level operations in files and directories */
 
+#ifndef __CORE_HFILE_H__
+#define __CORE_HFILE_H__
+
 #include "core.hxx"
 
 __EXTERN_C
@@ -54,3 +57,5 @@ _core_api String *hfile_home_dir(const char_t *path);
 _core_api String *hfile_tmp_path(const char_t *path);
 
 __END_C
+
+#endif /* __CORE_HFILE_H__ */

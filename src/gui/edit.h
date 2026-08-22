@@ -11,6 +11,9 @@
 
 /* Edit Box */
 
+#ifndef __GUI_EDIT_H__
+#define __GUI_EDIT_H__
+
 #include "gui.hxx"
 
 __EXTERN_C
@@ -72,3 +75,5 @@ _gui_api const char_t *edit_get_text(const Edit *edit);
 _gui_api real32_t edit_get_height(const Edit *edit);
 
 __END_C
+
+#endif /* __GUI_EDIT_H__ */

@@ -11,6 +11,9 @@
 
 /* Images */
 
+#ifndef __DRAW2D_IMAGE_H__
+#define __DRAW2D_IMAGE_H__
+
 #include "draw2d.hxx"
 
 __EXTERN_C
@@ -75,3 +78,5 @@ __END_C
 
 #define image_get_data(image, type) \
     cast(image_get_data_imp(image), type)
+
+#endif /* __DRAW2D_IMAGE_H__ */

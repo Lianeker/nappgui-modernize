@@ -11,6 +11,9 @@
 
 /* Vector 2d */
 
+#ifndef __GEOM2D_V2D_H__
+#define __GEOM2D_V2D_H__
+
 #include "geom2d.hxx"
 
 __EXTERN_C
@@ -107,3 +110,5 @@ _geom2d_api extern const V2Df kV2D_Yf;
 _geom2d_api extern const V2Dd kV2D_Yd;
 
 __END_C
+
+#endif /* __GEOM2D_V2D_H__ */

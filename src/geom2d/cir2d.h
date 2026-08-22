@@ -11,6 +11,9 @@
 
 /* Circle 2d */
 
+#ifndef __GEOM2D_CIR2D_H__
+#define __GEOM2D_CIR2D_H__
+
 #include "geom2d.hxx"
 
 __EXTERN_C
@@ -43,3 +46,5 @@ _geom2d_api extern const Cir2Df kCIR2D_NULLf;
 _geom2d_api extern const Cir2Dd kCIR2D_NULLd;
 
 __END_C
+
+#endif /* __GEOM2D_CIR2D_H__ */

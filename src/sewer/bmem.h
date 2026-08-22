@@ -11,6 +11,9 @@
 
 /* Operating System memory support */
 
+#ifndef __SEWER_BMEM_H__
+#define __SEWER_BMEM_H__
+
 #include "sewer.hxx"
 
 __EXTERN_C
@@ -104,3 +107,5 @@ __END_C
 #define bmem_shuffle_n(arr, size, type) \
     ((void)(cast(arr, type) == arr), \
      bmem_shuffle(cast(arr, byte_t), size, sizeof32(type)))
+
+#endif /* __SEWER_BMEM_H__ */

@@ -11,6 +11,9 @@
 
 /* Draw context */
 
+#ifndef __DRAW2D_DCTX_H__
+#define __DRAW2D_DCTX_H__
+
 #include "draw2d.hxx"
 
 __EXTERN_C
@@ -32,3 +35,5 @@ _draw2d_api void draw_matrix_cartesiand(DCtx *ctx, const T2Dd *t2d);
 _draw2d_api void draw_antialias(DCtx *ctx, const bool_t on);
 
 __END_C
+
+#endif /* __DRAW2D_DCTX_H__ */

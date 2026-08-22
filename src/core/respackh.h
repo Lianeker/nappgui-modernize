@@ -10,6 +10,9 @@
 
 /* Undocumented (hidden) API about resource packages */
 
+#ifndef __CORE_RESPACKH_H__
+#define __CORE_RESPACKH_H__
+
 #include "coreh.hxx"
 
 __EXTERN_C
@@ -41,3 +44,5 @@ __END_C
     ((void)FUNC_CHECK_FROM_DATA(func_create, type), \
      FUNC_CHECK_DESTROY(func_destroy, type), \
      cast(respack_aobj_imp(packs, id, (FPtr_from_data)func_create, (FPtr_destroy)func_destroy, is_resid), type))
+
+#endif /* __CORE_RESPACKH_H__ */

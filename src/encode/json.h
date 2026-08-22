@@ -11,6 +11,9 @@
 
 /* Json parser */
 
+#ifndef __ENCODE_JSON_H__
+#define __ENCODE_JSON_H__
+
 #include "encode.hxx"
 
 __EXTERN_C
@@ -50,3 +53,5 @@ __END_C
 #define json_destopt(data, type) \
     ((void)(dcast(data, type) == data), \
      json_destopt_imp(dcast(data, void), cast_const(#type, char_t)))
+
+#endif /* __ENCODE_JSON_H__ */

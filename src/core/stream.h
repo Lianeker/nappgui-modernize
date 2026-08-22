@@ -11,6 +11,9 @@
 
 /* Data streams */
 
+#ifndef __CORE_STREAM_H__
+#define __CORE_STREAM_H__
+
 #include "core.hxx"
 
 __EXTERN_C
@@ -204,3 +207,5 @@ __END_C
     unref(line); \
     } \
     }
+
+#endif /* __CORE_STREAM_H__ */

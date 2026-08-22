@@ -11,6 +11,9 @@
 
 /* Menu */
 
+#ifndef __GUI_MENU_H__
+#define __GUI_MENU_H__
+
 #include "gui.hxx"
 
 __EXTERN_C
@@ -40,3 +43,5 @@ _gui_api bool_t menu_is_menubar(const Menu *menu);
 _gui_api void *menu_imp(const Menu *menu);
 
 __END_C
+
+#endif /* __GUI_MENU_H__ */

@@ -11,6 +11,9 @@
 
 /* 2D Collision detection */
 
+#ifndef __GEOM2D_COL2D_H__
+#define __GEOM2D_COL2D_H__
+
 #include "geom2d.hxx"
 
 __EXTERN_C
@@ -128,3 +131,5 @@ _geom2d_api bool_t col2d_poly_polyf(const Pol2Df *poly1, const Pol2Df *poly2, Co
 _geom2d_api bool_t col2d_poly_polyd(const Pol2Dd *poly1, const Pol2Dd *poly2, Col2Dd *col);
 
 __END_C
+
+#endif /* __GEOM2D_COL2D_H__ */

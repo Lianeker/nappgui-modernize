@@ -10,6 +10,9 @@
 
 /* All-in-one draw2d headers include */
 
+#ifndef __DRAW2D_DRAW2DALL_H__
+#define __DRAW2D_DRAW2DALL_H__
+
 #include "color.h"
 #include "dctx.h"
 #include "draw.h"
@@ -20,3 +23,5 @@
 #include "palette.h"
 #include "pixbuf.h"
 #include <geom2d/geom2dall.h>
+
+#endif /* __DRAW2D_DRAW2DALL_H__ */

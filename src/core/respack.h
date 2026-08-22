@@ -11,6 +11,9 @@
 
 /* Resource Packages */
 
+#ifndef __CORE_RESPACK_H__
+#define __CORE_RESPACK_H__
+
 #include "core.hxx"
 
 __EXTERN_C
@@ -22,3 +25,5 @@ _core_api const char_t *respack_text(const ResPack *pack, const ResId id);
 _core_api const byte_t *respack_file(const ResPack *pack, const ResId id, uint32_t *size);
 
 __END_C
+
+#endif /* __CORE_RESPACK_H__ */

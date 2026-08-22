@@ -10,6 +10,9 @@
 
 /* All-in-one gui headers */
 
+#ifndef __GUI_GUIALL_H__
+#define __GUI_GUIALL_H__
+
 #include "button.h"
 #include "cell.h"
 #include "combo.h"
@@ -37,3 +40,5 @@
 #include "view.h"
 #include "window.h"
 #include <draw2d/draw2dall.h>
+
+#endif /* __GUI_GUIALL_H__ */
