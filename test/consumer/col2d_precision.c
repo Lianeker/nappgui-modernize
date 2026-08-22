@@ -7,6 +7,9 @@
  *
  * Esta prueba pone centinelas alrededor de las estructuras y comprueba que
  * nadie escribe fuera. Si alguien revierte las firmas, los centinelas mueren.
+ *
+ * Ampliada en NAP-019 con el contrato del parametro 'col': que cada funcion
+ * rellene lo que dice la tabla de docs/col2d-contacto.md, ni mas ni menos.
  */
 
 #include <nappgui.h>
@@ -64,20 +67,35 @@ static bool_t i_intactos(const Guarded *g)
 
 /*---------------------------------------------------------------------------*/
 
+/* Las tres funciones que NAP-003 arreglo eran col2d_box_segmentd,
+ * col2d_tri_circled y col2d_tri_boxd. Dos de ellas (box_segment y tri_box) van
+ * por SAT y desde NAP-019 exigen NULL en 'col': pasarles un puntero es un error
+ * del llamante y lo avisa un cassert. Se comprueban sin Col2D.
+ *
+ * Los centinelas se mantienen sobre col2d_tri_circled, que si escribe en el
+ * Col2Dd, y se amplian a las funciones de circulo, que son las unicas que
+ * rellenan el contacto entero. Ahi es donde una regresion de firma f/d se veria
+ * de verdad: escribiendo 40 bytes en un hueco de 20. Ver docs/col2d-contacto.md.
+ */
 static void i_box_segment(void)
 {
-    Guarded g;
     Box2Dd box;
     Seg2Dd seg;
+    Box2Df boxf;
+    Seg2Df segf;
 
-    i_reset(&g);
     box.min = v2dd(0, 0);
     box.max = v2dd(10, 10);
     seg.p0 = v2dd(-5, 5);
     seg.p1 = v2dd(5, 5);
+    boxf.min = v2df(0, 0);
+    boxf.max = v2df(10, 10);
+    segf.p0 = v2df(-5, 5);
+    segf.p1 = v2df(5, 5);
 
-    col2d_box_segmentd(&box, &seg, &g.col);
-    i_check(i_intactos(&g), "col2d_box_segmentd no escribe fuera del Col2Dd");
+    i_check(col2d_box_segmentd(&box, &seg, NULL) == TRUE, "col2d_box_segmentd detecta el cruce");
+    i_check(col2d_box_segmentd(&box, &seg, NULL) == col2d_box_segmentf(&boxf, &segf, NULL),
+            "col2d_box_segment: las variantes f y d coinciden");
 }
 
 /*---------------------------------------------------------------------------*/
@@ -101,17 +119,57 @@ static void i_tri_circle(void)
 
 static void i_tri_box(void)
 {
-    Guarded g;
     Tri2Dd tri;
     Box2Dd box;
 
-    i_reset(&g);
     tri = tri2dd(0, 0, 10, 0, 5, 10);
     box.min = v2dd(3, 3);
     box.max = v2dd(7, 7);
 
-    col2d_tri_boxd(&tri, &box, &g.col);
-    i_check(i_intactos(&g), "col2d_tri_boxd no escribe fuera del Col2Dd");
+    i_check(col2d_tri_boxd(&tri, &box, NULL) == TRUE, "col2d_tri_boxd detecta el solapamiento");
+}
+
+/*---------------------------------------------------------------------------*/
+
+/* Contacto completo (NAP-019): circulo-circulo y circulo-punto son las unicas
+ * que rellenan p, n y d. Con centinelas alrededor, porque son las que mas
+ * bytes escriben en el Col2Dd. */
+static void i_contacto_completo(void)
+{
+    Guarded g;
+    Cir2Dd c1, c2;
+    V2Dd pt;
+
+    c1.c = v2dd(0, 0);
+    c1.r = 5;
+    c2.c = v2dd(8, 0);
+    c2.r = 5;
+
+    i_reset(&g);
+    i_check(col2d_circle_circled(&c1, &c2, &g.col) == TRUE, "col2d_circle_circled detecta el solapamiento");
+    i_check(i_intactos(&g), "col2d_circle_circled no escribe fuera del Col2Dd");
+    i_check(g.col.n.x == 1., "la normal apunta de c1 a c2");
+    i_check(g.col.p.x == 5., "el punto de contacto esta en el borde de c1");
+    i_check(g.col.d == 2., "la profundidad es (5 + 5) - 8");
+
+    pt = v2dd(2, 0);
+    i_reset(&g);
+    i_check(col2d_circle_pointd(&c1, &pt, &g.col) == TRUE, "col2d_circle_pointd detecta el punto dentro");
+    i_check(i_intactos(&g), "col2d_circle_pointd no escribe fuera del Col2Dd");
+    i_check(g.col.d == 3., "la profundidad es 5 - 2");
+
+    /* Y la variante f debe dar lo mismo. */
+    {
+        Col2Df colf;
+        Cir2Df f1, f2;
+        f1.c = v2df(0, 0);
+        f1.r = 5;
+        f2.c = v2df(8, 0);
+        f2.r = 5;
+        bmem_set_zero(cast(&colf, byte_t), sizeof32(Col2Df));
+        i_check(col2d_circle_circlef(&f1, &f2, &colf) == TRUE, "col2d_circle_circlef detecta el solapamiento");
+        i_check(colf.d == 2.f, "la variante f da la misma profundidad que la d");
+    }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -119,9 +177,10 @@ static void i_tri_box(void)
 /* Las variantes f y d deben coincidir en si hay colision o no.
  *
  * Nota: NO se compara el contenido de Col2D. Las funciones basadas en SAT
- * (tri_box, tri_obb, poly_box...) hacen `unref(col)` en i_sat_box
- * (src/geom2d/col2d.cpp:780) y nunca rellenan el punto de contacto: solo
- * devuelven si hay solapamiento. Las demos lo pasan como NULL. Ver NAP-019. */
+ * (tri_box, tri_obb, poly_box...) descartan 'col' en i_sat_box
+ * (src/geom2d/col2d.cpp:844) y nunca rellenan el punto de contacto: solo
+ * devuelven si hay solapamiento. Desde NAP-019 exigen NULL y lo comprueban con
+ * cassert. Las demos ya lo pasaban asi. Ver docs/col2d-contacto.md. */
 static void i_f_y_d_coinciden(void)
 {
     Tri2Dd trid;
@@ -165,6 +224,7 @@ int main(int argc, char *argv[])
     i_box_segment();
     i_tri_circle();
     i_tri_box();
+    i_contacto_completo();
     i_f_y_d_coinciden();
 
     core_finish();
