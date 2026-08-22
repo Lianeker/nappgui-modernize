@@ -80,8 +80,26 @@
       the 0 and now leaves the field at its default value.
     - Affects a bound `Edit`, which reverts to the stored value instead of
       writing a 0. Its text filter only lets a number through, but it also lets
-      through the empty field and a `,` as decimal separator, and neither is a
-      number for `str_to_r64()`.
+      through the empty field, and the empty field is not a number for
+      `str_to_r64()`. The `,` it also let through is translated now, see the
+      entry below.
+
+- The text filter of a number bound to an `Edit` writes `.` in the field when
+  the user types `,` as decimal separator, instead of leaving the `,` in the
+  text. It has always accepted both keys, because `,` is the one a Spanish or a
+  French keyboard offers, but the conversion that comes next
+  (`dbind_st_set_value_str()` -> `str_to_r64()`) only understands `.`, whatever
+  the locale of the process. The two ends of the same path did not agree: `"1,5"`
+  used to store 1 in silence and, since the change above, is rejected and leaves
+  the control out of sync with the value. It stores 1.5 now.
+    - The translation only happens where a decimal separator is accepted, so a
+      member with no decimals (an integer, or a real with a precision of 1) still
+      drops the `,` like any other character that is not a digit.
+    - It keeps the length of the text, so the caret of the `Edit` does not move,
+      and the output of the filter is still a valid input of the filter.
+    - `str_to_r32()` and `str_to_r64()` are **not** affected: the decimal
+      separator of the conversions is still `.` and nothing else. What changed is
+      the filter that feeds them.
 
 - `tfilter_to_date()` returns `kDATE_NULL` when any of the three fields of the
   text is not a number, instead of a date with a 0 in that field. The filter of
@@ -164,6 +182,11 @@
   42. It is 0 with an error now, like on every other compiler. Cut the string at
   the first character that is not part of the number if the old reading is what
   you want.
+
+- **A bound `Edit` that reads its own text.** The text of the field now holds a
+  `.` where the user typed a `,`, so an `OnFilter` or an `OnChange` handler that
+  looked for the `,` will not find it. Nothing else changes: the field never held
+  a text that `str_to_r64()` accepted with a `,` in it.
 
 - **`tfilter_to_date()` with a text that is not a date.** It returns
   `kDATE_NULL` now instead of a made up date. The result was never usable, but

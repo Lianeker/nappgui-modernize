@@ -27,6 +27,20 @@ typedef enum _state_t
 
 /*---------------------------------------------------------------------------*/
 
+/*
+ * Writes in 'dest' the number that 'src' holds, dropping everything that does
+ * not fit the grammar. It accepts ',' as decimal separator, because that is the
+ * key a Spanish or French user presses, but writes '.' in 'dest': what comes
+ * next is 'str_to_r64', whose separator is always '.' whatever the locale
+ * (NAP-023). Leaving the ',' through made the filter and the conversion
+ * disagree, so "1,5" first stored 1 in silence and, after NAP-030, was rejected
+ * with the control left out of sync. NAP-031.
+ *
+ * The translation keeps the length in bytes and in characters, so the caret of
+ * the 'Edit' does not move, and the output of the filter is again a valid input
+ * of the filter. On an integer member ('num_decimals' == 0) there is no
+ * separator at all and the ',' keeps being dropped like any other character.
+ */
 void _tfilter_number(const char_t *src, char_t *dest, const uint32_t size, const uint32_t num_decimals, const bool_t allow_negatives)
 {
     uint32_t csize, i = 0;
@@ -34,9 +48,11 @@ void _tfilter_number(const char_t *src, char_t *dest, const uint32_t size, const
     uint32_t decimals = 0;
     gui_state_t state = stSTART;
     bool_t valid = FALSE;
+    uint32_t wcodepoint = 0;
     while (codepoint != 0)
     {
         valid = FALSE;
+        wcodepoint = codepoint;
         switch (state)
         {
         case stSTART:
@@ -54,6 +70,7 @@ void _tfilter_number(const char_t *src, char_t *dest, const uint32_t size, const
             {
                 if (num_decimals > 0)
                 {
+                    wcodepoint = '.';
                     state = stREAL;
                     valid = TRUE;
                 }
@@ -73,6 +90,7 @@ void _tfilter_number(const char_t *src, char_t *dest, const uint32_t size, const
             {
                 if (codepoint == '.' || codepoint == ',')
                 {
+                    wcodepoint = '.';
                     state = stREAL;
                     valid = TRUE;
                 }
@@ -89,6 +107,7 @@ void _tfilter_number(const char_t *src, char_t *dest, const uint32_t size, const
             {
                 if (num_decimals > 0)
                 {
+                    wcodepoint = '.';
                     state = stREAL;
                     valid = TRUE;
                 }
@@ -115,7 +134,7 @@ void _tfilter_number(const char_t *src, char_t *dest, const uint32_t size, const
         {
             if (i + csize < size - 1)
             {
-                dest += unicode_to_char(codepoint, dest, ekUTF8);
+                dest += unicode_to_char(wcodepoint, dest, ekUTF8);
                 i += csize;
             }
         }
