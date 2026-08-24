@@ -491,6 +491,8 @@ HBRUSH _oscontrol_ctl_color_edit(HDC hdc, COLORREF color, COLORREF bgcolor, HBRU
 {
     if (color != kCOLOR_DEFAULT)
         SetTextColor(hdc, color);
+    else if (_osdark_enabled() == TRUE)
+        SetTextColor(hdc, _osdark_textcolor());
 
     if (brush != NULL)
     {

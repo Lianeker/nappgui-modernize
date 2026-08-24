@@ -12,6 +12,7 @@
 
 #include "osedit_win.inl"
 #include "osgui_win.inl"
+#include "osdark_win.inl"
 #include "oscontrol_win.inl"
 #include "ospanel_win.inl"
 #include "oswindow_win.inl"
@@ -449,6 +450,15 @@ HBRUSH _osedit_background_color(const OSEdit *edit, COLORREF *color)
     {
         *color = edit->bgcolor & 0x00FFFFFF;
         return edit->bgbrush;
+    }
+
+    /* Sin color propio y en oscuro: el del tema. Sin esto el campo de texto se
+       queda blanco dentro de una ventana ya oscura, que es donde mas canta
+       porque suele ser lo mas grande de la barra (NAP-042). */
+    if (_osdark_enabled() == TRUE)
+    {
+        *color = _osdark_bgcolor();
+        return _osdark_bgbrush();
     }
 
     return NULL;
