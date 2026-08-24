@@ -19,6 +19,7 @@
 #include "../osbutton.h"
 #include "../osbutton.inl"
 #include "../osgui.inl"
+#include <draw2d/color.h>
 #include <draw2d/font.h>
 #include <draw2d/image.h>
 #include <core/event.h>
@@ -51,6 +52,9 @@
     real32_t imgx;
     real32_t imgy;
     gui_pos_t imgpos;
+    /* Fondo propio (NAP-044). El color del texto vive en `attrs.color`, que ya
+       existia; el fondo hay que pintarlo, y por eso va aparte. */
+    color_t bgcolor;
 }
 @end
 
@@ -541,6 +545,16 @@ static void i_remove_tracking_areas(OSXButton *button)
 - (void)drawBezelWithFrame:(NSRect)frame inView:(NSView *)controlView
 {
     cassert([controlView isKindOfClass:[OSXButton class]]);
+
+    /* Fondo propio: se pinta y no se llama al bisel del sistema. Solo en el
+       boton plano, que es el unico cuyo aspecto es nuestro. */
+    if (self->bgcolor != kCOLOR_TRANSPARENT && button_is_flat(self->flags) == TRUE)
+    {
+        [_oscontrol_color(self->bgcolor) setFill];
+        NSRectFill(frame);
+        return;
+    }
+
     if (button_get_type(self->flags) == ekBUTTON_FLATGLE)
     {
         OSXButton *button = cast(controlView, OSXButton);
@@ -1119,6 +1133,33 @@ void osbutton_image(OSButton *button, const Image *image)
         cell->imgwidth = 0.f;
         cell->imgheight = 0.f;
     }
+}
+
+/*---------------------------------------------------------------------------*/
+
+void osbutton_color(OSButton *button, const color_t color)
+{
+    OSXButton *lbutton = cast(button, OSXButton);
+    OSXButtonCell *cell = nil;
+    cassert_no_null(lbutton);
+    cell = [lbutton cell];
+    cell->attrs.color = color;
+    /* El titulo se vuelve a aplicar para que recoja el color: el atribuido se
+       construye a partir de `attrs`, no se actualiza solo. */
+    _oscontrol_set_text(lbutton, &cell->attrs, tc(cell->text));
+    [lbutton setNeedsDisplay:YES];
+}
+
+/*---------------------------------------------------------------------------*/
+
+void osbutton_bgcolor(OSButton *button, const color_t color)
+{
+    OSXButton *lbutton = cast(button, OSXButton);
+    OSXButtonCell *cell = nil;
+    cassert_no_null(lbutton);
+    cell = [lbutton cell];
+    cell->bgcolor = color;
+    [lbutton setNeedsDisplay:YES];
 }
 
 /*---------------------------------------------------------------------------*/

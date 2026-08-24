@@ -38,6 +38,47 @@ static Layout *i_flatbuttons(void)
 
 /*---------------------------------------------------------------------------*/
 
+/* Botones planos con color propio (NAP-044).
+   Solo el boton PLANO lo dibuja NAppGUI, y por eso es el unico al que se le
+   puede fijar color: el boton normal lo pinta el sistema. Sin llamar a nada,
+   un boton plano se ve como siempre. */
+static Layout *i_colorbuttons(void)
+{
+    Layout *layout = layout_create(3, 1);
+    Button *button1 = button_flat();
+    Button *button2 = button_flat();
+    Button *button3 = button_flat();
+    /* Con imagen: el boton plano con SOLO texto no funciona hoy (NAP-045), asi
+       que el ejemplo usa lo que si esta soportado. Lo que muestra es el color. */
+    button_image(button1, gui_image(PLUS24_PNG));
+    button_image(button2, gui_image(SEARCH24_PNG));
+    button_image(button3, gui_image(EDIT24_PNG));
+    button_tooltip(button1, "color + bgcolor");
+    button_tooltip(button2, "color + bgcolor");
+    button_tooltip(button3, "sin tocar: se ve como siempre");
+    button_color(button1, color_rgb(255, 255, 255));
+    button_bgcolor(button1, color_rgb(190, 45, 45));
+    button_color(button2, color_rgb(20, 90, 40));
+    button_bgcolor(button2, color_rgb(190, 230, 195));
+    /* El tercero no toca nada: es la comprobacion que de verdad importa, la de
+       que lo de siempre se sigue viendo igual. */
+    layout_button(layout, button1, 0, 0);
+    layout_button(layout, button2, 1, 0);
+    layout_button(layout, button3, 2, 0);
+    /* Tamano explicito: el boton plano esta pensado para iconos y NAppGUI le
+       pone la fuente diminuta a proposito, para que el texto no le fije el
+       tamano minimo. Con solo texto, sin esto sale de tamano cero. */
+    layout_hsize(layout, 0, 40);
+    layout_hsize(layout, 1, 40);
+    layout_hsize(layout, 2, 40);
+    layout_vsize(layout, 0, 32);
+    layout_hmargin(layout, 0, 5);
+    layout_hmargin(layout, 1, 5);
+    return layout;
+}
+
+/*---------------------------------------------------------------------------*/
+
 static Layout *i_radios(void)
 {
     Layout *layout = layout_create(1, 4);
@@ -114,8 +155,9 @@ static Layout *i_pushes(Button **defbutton)
 
 static Layout *i_buttons(Button **defbutton)
 {
-    Layout *layout = layout_create(1, 3);
+    Layout *layout = layout_create(1, 4);
     Layout *layout1 = i_flatbuttons();
+    Layout *layout6 = i_colorbuttons();
     Layout *layout2 = layout_create(2, 2);
     Layout *layout3 = i_radios();
     Layout *layout4 = i_checks();
@@ -133,7 +175,10 @@ static Layout *i_buttons(Button **defbutton)
     layout_layout(layout2, layout4, 1, 1);
     layout_layout(layout, layout2, 0, 1);
     layout_layout(layout, layout5, 0, 2);
+    layout_layout(layout, layout6, 0, 3);
     layout_halign(layout, 0, 0, ekHLEFT);
+    layout_halign(layout, 0, 3, ekHLEFT);
+    layout_margin(layout6, 5);
     layout_margin(layout2, 5);
     layout_hmargin(layout2, 0, 10);
     layout_margin(layout5, 5);

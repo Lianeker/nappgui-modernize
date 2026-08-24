@@ -52,6 +52,10 @@ struct _osbutton_t
     PangoAttrList *attrs;
     GtkCssProvider *css_padding;
     GtkCssProvider *css_font;
+    /* Color propio (NAP-044). Solo lo mira el boton plano; en GTK el color va
+       por CSS, igual que en el campo de texto (osentry.c). */
+    GtkCssProvider *css_color;
+    GtkCssProvider *css_bgcolor;
     Listener *OnClick;
 };
 
@@ -446,6 +450,8 @@ void osbutton_destroy(OSButton **button)
     ptr_destopt(image_destroy, &(*button)->image, Image);
     ptr_destopt(font_destroy, &(*button)->font, Font);
     _oscontrol_destroy_css_provider(&(*button)->css_padding);
+    _oscontrol_destroy_css_provider(&(*button)->css_color);
+    _oscontrol_destroy_css_provider(&(*button)->css_bgcolor);
     _oscontrol_destroy_css_provider(&(*button)->css_font);
 
     if ((*button)->attrs != NULL)
@@ -593,6 +599,24 @@ void osbutton_image(OSButton *button, const Image *image)
         image_destroy(&button->image);
     button->image = ptr_copyopt(image_copy, image, Image);
     gtk_widget_queue_draw(button->control.widget);
+}
+
+/*---------------------------------------------------------------------------*/
+
+void osbutton_color(OSButton *button, const color_t color)
+{
+    cassert_no_null(button);
+    _oscontrol_update_css_color(button->control.widget, i_css_obj(button->flags),
+                                color, &button->css_color);
+}
+
+/*---------------------------------------------------------------------------*/
+
+void osbutton_bgcolor(OSButton *button, const color_t color)
+{
+    cassert_no_null(button);
+    _oscontrol_update_css_bgcolor(button->control.widget, i_css_obj(button->flags),
+                                  color, &button->css_bgcolor);
 }
 
 /*---------------------------------------------------------------------------*/

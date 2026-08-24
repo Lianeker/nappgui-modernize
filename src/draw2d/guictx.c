@@ -71,6 +71,22 @@ void guictx_set_current(const GuiCtx *context)
 
 /*---------------------------------------------------------------------------*/
 
+void guictx_append_button_color_imp(
+    GuiCtx *context,
+    FPtr_gctx_set_uint32 func_button_set_text_color,
+    FPtr_gctx_set_uint32 func_button_set_bg_color)
+{
+    cassert_no_null(context);
+    cassert(context->func_button_set_text_color == NULL);
+    cassert(context->func_button_set_bg_color == NULL);
+    cassert_no_nullf(func_button_set_text_color);
+    cassert_no_nullf(func_button_set_bg_color);
+    context->func_button_set_text_color = func_button_set_text_color;
+    context->func_button_set_bg_color = func_button_set_bg_color;
+}
+
+/*---------------------------------------------------------------------------*/
+
 void guictx_append_button_manager_imp(
     GuiCtx *context,
     FPtr_gctx_create func_button_create,

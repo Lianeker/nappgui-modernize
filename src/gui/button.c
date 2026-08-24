@@ -422,6 +422,27 @@ void button_image_alt(Button *button, const Image *image)
 
 /*---------------------------------------------------------------------------*/
 
+/* El color solo pinta algo en el boton PLANO: es el unico que dibuja NAppGUI.
+   El normal lo pinta el sistema, y colorearlo obligaria a reimplementar su
+   aspecto nativo en las tres plataformas. Ver backlog/NAP-044. */
+void button_color(Button *button, const color_t color)
+{
+    cassert_no_null(button);
+    cassert(button_get_type(button->flags) == ekBUTTON_FLAT || button_get_type(button->flags) == ekBUTTON_FLATGLE);
+    button->component.context->func_button_set_text_color(button->component.ositem, (uint32_t)color);
+}
+
+/*---------------------------------------------------------------------------*/
+
+void button_bgcolor(Button *button, const color_t color)
+{
+    cassert_no_null(button);
+    cassert(button_get_type(button->flags) == ekBUTTON_FLAT || button_get_type(button->flags) == ekBUTTON_FLATGLE);
+    button->component.context->func_button_set_bg_color(button->component.ositem, (uint32_t)color);
+}
+
+/*---------------------------------------------------------------------------*/
+
 void button_image_pos(Button *button, const gui_pos_t pos)
 {
     cassert_no_null(button);

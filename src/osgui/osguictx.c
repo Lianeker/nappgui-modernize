@@ -65,6 +65,12 @@ GuiCtx *osguictx(void)
         osbutton_frame,
         OSButton, OSPanel, Image, Font);
 
+    guictx_append_button_color(
+        context,
+        osbutton_color,
+        osbutton_bgcolor,
+        OSButton);
+
     guictx_append_popup_manager(
         context,
         ospopup_create,

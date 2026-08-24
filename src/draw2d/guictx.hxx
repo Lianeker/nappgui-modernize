@@ -987,6 +987,14 @@ struct _guictx_t
     FPtr_gctx_draw_image func_drawctrl_image;
     FPtr_gctx_draw_rect func_drawctrl_checkbox;
     FPtr_gctx_draw_rect func_drawctrl_uncheckbox;
+
+    /* Color del boton (NAP-044).
+       Van AQUI, al final, y no junto al resto de <Button>: meterlos en su
+       seccion desplazaria todos los campos posteriores y eso cambia la ABI de
+       un SDK ya instalado. Al final no desplazan nada. Feo, pero es la
+       diferencia entre un cambio aditivo y uno que rompe. */
+    FPtr_gctx_set_uint32 func_button_set_text_color;
+    FPtr_gctx_set_uint32 func_button_set_bg_color;
 };
 
 struct _evbutton_t
