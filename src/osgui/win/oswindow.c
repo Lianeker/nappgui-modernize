@@ -12,6 +12,7 @@
 
 #include "oswindow_win.inl"
 #include "osgui_win.inl"
+#include "osdark_win.inl"
 #include "osbutton_win.inl"
 #include "oscontrol_win.inl"
 #include "osmenuitem_win.inl"
@@ -330,6 +331,31 @@ static LRESULT CALLBACK i_WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPa
 
     switch (msg)
     {
+    /* El fondo NO puede venir de la clase de ventana: se registra con
+       COLOR_BTNFACE+1, que es un indice de color de sistema y esos no cambian
+       con el tema (NAP-042). Se borra aqui, que es donde se puede decidir. */
+    case WM_ERASEBKGND:
+        if (_osdark_enabled() == TRUE)
+        {
+            RECT rc;
+            GetClientRect(hwnd, &rc);
+            FillRect((HDC)wParam, &rc, _osdark_bgbrush());
+            return 1;
+        }
+        break;
+
+    /* El sistema ha cambiado de tema con la aplicacion abierta. Los controles
+       ya creados NO se enteran solos: hay que reaplicarles el tema y repintar
+       con marco, o se quedan con el borde del color anterior (NAP-042). */
+    case WM_THEMECHANGED:
+        _osdark_refresh(hwnd);
+        break;
+
+    case WM_SETTINGCHANGE:
+        if (lParam != 0 && lstrcmpiW((LPCWSTR)lParam, L"ImmersiveColorSet") == 0)
+            _osdark_refresh(hwnd);
+        break;
+
     case WM_ACTIVATE:
         if (LOWORD(wParam) == WA_ACTIVE || LOWORD(wParam) == WA_CLICKACTIVE)
         {
@@ -542,6 +568,10 @@ OSWindow *oswindow_create(const uint32_t flags)
     window->control.type = ekGUI_TYPE_WINDOW;
     i_window_style(flags, &window->dwStyle, &window->dwExStyle);
     _oscontrol_init_hidden(cast(window, OSControl), window->dwExStyle, window->dwStyle | WS_POPUP, kWINDOW_CLASS, 0, 0, i_WndProc, GetDesktopWindow());
+    /* Barra de titulo en oscuro si toca (NAP-042). Va aqui y no en la creacion
+       generica de controles porque una ventana tiene ademas marco, y eso lo
+       decide DWM, no el tema de los controles. */
+    _osdark_window(window->control.hwnd);
     window->launch_resize_event = TRUE;
     window->destroy_main_view = TRUE;
     window->wm_sizing = FALSE;

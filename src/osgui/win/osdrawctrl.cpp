@@ -14,6 +14,7 @@
 #include "osimg.inl"
 #include "osstyleXP.inl"
 #include "osgui_win.inl"
+#include "osdark_win.inl"
 #include "../osdrawctrl.h"
 #include "../osgui.inl"
 #include <draw2d/color.h>
@@ -127,7 +128,10 @@ void osdrawctrl_clear(DCtx *ctx, const int32_t x, const int32_t y, const uint32_
     rect.top = (LONG)y + (LONG)offset_y;
     rect.right = rect.left + (LONG)width;
     rect.bottom = rect.top + (LONG)height;
-    FillRect((HDC)dctx_native(ctx), &rect, GetSysColorBrush(COLOR_WINDOW));
+    /* COLOR_WINDOW no cambia con el tema: sin esto, las listas y tablas que
+       dibuja NAppGUI se quedan blancas dentro de una ventana oscura. */
+    FillRect((HDC)dctx_native(ctx), &rect,
+             (_osdark_enabled() == TRUE) ? _osdark_bgbrush() : GetSysColorBrush(COLOR_WINDOW));
     unref(nonused);
 }
 
@@ -406,7 +410,7 @@ static COLORREF i_colorref(const color_t color)
 
 /*---------------------------------------------------------------------------*/
 
-void _osdrawctrl_gdi_text(HDC hdc, HTHEME theme, const char_t *text, const int32_t x, const int32_t y, const halign_t align, const ellipsis_t trim, const int32_t text_width, const COLORREF text_color, const ctrl_state_t state)
+void _osdrawctrl_gdi_text(HDC hdc, HTHEME theme, const char_t *text, const int32_t x, const int32_t y, const halign_t align, const ellipsis_t trim, const int32_t text_width, const color_t text_color, const ctrl_state_t state)
 {
     RECT rect;
     WString str;
@@ -464,9 +468,20 @@ void _osdrawctrl_gdi_text(HDC hdc, HTHEME theme, const char_t *text, const int32
         rect.bottom = rect.top + (nrect.bottom - nrect.top);
     }
 
-    if (text_color == UINT32_MAX)
+    /* `kCOLOR_DEFAULT` y no UINT32_MAX: como color_t, UINT32_MAX es el blanco
+       opaco, y con ese centinela no habria forma de pedir texto blanco. */
+    if (text_color == kCOLOR_DEFAULT)
     {
-        if (osbs_windows() > ekWIN_XP3)
+        /* En oscuro se dibuja el texto a mano y NO por el tema: el tema de
+           LISTVIEW sigue devolviendo el color de la variante clara, con lo que
+           el texto sale gris oscuro sobre fondo oscuro y no se lee (NAP-042).
+           El elemento seleccionado se deja al tema, que ahi si acierta. */
+        if (_osdark_enabled() == TRUE && state != ekCTRL_STATE_PRESSED && state != ekCTRL_STATE_BKPRESSED)
+        {
+            SetTextColor(hdc, _osdark_textcolor());
+            DrawTextW(hdc, wtext, -1, &rect, format);
+        }
+        else if (osbs_windows() > ekWIN_XP3)
         {
             int istate = i_list_state(state);
             _osstyleXP_DrawThemeText2(theme, hdc, LVP_LISTITEM, istate, wtext, -1, format, &rect);

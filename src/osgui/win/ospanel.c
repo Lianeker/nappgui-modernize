@@ -11,6 +11,7 @@
 /* Operating System native panel */
 
 #include "osgui_win.inl"
+#include "osdark_win.inl"
 #include "ospanel_win.inl"
 #include "oscontrol_win.inl"
 #include "osbutton_win.inl"
@@ -127,7 +128,11 @@ static void i_area(HWND hwnd, HDC hdc, Area *area)
     }
     else
     {
-        HBRUSH defbrush = GetSysColorBrush(COLOR_3DFACE);
+        /* En oscuro, COLOR_3DFACE sigue siendo gris claro: no cambia con el
+           tema. Sin esto el fondo del panel se queda blanco debajo de unos
+           controles ya oscuros, que es peor que no hacer nada. */
+        HBRUSH defbrush = (_osdark_enabled() == TRUE) ? _osdark_bgbrush()
+                                                      : GetSysColorBrush(COLOR_3DFACE);
         FillRect(hdc, &area->rect, defbrush);
     }
 
@@ -158,7 +163,10 @@ static void i_area(HWND hwnd, HDC hdc, Area *area)
 
                 /* Erase the border line */
                 {
-                    HBRUSH bgbrush = area->bgbrush != NULL ? area->bgbrush : GetSysColorBrush(COLOR_3DFACE);
+                    HBRUSH bgbrush = area->bgbrush != NULL
+                                         ? area->bgbrush
+                                         : ((_osdark_enabled() == TRUE) ? _osdark_bgbrush()
+                                                                        : GetSysColorBrush(COLOR_3DFACE));
                     int32_t ewidth = mwidth;
                     RECT erect;
 
@@ -178,7 +186,7 @@ static void i_area(HWND hwnd, HDC hdc, Area *area)
                     int32_t tx = area->rect.left + i_GROUP_TITLE_OFFSET;
                     int32_t ty = area->rect.top;
                     ty -= (int32_t)height / 2;
-                    _osdrawctrl_gdi_text(hdc, theme, tc(area->text), tx, ty, ekHLEFT, ekELLIPEND, mwidth, UINT32_MAX, ekCTRL_STATE_NORMAL);
+                    _osdrawctrl_gdi_text(hdc, theme, tc(area->text), tx, ty, ekHLEFT, ekELLIPEND, mwidth, kCOLOR_DEFAULT, ekCTRL_STATE_NORMAL);
                 }
 
                 font_destroy(&font);
@@ -298,6 +306,28 @@ static LRESULT CALLBACK i_WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lP
     case WM_PRINTCLIENT:
         return 0;
 
+    /* El fondo NO puede venir de la clase de ventana: se registra con
+       COLOR_BTNFACE+1, que es un indice de color de sistema y esos no cambian
+       con el tema (NAP-042). Se borra aqui, que es donde se puede decidir. */
+    case WM_ERASEBKGND:
+        if (_osdark_enabled() == TRUE)
+        {
+            RECT rc;
+            GetClientRect(hwnd, &rc);
+            FillRect((HDC)wParam, &rc, _osdark_bgbrush());
+            return 1;
+        }
+        break;
+
+    case WM_CTLCOLORLISTBOX:
+        if (_osdark_enabled() == TRUE)
+        {
+            SetTextColor((HDC)wParam, _osdark_textcolor());
+            SetBkColor((HDC)wParam, _osdark_bgcolor());
+            return (LRESULT)_osdark_bgbrush();
+        }
+        break;
+
     case WM_CTLCOLORSTATIC:
     {
         HBRUSH defbrush = (HBRUSH)CallWindowProc(panel->control.def_wnd_proc, hwnd, uMsg, wParam, lParam);
@@ -314,6 +344,15 @@ static LRESULT CALLBACK i_WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lP
                     return (LRESULT)brush;
                 }
             }
+        }
+
+        /* Sin area propia y en oscuro: el color del panel. Es lo que hace que
+           una etiqueta suelta no salga con un recuadro blanco detras. */
+        if (_osdark_enabled() == TRUE && control != NULL && control->type != ekGUI_TYPE_CUSTOMVIEW)
+        {
+            SetTextColor((HDC)wParam, _osdark_textcolor());
+            SetBkColor((HDC)wParam, _osdark_bgcolor());
+            return (LRESULT)_osdark_bgbrush();
         }
 
         return (LRESULT)defbrush;
@@ -341,6 +380,14 @@ static LRESULT CALLBACK i_WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lP
     {
         OSControl *control = cast(GetWindowLongPtr((HWND)lParam, GWLP_USERDATA), OSControl);
         cassert_unref(control->type != ekGUI_TYPE_COMBOBOX, control);
+        /* Casillas, radios y grupos: sin esto se pintan sobre gris claro
+           aunque el panel ya sea oscuro (NAP-042). */
+        if (_osdark_enabled() == TRUE)
+        {
+            SetTextColor((HDC)wParam, _osdark_textcolor());
+            SetBkColor((HDC)wParam, _osdark_bgcolor());
+            return (LRESULT)_osdark_bgbrush();
+        }
         break;
     }
 

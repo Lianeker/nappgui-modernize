@@ -35,6 +35,14 @@ _osgui_api void osbutton_image(OSButton *button, const Image *image);
 
 _osgui_api void osbutton_image_pos(OSButton *button, const gui_pos_t pos);
 
+/* Color de texto y de fondo. kCOLOR_TRANSPARENT = el del sistema.
+   Solo tienen efecto en el boton PLANO, que es el que dibuja NAppGUI: el boton
+   normal lo pinta el sistema y colorearlo exigiria reimplementar su aspecto en
+   cada plataforma. Ver backlog/NAP-044. */
+_osgui_api void osbutton_color(OSButton *button, const color_t color);
+
+_osgui_api void osbutton_bgcolor(OSButton *button, const color_t color);
+
 _osgui_api void osbutton_state(OSButton *button, const gui_state_t state);
 
 _osgui_api gui_state_t osbutton_get_state(const OSButton *button);
