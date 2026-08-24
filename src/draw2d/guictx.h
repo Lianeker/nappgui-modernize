@@ -29,6 +29,29 @@ _draw2d_api const GuiCtx *guictx_get_current(void);
 
 _draw2d_api void guictx_set_current(const GuiCtx *context);
 
+/* Registro del color del boton, aparte del bloque principal (NAP-044).
+   Va en su propia funcion en vez de anadir parametros a
+   `guictx_append_button_manager_imp`: cambiar aquella firma romperia la fuente
+   de quien ya la llama. Que sea opcional tambien evita obligar a los backends a
+   implementarlo todos a la vez. */
+_draw2d_api void guictx_append_button_color_imp(
+    GuiCtx *context,
+    FPtr_gctx_set_uint32 func_button_set_text_color,
+    FPtr_gctx_set_uint32 func_button_set_bg_color);
+
+#define guictx_append_button_color( \
+    context, \
+    func_button_set_text_color, \
+    func_button_set_bg_color, \
+    button_type) \
+    ( \
+        FUNC_CHECK_GCTX_SET_UINT32(func_button_set_text_color, button_type), \
+        FUNC_CHECK_GCTX_SET_UINT32(func_button_set_bg_color, button_type), \
+        guictx_append_button_color_imp( \
+            context, \
+            (FPtr_gctx_set_uint32)func_button_set_text_color, \
+            (FPtr_gctx_set_uint32)func_button_set_bg_color))
+
 _draw2d_api void guictx_append_button_manager_imp(
     GuiCtx *context,
     FPtr_gctx_create func_button_create,

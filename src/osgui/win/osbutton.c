@@ -21,6 +21,7 @@
 #include "../osbutton.h"
 #include "../osbutton.inl"
 #include "../osgui.inl"
+#include <draw2d/color.h>
 #include <draw2d/font.h>
 #include <draw2d/image.h>
 #include <core/event.h>
@@ -55,6 +56,10 @@ struct _osbutton_t
     LONG height;
     uint32_t hpadding;
     uint32_t vpadding;
+    /* kCOLOR_TRANSPARENT = el del sistema. Solo los tiene en cuenta el boton
+       plano, que es el que dibuja NAppGUI; el normal lo pinta Windows. */
+    color_t ccolor;
+    color_t bgcolor;
     Listener *OnClick;
 };
 
@@ -90,7 +95,7 @@ static void i_draw_flat_button(OSButton *button, const Image *image)
 
     /* Button background */
     {
-        HTHEME theme = _osstyleXP_OpenTheme(hwnd, L"TOOLBAR");
+        HTHEME theme = NULL;
         RECT rect;
         RECT border;
 
@@ -100,6 +105,17 @@ static void i_draw_flat_button(OSButton *button, const Image *image)
         rect.bottom = button->height;
         border = rect;
 
+        /* Fondo propio: se pinta y no se consulta el tema. Se hace antes de
+           abrirlo para no pagar un OpenTheme que no se va a usar. */
+        if (button->bgcolor != kCOLOR_TRANSPARENT)
+        {
+            HBRUSH brush = CreateSolidBrush(_oscontrol_colorref(button->bgcolor));
+            FillRect(memHdc, &rect, brush);
+            DeleteObject(brush);
+            goto content;
+        }
+
+        theme = _osstyleXP_OpenTheme(hwnd, L"TOOLBAR");
         if (theme != NULL)
         {
             int state = 0;
@@ -159,6 +175,7 @@ static void i_draw_flat_button(OSButton *button, const Image *image)
             _osstyleXP_CloseTheme(theme);
     }
 
+content:
     /* Button content */
     {
         real32_t imgwidth = 0.f, imgheight = 0.f, imgsep = 0.f;
@@ -194,6 +211,10 @@ static void i_draw_flat_button(OSButton *button, const Image *image)
         {
             HGDIOBJ old_font = SelectObject(memHdc, (HFONT)font_native(button->font));
             COLORREF color = GetSysColor(enabled ? COLOR_BTNTEXT : COLOR_GRAYTEXT);
+            /* Deshabilitado manda sobre el color propio: un boton que no se
+               puede pulsar tiene que parecerlo, lo pida quien lo pida. */
+            if (enabled == TRUE && button->ccolor != kCOLOR_TRANSPARENT)
+                color = _oscontrol_colorref(button->ccolor);
             SetBkMode(memHdc, TRANSPARENT);
             _osdrawctrl_gdi_text(memHdc, NULL, tc(button->text), (int32_t)tx, (int32_t)ty, ekHLEFT, ekELLIPEND, -1, color, ekCTRL_STATE_NORMAL);
             SelectObject(memHdc, old_font);
@@ -518,6 +539,24 @@ void osbutton_image(OSButton *button, const Image *image)
         button->image = ptr_copyopt(image_copy, image, Image);
         InvalidateRect(button->control.hwnd, NULL, FALSE);
     }
+}
+
+/*---------------------------------------------------------------------------*/
+
+void osbutton_color(OSButton *button, const color_t color)
+{
+    cassert_no_null(button);
+    button->ccolor = color;
+    InvalidateRect(button->control.hwnd, NULL, FALSE);
+}
+
+/*---------------------------------------------------------------------------*/
+
+void osbutton_bgcolor(OSButton *button, const color_t color)
+{
+    cassert_no_null(button);
+    button->bgcolor = color;
+    InvalidateRect(button->control.hwnd, NULL, FALSE);
 }
 
 /*---------------------------------------------------------------------------*/
