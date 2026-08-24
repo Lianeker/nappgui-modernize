@@ -19,6 +19,7 @@
 #include "../osbutton.h"
 #include "../osbutton.inl"
 #include "../osgui.inl"
+#include <draw2d/color.h>
 #include <draw2d/font.h>
 #include <draw2d/image.h>
 #include <core/event.h>
