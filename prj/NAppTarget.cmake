@@ -958,7 +958,9 @@ function(nap_library_requires libName scope)
             if (${libName} STREQUAL "draw2d")
                 target_link_libraries(draw2d ${scope} gdiplus shlwapi)
             else()
-                target_link_libraries(osgui ${scope} comctl32 uxtheme)
+                # dwmapi: la barra de titulo en modo oscuro va por
+                # DwmSetWindowAttribute, que es API documentada (NAP-042).
+                target_link_libraries(osgui ${scope} comctl32 uxtheme dwmapi)
             endif()
 
         elseif (${CMAKE_SYSTEM_NAME} STREQUAL "Linux")

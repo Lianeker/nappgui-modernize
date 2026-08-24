@@ -11,6 +11,7 @@
 /* Operating System native screen */
 
 #include "osgui_win.inl"
+#include "osdark_win.inl"
 #include "oswindow_win.inl"
 #include "osimg.inl"
 #include "../osglobals.h"
@@ -39,28 +40,40 @@ color_t osglobals_color(const syscolor_t *color)
 
     switch (*color)
     {
+    /* AQUI estaba la raiz del modo oscuro roto en Windows (NAP-042).
+     *
+     * Se deducia el tema del BRILLO de COLOR_3DFACE. Pero los colores de
+     * sistema de Win32 son de la epoca de Windows 95 y **no cambian** cuando el
+     * usuario pone el escritorio en oscuro: COLOR_3DFACE sigue siendo gris
+     * claro. O sea que esto devolvia siempre FALSE, `gui_dark_mode()` mentia, y
+     * con el `gui_alt_color()` de todas las aplicaciones. Nada se ponia oscuro
+     * por mucho que el sistema lo estuviera.
+     *
+     * El ajuste vive en el registro y es lo unico que sabe la verdad. */
     case ekSYSCOLOR_DARKMODE:
-    {
-        uint32_t c = GetSysColor(COLOR_3DFACE);
-        real32_t r = (real32_t)((uint8_t)(c) / 255.f);
-        real32_t g = (real32_t)((uint8_t)(c >> 8) / 255.f);
-        real32_t b = (real32_t)((uint8_t)(c >> 16) / 255.f);
-        return (.21 * r + .72 * g + .07 * b) < .5 ? TRUE : FALSE;
-    }
+        return (_osdark_enabled() == TRUE) ? TRUE : FALSE;
 
     case ekSYSCOLOR_LABEL:
+        if (_osdark_enabled() == TRUE)
+            return _osdark_textcolor() | (uint32_t)(255 << 24);
         return GetSysColor(COLOR_BTNTEXT) | (uint32_t)(255 << 24);
 
     case ekSYSCOLOR_VIEW:
+        if (_osdark_enabled() == TRUE)
+            return _osdark_bgcolor() | (uint32_t)(255 << 24);
         return GetSysColor(COLOR_3DFACE) | (uint32_t)(255 << 24);
 
     case ekSYSCOLOR_LINE:
+        if (_osdark_enabled() == TRUE)
+            return RGB(70, 70, 70) | (uint32_t)(255 << 24);
         return GetSysColor(COLOR_SCROLLBAR) | (uint32_t)(255 << 24);
 
     case ekSYSCOLOR_LINK:
         return GetSysColor(COLOR_HOTLIGHT) | (uint32_t)(255 << 24);
 
     case ekSYSCOLOR_BORDER:
+        if (_osdark_enabled() == TRUE)
+            return RGB(85, 85, 85) | (uint32_t)(255 << 24);
         return GetSysColor(COLOR_ACTIVEBORDER) | (uint32_t)(255 << 24);
 
     default:

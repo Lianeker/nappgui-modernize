@@ -11,6 +11,7 @@
 /* Operating system native gui */
 
 #include "osgui_win.inl"
+#include "osdark_win.inl"
 #include "osmenu_win.inl"
 #include "ospanel_win.inl"
 #include "oswindow_win.inl"
@@ -498,6 +499,10 @@ void _osgui_wstr_remove(WString *str)
 
 void _osgui_start_imp(void)
 {
+    /* Modo oscuro: se resuelve una sola vez y antes que nada, para que los
+       controles que se creen despues ya nazcan con el tema puesto (NAP-042). */
+    _osdark_start();
+
     /* Application instance */
     cassert(i_INSTANCE == NULL);
     i_INSTANCE = (HINSTANCE)GetModuleHandle(NULL);

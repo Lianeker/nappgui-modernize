@@ -12,6 +12,7 @@
 
 #include "oscontrol_win.inl"
 #include "osgui_win.inl"
+#include "osdark_win.inl"
 #include "osbutton_win.inl"
 #include "oscombo_win.inl"
 #include "ospanel_win.inl"
@@ -71,6 +72,20 @@ static void i_init(OSControl *control, const DWORD dwExStyle, const DWORD dwStyl
         PARAM(lpParam, NULL));
 
     cassert_no_null(control->hwnd);
+
+    /* Tema oscuro, si el sistema lo pide (NAP-042).
+     *
+     * Aqui hay un orden que importa: `SetWindowTheme` manda `WM_THEMECHANGED`
+     * al control EN EL ACTO. Si eso pasa despues de instalar el WndProc de
+     * NAppGUI, el mensaje llega a un control a medio construir —`type` aun sin
+     * asignar— y salta una asercion. Aplicandolo ANTES, el mensaje lo atiende
+     * el procedimiento por omision de la clase, que no sabe ni le importa.
+     *
+     * Y va en este sitio y no en cada control porque es el unico por el que
+     * pasan todos: repartirlo por osbutton/oscombo/osedit/... garantizaria que
+     * el proximo control nuevo se olvidara de hacerlo. */
+    _osdark_control(control->hwnd);
+
     control->window = NULL;
     control->tooltip = NULL;
     control->tooltip_hwnd1 = NULL;
@@ -85,6 +100,7 @@ static void i_init(OSControl *control, const DWORD dwExStyle, const DWORD dwStyl
         void *data = cast(SetWindowLongPtr(control->hwnd, GWLP_USERDATA, (LONG_PTR)control), void);
         cassert_unref(data == NULL, data);
     }
+
 }
 
 /*---------------------------------------------------------------------------*/
