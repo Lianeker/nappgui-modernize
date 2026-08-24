@@ -74,6 +74,27 @@ static const char_t *i_button_state_text(const Button *button, const gui_state_t
 
 /*---------------------------------------------------------------------------*/
 
+static const Image *i_button_state_image(const Button *button, const gui_state_t state)
+{
+    cassert_no_null(button);
+    if (button_get_type(button->flags) == ekBUTTON_FLATGLE && state == ekGUI_ON && button->imalt != NULL)
+        return button->imalt;
+    return button->image;
+}
+
+/*---------------------------------------------------------------------------*/
+
+/* El boton plano con `ekGUI_POS_NONE` es el de barra de herramientas: lo que se
+   ve es el icono, y el texto pasa a ser su etiqueta emergente. Sin icono no
+   quedaria nada que ver, asi que ahi el texto se dibuja. Ver backlog/NAP-045. */
+static bool_t i_flat_draws_text(const Button *button, const Image *image)
+{
+    cassert_no_null(button);
+    return (bool_t)(button->image_pos != ekGUI_POS_NONE || image == NULL);
+}
+
+/*---------------------------------------------------------------------------*/
+
 static gui_state_t i_button_state(const Button *button)
 {
     cassert_no_null(button);
@@ -91,7 +112,7 @@ static void i_update_flat_text(Button *button, const gui_state_t state)
     cassert_no_null(button);
     cassert(button_get_type(button->flags) == ekBUTTON_FLAT || button_get_type(button->flags) == ekBUTTON_FLATGLE);
 
-    if (button->image_pos == ekGUI_POS_NONE)
+    if (i_flat_draws_text(button, i_button_state_image(button, state)) == FALSE)
     {
         button->component.context->func_button_set_text(button->component.ositem, "");
         tooltip = text;
@@ -407,6 +428,11 @@ void button_image(Button *button, const Image *image)
     ptr_destopt(image_destroy, &button->image, Image);
     button->image = ptr_copyopt(image_copy, limage, Image);
     button->component.context->func_button_set_image(button->component.ositem, limage);
+
+    /* Poner o quitar el icono cambia de sitio al texto: con icono es la etiqueta
+       emergente, sin el se dibuja. Hay que rehacerlo, no basta con la imagen. */
+    if (button_get_type(button->flags) == ekBUTTON_FLAT || button_get_type(button->flags) == ekBUTTON_FLATGLE)
+        i_update_flat_text(button, i_button_state(button));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -418,6 +444,7 @@ void button_image_alt(Button *button, const Image *image)
     cassert(button_get_type(button->flags) == ekBUTTON_FLATGLE);
     ptr_destopt(image_destroy, &button->imalt, Image);
     button->imalt = ptr_copyopt(image_copy, limage, Image);
+    i_update_flat_text(button, i_button_state(button));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -589,21 +616,18 @@ void _button_natural(Button *button, const uint32_t i, real32_t *dim0, real32_t 
         }
         else
         {
-            const char_t *text = button->image_pos == ekGUI_POS_NONE ? NULL : tc(button->text);
+            const char_t *text = i_flat_draws_text(button, button->image) == TRUE ? tc(button->text) : NULL;
             i_flat_natural_bounds(button, text, button->image, &button->size.width, &button->size.height);
 
             if (button_get_type(button->flags) == ekBUTTON_FLATGLE)
             {
-                const char_t *alt_text = text;
-                const Image *alt_image = button->image;
+                const Image *alt_image = button->imalt != NULL ? button->imalt : button->image;
+                const char_t *alt_text = NULL;
                 real32_t alt_width = 0;
                 real32_t alt_height = 0;
 
-                if (button->image_pos != ekGUI_POS_NONE && button->talt != NULL)
-                    alt_text = tc(button->talt);
-
-                if (button->imalt != NULL)
-                    alt_image = button->imalt;
+                if (i_flat_draws_text(button, alt_image) == TRUE)
+                    alt_text = button->talt != NULL ? tc(button->talt) : tc(button->text);
 
                 i_flat_natural_bounds(button, alt_text, alt_image, &alt_width, &alt_height);
                 if (alt_width > button->size.width)

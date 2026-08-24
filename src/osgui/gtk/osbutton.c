@@ -204,7 +204,9 @@ static gboolean i_OnButtonDraw(GtkWidget *widget, cairo_t *cr, OSButton *button)
 
     _oscontrol_widget_get_size(button->control.widget, &bwidth, &bheight);
 
-    if (button_is_flat(button->flags) == TRUE && (str_empty(button->text) == TRUE || button->imgpos == ekGUI_POS_NONE))
+    /* Con `ekGUI_POS_NONE` el texto es la etiqueta emergente del icono; sin
+       icono no hay nada que ver y el texto se dibuja. Ver backlog/NAP-045. */
+    if (button_is_flat(button->flags) == TRUE && (str_empty(button->text) == TRUE || (button->imgpos == ekGUI_POS_NONE && button->image != NULL)))
         draw_text = FALSE;
 
     if (draw_text == TRUE)

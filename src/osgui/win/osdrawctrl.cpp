@@ -410,7 +410,7 @@ static COLORREF i_colorref(const color_t color)
 
 /*---------------------------------------------------------------------------*/
 
-void _osdrawctrl_gdi_text(HDC hdc, HTHEME theme, const char_t *text, const int32_t x, const int32_t y, const halign_t align, const ellipsis_t trim, const int32_t text_width, const COLORREF text_color, const ctrl_state_t state)
+void _osdrawctrl_gdi_text(HDC hdc, HTHEME theme, const char_t *text, const int32_t x, const int32_t y, const halign_t align, const ellipsis_t trim, const int32_t text_width, const color_t text_color, const ctrl_state_t state)
 {
     RECT rect;
     WString str;
@@ -468,7 +468,9 @@ void _osdrawctrl_gdi_text(HDC hdc, HTHEME theme, const char_t *text, const int32
         rect.bottom = rect.top + (nrect.bottom - nrect.top);
     }
 
-    if (text_color == UINT32_MAX)
+    /* `kCOLOR_DEFAULT` y no UINT32_MAX: como color_t, UINT32_MAX es el blanco
+       opaco, y con ese centinela no habria forma de pedir texto blanco. */
+    if (text_color == kCOLOR_DEFAULT)
     {
         /* En oscuro se dibuja el texto a mano y NO por el tema: el tema de
            LISTVIEW sigue devolviendo el color de la variante clara, con lo que

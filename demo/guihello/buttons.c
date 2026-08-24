@@ -38,6 +38,31 @@ static Layout *i_flatbuttons(void)
 
 /*---------------------------------------------------------------------------*/
 
+/* Boton plano con SOLO texto (NAP-045).
+   El plano esta pensado para barras de herramientas, y por eso su texto es por
+   omision la etiqueta emergente del icono. Sin icono no queda nada que ver, asi
+   que ahi el texto se dibuja. Es el boton de barra al estilo del explorador:
+   sin borde, del color del fondo, y que solo se resalta al pasar por encima. */
+static Layout *i_textflatbuttons(void)
+{
+    Layout *layout = layout_create(3, 1);
+    Button *button1 = button_flat();
+    Button *button2 = button_flat();
+    Button *button3 = button_flat();
+    button_text(button1, "File");
+    button_text(button2, "Edit");
+    button_text(button3, "View");
+    /* Sin layout_hsize: el ancho lo da el texto, que es justo lo que antes no
+       se podia. Solo se fija el alto, que el texto no tiene por que mandar. */
+    layout_button(layout, button1, 0, 0);
+    layout_button(layout, button2, 1, 0);
+    layout_button(layout, button3, 2, 0);
+    layout_vsize(layout, 0, 26);
+    return layout;
+}
+
+/*---------------------------------------------------------------------------*/
+
 /* Botones planos con color propio (NAP-044).
    Solo el boton PLANO lo dibuja NAppGUI, y por eso es el unico al que se le
    puede fijar color: el boton normal lo pinta el sistema. Sin llamar a nada,
@@ -48,8 +73,8 @@ static Layout *i_colorbuttons(void)
     Button *button1 = button_flat();
     Button *button2 = button_flat();
     Button *button3 = button_flat();
-    /* Con imagen: el boton plano con SOLO texto no funciona hoy (NAP-045), asi
-       que el ejemplo usa lo que si esta soportado. Lo que muestra es el color. */
+    /* Con imagen a proposito: asi se ve que el color no depende de que el
+       contenido sea texto. El caso de solo texto lo cubre la fila de arriba. */
     button_image(button1, gui_image(PLUS24_PNG));
     button_image(button2, gui_image(SEARCH24_PNG));
     button_image(button3, gui_image(EDIT24_PNG));
@@ -65,9 +90,7 @@ static Layout *i_colorbuttons(void)
     layout_button(layout, button1, 0, 0);
     layout_button(layout, button2, 1, 0);
     layout_button(layout, button3, 2, 0);
-    /* Tamano explicito: el boton plano esta pensado para iconos y NAppGUI le
-       pone la fuente diminuta a proposito, para que el texto no le fije el
-       tamano minimo. Con solo texto, sin esto sale de tamano cero. */
+    /* Tamano explicito para que los tres iconos midan lo mismo. */
     layout_hsize(layout, 0, 40);
     layout_hsize(layout, 1, 40);
     layout_hsize(layout, 2, 40);
@@ -155,9 +178,10 @@ static Layout *i_pushes(Button **defbutton)
 
 static Layout *i_buttons(Button **defbutton)
 {
-    Layout *layout = layout_create(1, 4);
+    Layout *layout = layout_create(1, 5);
     Layout *layout1 = i_flatbuttons();
     Layout *layout6 = i_colorbuttons();
+    Layout *layout7 = i_textflatbuttons();
     Layout *layout2 = layout_create(2, 2);
     Layout *layout3 = i_radios();
     Layout *layout4 = i_checks();
@@ -176,9 +200,12 @@ static Layout *i_buttons(Button **defbutton)
     layout_layout(layout, layout2, 0, 1);
     layout_layout(layout, layout5, 0, 2);
     layout_layout(layout, layout6, 0, 3);
+    layout_layout(layout, layout7, 0, 4);
     layout_halign(layout, 0, 0, ekHLEFT);
     layout_halign(layout, 0, 3, ekHLEFT);
+    layout_halign(layout, 0, 4, ekHLEFT);
     layout_margin(layout6, 5);
+    layout_margin(layout7, 5);
     layout_margin(layout2, 5);
     layout_hmargin(layout2, 0, 10);
     layout_margin(layout5, 5);

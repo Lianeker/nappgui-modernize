@@ -57,8 +57,20 @@ static void i_resolve(void)
     if (ux == NULL)
         return;
 
+    /* GetProcAddress devuelve FARPROC y hay que convertirlo al tipo real. El
+       aviso 4191 avisa justamente de eso, y aqui es lo que se quiere hacer: la
+       misma excepcion puntual que ya usa draw2d/win/osimage.cpp. */
+#if defined(_MSC_VER)
+#pragma warning(disable : 4191)
+#endif
+#if defined(__GNUC__)
+#pragma GCC diagnostic ignored "-Wcast-function-type"
+#endif
     i_ALLOW_DARK = (FPtr_allow_dark)GetProcAddress(ux, MAKEINTRESOURCEA(ORD_ALLOW_DARK_MODE_FOR_WINDOW));
     i_SET_APP_MODE = (FPtr_set_app_mode)GetProcAddress(ux, MAKEINTRESOURCEA(ORD_SET_PREFERRED_APP_MODE));
+#if defined(_MSC_VER)
+#pragma warning(default : 4191)
+#endif
 
     if (i_ALLOW_DARK == NULL || i_SET_APP_MODE == NULL)
         return;
@@ -136,6 +148,22 @@ COLORREF _osdark_textcolor(void)
 {
     return RGB(235, 235, 235);
 }
+
+/* Los dos tonos de realce del Explorer en oscuro: apenas por encima del fondo.
+   Un boton de barra tiene que quedarse invisible hasta que se le apunta. */
+COLORREF _osdark_hotcolor(void)
+{
+    return RGB(58, 58, 58);
+}
+
+/*---------------------------------------------------------------------------*/
+
+COLORREF _osdark_pressedcolor(void)
+{
+    return RGB(72, 72, 72);
+}
+
+/*---------------------------------------------------------------------------*/
 
 HBRUSH _osdark_bgbrush(void)
 {

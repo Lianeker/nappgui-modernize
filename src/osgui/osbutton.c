@@ -104,7 +104,8 @@ static void i_flat_content_size(const real32_t imgwidth, const real32_t imgheigh
     }
     else
     {
-        cassert(twidth > 0.f);
+        /* Sin imagen manda el texto. Y si tampoco hay texto, el boton no tiene
+           contenido y mide cero: es lo que se ha pedido, no un error. */
         *cwidth = twidth;
         *cheight = theight;
     }
@@ -118,7 +119,10 @@ void _osbutton_flat_bounds(const char_t *text, const Font *font, const real32_t 
     real32_t theight = 0.f;
     real32_t cwidth = 0.f;
     real32_t cheight = 0.f;
-    const bool_t draw_text = (bool_t)(str_empty_c(text) == FALSE && imgpos != ekGUI_POS_NONE);
+    /* `ekGUI_POS_NONE` es el boton de barra de herramientas: se ve el icono y el
+       texto pasa a ser la etiqueta emergente. Pero sin icono no quedaria nada
+       que ver, asi que ahi el texto se dibuja. Ver backlog/NAP-045. */
+    const bool_t draw_text = (bool_t)(str_empty_c(text) == FALSE && (imgpos != ekGUI_POS_NONE || imgwidth == 0.f));
 
     cassert_no_null(width);
     cassert_no_null(height);
@@ -128,15 +132,33 @@ void _osbutton_flat_bounds(const char_t *text, const Font *font, const real32_t 
 
     i_flat_content_size(imgwidth, imgheight, imgsep, imgpos, twidth, theight, &cwidth, &cheight);
 
+    /* La holgura por omision se saca de la imagen: media imagen, repartida entre
+       los dos lados. Sin imagen eso da cero, y los botones saldrian pegados unos
+       a otros y con el texto tocando el borde. Se saca entonces del alto del
+       texto, que es lo unico que escala con la fuente y con el DPI. */
     if (hpadding == UINT32_MAX)
-        *width = cwidth + (real32_t)(uint32_t)((imgwidth * .5f) + .5f);
+    {
+        if (imgwidth > 0.f)
+            *width = cwidth + (real32_t)(uint32_t)((imgwidth * .5f) + .5f);
+        else
+            *width = cwidth + (real32_t)(uint32_t)(theight + .5f);
+    }
     else
+    {
         *width = cwidth + (real32_t)hpadding;
+    }
 
     if (vpadding == UINT32_MAX)
-        *height = cheight + (real32_t)(uint32_t)((imgheight * .5f) + .5f);
+    {
+        if (imgheight > 0.f)
+            *height = cheight + (real32_t)(uint32_t)((imgheight * .5f) + .5f);
+        else
+            *height = cheight + (real32_t)(uint32_t)((theight * .5f) + .5f);
+    }
     else
+    {
         *height = cheight + (real32_t)vpadding;
+    }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -187,8 +209,18 @@ void _osbutton_flat_position(const real32_t width, const real32_t height, const 
     case ekGUI_POS_NONE:
         *imgx = ox + (cwidth - imgwidth) / 2.f;
         *imgy = oy + (cheight - imgheight) / 2.f;
-        *tx = 0.f;
-        *ty = 0.f;
+        /* Con icono el texto no se dibuja: es la etiqueta emergente. Sin el, el
+           contenido ES el texto, y el contenido va centrado. */
+        if (imgwidth == 0.f)
+        {
+            *tx = ox;
+            *ty = oy;
+        }
+        else
+        {
+            *tx = 0.f;
+            *ty = 0.f;
+        }
         break;
 
     default:

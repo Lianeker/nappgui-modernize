@@ -11,6 +11,7 @@
 /* Operating System native button */
 
 #include "osbutton_win.inl"
+#include "osdark_win.inl"
 #include "osgui_win.inl"
 #include "oscontrol_win.inl"
 #include "osdrawctrl_win.inl"
@@ -72,6 +73,31 @@ static real32_t i_BUTTON_IMAGE_SEP = 4.f;
 
 /*---------------------------------------------------------------------------*/
 
+/* El fondo del boton plano en modo oscuro, por estado.
+   Hace falta porque el tema de TOOLBAR no tiene variante oscura:
+   `SetWindowTheme(DarkMode_Explorer)` no la encuentra y devuelve la clara, con
+   lo que el resaltado salia casi blanco y el texto claro encima se perdia. */
+static COLORREF i_dark_flat_bgcolor(HWND hwnd, const BOOL enabled)
+{
+    if (enabled == FALSE)
+        return _osdark_bgcolor();
+
+    if (SendMessage(hwnd, BM_GETCHECK, (WPARAM)0, (LPARAM)0) == BST_CHECKED)
+        return _osdark_pressedcolor();
+
+    if (_osgui_hit_test(hwnd) == TRUE)
+    {
+        if ((GetKeyState(VK_LBUTTON) & 0x100) != 0)
+            return _osdark_pressedcolor();
+        return _osdark_hotcolor();
+    }
+
+    /* En reposo, el del panel: el boton no se ve hasta que se le apunta. */
+    return _osdark_bgcolor();
+}
+
+/*---------------------------------------------------------------------------*/
+
 static void i_draw_flat_button(OSButton *button, const Image *image)
 {
     HWND hwnd = NULL;
@@ -110,6 +136,16 @@ static void i_draw_flat_button(OSButton *button, const Image *image)
         if (button->bgcolor != kCOLOR_TRANSPARENT)
         {
             HBRUSH brush = CreateSolidBrush(_oscontrol_colorref(button->bgcolor));
+            FillRect(memHdc, &rect, brush);
+            DeleteObject(brush);
+            goto content;
+        }
+
+        /* En oscuro tampoco se consulta el tema, por lo mismo que explica
+           `i_dark_flat_bgcolor`: no hay variante oscura de TOOLBAR. */
+        if (_osdark_enabled() == TRUE)
+        {
+            HBRUSH brush = CreateSolidBrush(i_dark_flat_bgcolor(hwnd, enabled));
             FillRect(memHdc, &rect, brush);
             DeleteObject(brush);
             goto content;
@@ -210,11 +246,19 @@ content:
         if (button->twidth > 0.f)
         {
             HGDIOBJ old_font = SelectObject(memHdc, (HFONT)font_native(button->font));
-            COLORREF color = GetSysColor(enabled ? COLOR_BTNTEXT : COLOR_GRAYTEXT);
+            /* color_t, no COLORREF: `_osdrawctrl_gdi_text` lo consume como color
+               de NAppGUI. Un COLORREF crudo lleva el alfa a cero, que ahi
+               significa "color indexado", y salia un color que no es el suyo. */
+            color_t color = _oscontrol_from_colorref(GetSysColor(enabled ? COLOR_BTNTEXT : COLOR_GRAYTEXT));
+            /* COLOR_BTNTEXT es un color de sistema de 1995 y NO cambia con el
+               modo oscuro: dejaba el texto en negro sobre fondo oscuro. El del
+               tema es el mismo que usa el backend de GTK (ekSYSCOLOR_LABEL). */
+            if (enabled == TRUE && _osdark_enabled() == TRUE)
+                color = _oscontrol_from_colorref(_osdark_textcolor());
             /* Deshabilitado manda sobre el color propio: un boton que no se
                puede pulsar tiene que parecerlo, lo pida quien lo pida. */
             if (enabled == TRUE && button->ccolor != kCOLOR_TRANSPARENT)
-                color = _oscontrol_colorref(button->ccolor);
+                color = button->ccolor;
             SetBkMode(memHdc, TRANSPARENT);
             _osdrawctrl_gdi_text(memHdc, NULL, tc(button->text), (int32_t)tx, (int32_t)ty, ekHLEFT, ekELLIPEND, -1, color, ekCTRL_STATE_NORMAL);
             SelectObject(memHdc, old_font);

@@ -33,4 +33,10 @@ COLORREF _osdark_bgcolor(void);
 COLORREF _osdark_textcolor(void);
 HBRUSH _osdark_bgbrush(void);
 
+/* Fondo de un control con el raton encima y con el raton pulsando. El tema de
+   TOOLBAR no tiene variante oscura, asi que quien dibuje un control plano en
+   oscuro tiene que pintar estos dos estados a mano. */
+COLORREF _osdark_hotcolor(void);
+COLORREF _osdark_pressedcolor(void);
+
 __END_C
