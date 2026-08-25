@@ -196,6 +196,30 @@ LONG kTWIPS_PER_PIXEL_GUI = 0;
 
 /*---------------------------------------------------------------------------*/
 
+/* La brocha de fondo de las clases propias.
+ *
+ * Es lo que Windows pinta ANTES del primer WM_PAINT de cada control. Con el
+ * gris de boton, en modo oscuro se ve un destello claro al arrancar: ventana
+ * negra con el lienzo y los botones en blanco hasta que pintan (NAP-048).
+ *
+ * Y en x64 no era gris sino BLANCO. Un color de sistema se pasa como
+ * `COLOR_X + 1` porque el 0 significa "sin brocha", y la rama de x64 se habia
+ * dejado el `+ 1` al anadir el cast que silencia el aviso C4306: pasaba 15, que
+ * es el color 14, COLOR_BTNHIGHLIGHT.
+ *
+ * `_osdark_start()` corre antes que los registros, asi que aqui ya se sabe si
+ * el sistema esta en oscuro. */
+static HBRUSH i_class_brush(void)
+{
+    if (_osdark_enabled() == TRUE)
+    {
+        HBRUSH b = _osdark_bgbrush();
+        if (b != NULL)
+            return b;
+    }
+    return (HBRUSH)(uint64_t)(COLOR_BTNFACE + 1);
+}
+
 static void i_registry_custom_window_class(void)
 {
     WNDCLASSEX wc;
@@ -209,12 +233,7 @@ static void i_registry_custom_window_class(void)
     wc.hIcon = LoadIcon(NULL, IDI_APPLICATION);
     wc.hCursor = LoadCursor(NULL, IDC_ARROW);
 
-/* Avoid warning C4306: 'type cast' : conversion from 'int' to 'HBRUSH' of greater size */
-#if defined(__x64__)
-    wc.hbrBackground = (HBRUSH)(uint64_t)(COLOR_BTNFACE);
-#else
-    wc.hbrBackground = (HBRUSH)(COLOR_BTNFACE + 1);
-#endif
+    wc.hbrBackground = i_class_brush();
 
     wc.lpszMenuName = NULL;
     wc.lpszClassName = kWINDOW_CLASS;
@@ -241,7 +260,7 @@ static void i_registry_view_class(void)
     wc.hInstance = i_INSTANCE;
     wc.hIcon = LoadIcon(NULL, IDI_APPLICATION);
     wc.hCursor = LoadCursor(NULL, IDC_ARROW);
-    wc.hbrBackground = (HBRUSH)(COLOR_BTNFACE + 1);
+    wc.hbrBackground = i_class_brush();
     wc.lpszMenuName = NULL;
     wc.lpszClassName = kVIEW_CLASS;
     wc.hIconSm = LoadCursor(NULL, IDC_ARROW);
@@ -266,7 +285,7 @@ static void i_registry_web_class(void)
     wc.hInstance = i_INSTANCE;
     wc.hIcon = LoadIcon(NULL, IDI_APPLICATION);
     wc.hCursor = LoadCursor(NULL, IDC_ARROW);
-    wc.hbrBackground = (HBRUSH)(COLOR_BTNFACE + 1);
+    wc.hbrBackground = i_class_brush();
     wc.lpszMenuName = NULL;
     wc.lpszClassName = kWEBVIEW_CLASS;
     wc.hIconSm = LoadCursor(NULL, IDC_ARROW);
